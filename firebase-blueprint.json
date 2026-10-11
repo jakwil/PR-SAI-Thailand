@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "HeroStory": {
+      "title": "HeroStory",
+      "description": "Featured news and cinematic showcase story displayed on the hero carousel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 300 },
+        "subtitle": { "type": "string", "maxLength": 1000 },
+        "category": { "type": "string", "maxLength": 100 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "linkUrl": { "type": "string", "maxLength": 1000 },
+        "date": { "type": "string", "maxLength": 50 },
+        "badge": { "type": "string", "maxLength": 50 },
+        "order": { "type": "number" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "subtitle", "category", "imageUrl", "linkUrl", "date", "order"]
+    },
+    "KnowledgeItem": {
+      "title": "KnowledgeItem",
+      "description": "Organizational knowledge base item used for AI grounding and public retrieval",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 300 },
+        "category": { "type": "string", "maxLength": 100 },
+        "content": { "type": "string", "maxLength": 10000 },
+        "sourceType": { "type": "string", "enum": ["url", "raw_text", "pdf_summary", "infographic"] },
+        "sourceUrl": { "type": "string", "maxLength": 1000 },
+        "dateAdded": { "type": "string", "maxLength": 50 },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "category", "content", "sourceType", "dateAdded"]
+    },
+    "PublishedWork": {
+      "title": "PublishedWork",
+      "description": "Public relations published work, video, or document",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 300 },
+        "category": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "linkUrl": { "type": "string", "maxLength": 1000 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "publishDate": { "type": "string", "maxLength": 50 },
+        "views": { "type": "string", "maxLength": 50 },
+        "badge": { "type": "string", "maxLength": 50 },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "category", "description", "linkUrl", "imageUrl", "publishDate", "views"]
+    },
+    "ViralClip": {
+      "title": "ViralClip",
+      "description": "Video clips and social highlights of PR - SAI Thailand",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 300 },
+        "creator": { "type": "string", "maxLength": 150 },
+        "views": { "type": "string", "maxLength": 50 },
+        "duration": { "type": "string", "maxLength": 30 },
+        "thumbnail": { "type": "string", "maxLength": 1000 },
+        "linkUrl": { "type": "string", "maxLength": 1000 },
+        "highlight": { "type": "string", "maxLength": 500 },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "creator", "views", "duration", "thumbnail", "linkUrl", "highlight"]
+    },
+    "IncidentMilestone": {
+      "title": "IncidentMilestone",
+      "description": "Chronological milestone of the SAI building situation and engineering response",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "maxLength": 50 },
+        "time": { "type": "string", "maxLength": 30 },
+        "phase": { "type": "string", "maxLength": 100 },
+        "title": { "type": "string", "maxLength": 300 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "status": { "type": "string", "maxLength": 100 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "technicalDetails": { "type": "string", "maxLength": 2000 },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "date", "time", "phase", "title", "description", "status", "imageUrl", "technicalDetails"]
+    },
+    "MusicSettings": {
+      "title": "MusicSettings",
+      "description": "Background music settings including Google Drive audio url and volume levels",
+      "type": "object",
+      "properties": {
+        "driveUrl": { "type": "string", "maxLength": 1000 },
+        "streamUrl": { "type": "string", "maxLength": 1000 },
+        "title": { "type": "string", "maxLength": 200 },
+        "defaultVolume": { "type": "number" },
+        "duckingVolume": { "type": "number" },
+        "enabled": { "type": "boolean" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["driveUrl", "defaultVolume", "duckingVolume", "enabled"]
+    },
+    "VisitorLog": {
+      "title": "VisitorLog",
+      "description": "Anonymous aggregated visitor statistics and interaction counts",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "maxLength": 50 },
+        "action": { "type": "string", "maxLength": 100 },
+        "page": { "type": "string", "maxLength": 100 },
+        "userAgent": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["timestamp", "action"]
+    }
+  },
+  "firestore": {
+    "/heroStories/{storyId}": {
+      "schema": { "$ref": "#/entities/HeroStory" },
+      "description": "Hero carousel news stories collection (up to 10 stories)"
+    },
+    "/knowledgeBase/{itemId}": {
+      "schema": { "$ref": "#/entities/KnowledgeItem" },
+      "description": "Organizational knowledge base for AI training and user retrieval"
+    },
+    "/publishedWorks/{workId}": {
+      "schema": { "$ref": "#/entities/PublishedWork" },
+      "description": "Published works showcase items"
+    },
+    "/viralClips/{clipId}": {
+      "schema": { "$ref": "#/entities/ViralClip" },
+      "description": "Viral media and video clips"
+    },
+    "/incidentTimeline/{milestoneId}": {
+      "schema": { "$ref": "#/entities/IncidentMilestone" },
+      "description": "SAI Building incident timeline milestones"
+    },
+    "/settings/music": {
+      "schema": { "$ref": "#/entities/MusicSettings" },
+      "description": "Global background music and Google Drive stream settings"
+    },
+    "/visitorLogs/{logId}": {
+      "schema": { "$ref": "#/entities/VisitorLog" },
+      "description": "Visitor analytics and interaction logs"
+    }
+  }
+}

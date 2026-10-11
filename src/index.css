@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #020819;
+    color: #e2e8f0;
+    overflow-x: hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #040d28;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0e2a5c;
+  border-radius: 9999px;
+  border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #17428b;
+}
+
+/* Digital Tech Glow & Neon Laser Borders */
+.glow-border-cyan {
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.15), inset 0 0 15px rgba(6, 182, 212, 0.05);
+}
+
+.glow-border-blue {
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+}
+
+.glow-text-cyan {
+  text-shadow: 0 0 12px rgba(6, 182, 212, 0.5);
+}
+
+/* Radiant Yellow Logo Filter */
+.yellow-logo-filter {
+  filter: sepia(1) saturate(12) hue-rotate(15deg) brightness(1.35) contrast(1.1) drop-shadow(0 0 20px rgba(250, 204, 21, 0.95));
+}
+
+/* Luxurious Golden Logo Filter */
+.gold-filter {
+  filter: sepia(1) saturate(7) hue-rotate(8deg) brightness(1.22) contrast(1.15) drop-shadow(0 0 16px rgba(245, 158, 11, 0.85));
+}
+
+/* Cinematic Ken Burns Slow Zoom In */
+@keyframes cinematicSlowZoom {
+  0% {
+    transform: scale(1.0);
+  }
+  100% {
+    transform: scale(1.14);
+  }
+}
+
+.animate-cinematic-zoom {
+  animation: cinematicSlowZoom 6s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+}
+
+
+
+/* Grid overlay pattern */
+.bg-digital-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(6, 182, 212, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
+}
+
+/* Subtle Glowing Shimmer and Cinematic Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes laserScan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 5s ease-in-out infinite;
+}
+
+.animate-laser {
+  animation: laserScan 4s linear infinite;
+}
+
+/* 3D Perspective Card Utilities */
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Audio Equalizer Soundwave Animations */
+@keyframes soundwave {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 15px;
+  }
+}
+
+.animate-soundwave-1 {
+  animation: soundwave 0.8s ease-in-out infinite;
+}
+.animate-soundwave-2 {
+  animation: soundwave 1.1s ease-in-out infinite 0.2s;
+}
+.animate-soundwave-3 {
+  animation: soundwave 0.9s ease-in-out infinite 0.4s;
+}
+.animate-soundwave-4 {
+  animation: soundwave 1.2s ease-in-out infinite 0.1s;
+}
+
+/* Digital Data Cyber Circuit Background */
+.bg-digital-circuit {
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.12) 0%, transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.12) 0%, transparent 30%),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.04) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
+}
+
+.bg-digital-dots {
+  background-image: radial-gradient(rgba(6, 182, 212, 0.18) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}

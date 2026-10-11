@@ -1,0 +1,6 @@
+{
+  "name": "PR - SAI Thailand | สำนักประชาสัมพันธ์และสื่อสารองค์กร",
+  "description": "ระบบสื่อสารดิจิทัล 3D และผู้ช่วย AI ประชาสัมพันธ์องค์กร สำนักประชาสัมพันธ์และสื่อสารองค์กร สำนักงานการตรวจเงินแผ่นดิน",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

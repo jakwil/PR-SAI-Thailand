@@ -1,0 +1,156 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'auditpicture.webapp@gmail.com' ||
+        request.auth.token.email == 'jakwil@jakwil.page'
+      );
+    }
+
+    function isValidHeroStory(data) {
+      return data.keys().hasAll(['id', 'title', 'subtitle', 'category', 'imageUrl', 'linkUrl', 'date', 'order']) &&
+             data.keys().hasOnly(['id', 'title', 'subtitle', 'category', 'imageUrl', 'linkUrl', 'date', 'badge', 'order', 'updatedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() <= 300 &&
+             data.subtitle is string && data.subtitle.size() <= 1000 &&
+             data.category is string && data.category.size() <= 100 &&
+             data.imageUrl is string && data.imageUrl.size() <= 1000 &&
+             data.linkUrl is string && data.linkUrl.size() <= 1000 &&
+             data.date is string && data.date.size() <= 50 &&
+             data.order is number;
+    }
+
+    function isValidKnowledgeItem(data) {
+      return data.keys().hasAll(['id', 'title', 'category', 'content', 'sourceType', 'dateAdded']) &&
+             data.keys().hasOnly(['id', 'title', 'category', 'content', 'sourceType', 'sourceUrl', 'dateAdded', 'updatedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() <= 300 &&
+             data.category is string && data.category.size() <= 100 &&
+             data.content is string && data.content.size() <= 10000 &&
+             data.sourceType in ['url', 'raw_text', 'pdf_summary', 'infographic'] &&
+             data.dateAdded is string && data.dateAdded.size() <= 50;
+    }
+
+    function isValidPublishedWork(data) {
+      return data.keys().hasAll(['id', 'title', 'category', 'description', 'linkUrl', 'imageUrl', 'publishDate', 'views']) &&
+             data.keys().hasOnly(['id', 'title', 'category', 'description', 'linkUrl', 'imageUrl', 'publishDate', 'views', 'badge', 'updatedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() <= 300 &&
+             data.category is string && data.category.size() <= 100 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.linkUrl is string && data.linkUrl.size() <= 1000 &&
+             data.imageUrl is string && data.imageUrl.size() <= 1000 &&
+             data.publishDate is string && data.publishDate.size() <= 50 &&
+             data.views is string && data.views.size() <= 50;
+    }
+
+    function isValidViralClip(data) {
+      return data.keys().hasAll(['id', 'title', 'creator', 'views', 'duration', 'thumbnail', 'linkUrl', 'highlight']) &&
+             data.keys().hasOnly(['id', 'title', 'creator', 'views', 'duration', 'thumbnail', 'linkUrl', 'highlight', 'updatedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() <= 300 &&
+             data.creator is string && data.creator.size() <= 150 &&
+             data.views is string && data.views.size() <= 50 &&
+             data.duration is string && data.duration.size() <= 30 &&
+             data.thumbnail is string && data.thumbnail.size() <= 1000 &&
+             data.linkUrl is string && data.linkUrl.size() <= 1000 &&
+             data.highlight is string && data.highlight.size() <= 500;
+    }
+
+    function isValidIncidentMilestone(data) {
+      return data.keys().hasAll(['id', 'date', 'time', 'phase', 'title', 'description', 'status', 'imageUrl', 'technicalDetails']) &&
+             data.keys().hasOnly(['id', 'date', 'time', 'phase', 'title', 'description', 'status', 'imageUrl', 'technicalDetails', 'updatedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.date is string && data.date.size() <= 50 &&
+             data.time is string && data.time.size() <= 30 &&
+             data.phase is string && data.phase.size() <= 100 &&
+             data.title is string && data.title.size() <= 300 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.status is string && data.status.size() <= 100 &&
+             data.imageUrl is string && data.imageUrl.size() <= 1000 &&
+             data.technicalDetails is string && data.technicalDetails.size() <= 2000;
+    }
+
+    function isValidMusicSettings(data) {
+      return data.keys().hasAll(['driveUrl', 'defaultVolume', 'duckingVolume', 'enabled']) &&
+             data.keys().hasOnly(['driveUrl', 'streamUrl', 'title', 'defaultVolume', 'duckingVolume', 'enabled', 'updatedAt']) &&
+             data.driveUrl is string && data.driveUrl.size() <= 1000 &&
+             data.defaultVolume is number && data.defaultVolume >= 0 && data.defaultVolume <= 1 &&
+             data.duckingVolume is number && data.duckingVolume >= 0 && data.duckingVolume <= 1 &&
+             data.enabled is bool;
+    }
+
+    function isValidVisitorLog(data) {
+      return data.keys().hasAll(['timestamp', 'action']) &&
+             data.keys().hasOnly(['timestamp', 'action', 'page', 'userAgent']) &&
+             data.timestamp is string && data.timestamp.size() <= 50 &&
+             data.action is string && data.action.size() <= 100;
+    }
+
+    // Hero Stories Collection
+    match /heroStories/{storyId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || !isSignedIn()) && isValidHeroStory(incoming());
+      allow delete: if isAdmin() || !isSignedIn();
+    }
+
+    // Knowledge Base Collection
+    match /knowledgeBase/{itemId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || !isSignedIn()) && isValidKnowledgeItem(incoming());
+      allow delete: if isAdmin() || !isSignedIn();
+    }
+
+    // Published Works Collection
+    match /publishedWorks/{workId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || !isSignedIn()) && isValidPublishedWork(incoming());
+      allow delete: if isAdmin() || !isSignedIn();
+    }
+
+    // Viral Clips Collection
+    match /viralClips/{clipId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || !isSignedIn()) && isValidViralClip(incoming());
+      allow delete: if isAdmin() || !isSignedIn();
+    }
+
+    // Incident Timeline Collection
+    match /incidentTimeline/{milestoneId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || !isSignedIn()) && isValidIncidentMilestone(incoming());
+      allow delete: if isAdmin() || !isSignedIn();
+    }
+
+    // Settings Collection (Music etc.)
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if (settingId == 'music' && isValidMusicSettings(incoming())) || isAdmin();
+    }
+
+    // Visitor Logs Collection
+    match /visitorLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isValidVisitorLog(incoming());
+    }
+  }
+}
