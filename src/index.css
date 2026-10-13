@@ -14,49 +14,63 @@
   }
 }
 
-/* Custom Sleek Scrollbar */
+/* Custom Royal Sleek Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #040d28;
+  background: #020717;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #0e2a5c;
+  background: #0d2861;
   border-radius: 9999px;
-  border: 1px solid rgba(6, 182, 212, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #17428b;
+  background: #d4af37;
 }
 
-/* Digital Tech Glow & Neon Laser Borders */
+/* Royal Luxury Gold & Navy Glow Borders */
+.glow-border-gold {
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.15), inset 0 0 15px rgba(245, 158, 11, 0.05);
+}
+
+.glow-border-royal {
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 20px rgba(30, 64, 175, 0.25);
+}
+
 .glow-border-cyan {
-  border: 1px solid rgba(6, 182, 212, 0.4);
-  box-shadow: 0 0 15px rgba(6, 182, 212, 0.15), inset 0 0 15px rgba(6, 182, 212, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.12);
 }
 
 .glow-border-blue {
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.18);
+}
+
+.glow-text-gold {
+  text-shadow: 0 0 14px rgba(245, 158, 11, 0.6);
 }
 
 .glow-text-cyan {
-  text-shadow: 0 0 12px rgba(6, 182, 212, 0.5);
+  text-shadow: 0 0 12px rgba(254, 240, 138, 0.5);
 }
 
-/* Radiant Yellow Logo Filter */
+/* Radiant Royal Yellow Logo Filter */
 .yellow-logo-filter {
-  filter: sepia(1) saturate(12) hue-rotate(15deg) brightness(1.35) contrast(1.1) drop-shadow(0 0 20px rgba(250, 204, 21, 0.95));
+  filter: sepia(1) saturate(10) hue-rotate(10deg) brightness(1.25) contrast(1.1) drop-shadow(0 0 20px rgba(245, 158, 11, 0.95));
 }
 
-/* Luxurious Golden Logo Filter */
+/* Luxurious Golden Royal Filter */
 .gold-filter {
-  filter: sepia(1) saturate(7) hue-rotate(8deg) brightness(1.22) contrast(1.15) drop-shadow(0 0 16px rgba(245, 158, 11, 0.85));
+  filter: sepia(1) saturate(8) hue-rotate(8deg) brightness(1.25) contrast(1.15) drop-shadow(0 0 18px rgba(212, 175, 55, 0.9));
 }
 
 /* Cinematic Ken Burns Slow Zoom In */
@@ -106,6 +120,38 @@
 
 .animate-pulse-glow {
   animation: pulseGlow 5s ease-in-out infinite;
+}
+
+/* Refined Soft Rhythmic Pulse Glow for Red SAI Logo (Reduced glow by 50% for crisp, subtle elegance) */
+@keyframes logoPulseGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 2.5px rgba(239, 68, 68, 0.25)) drop-shadow(0 0 5px rgba(245, 158, 11, 0.12));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 7px rgba(239, 68, 68, 0.42)) drop-shadow(0 0 12px rgba(245, 158, 11, 0.22));
+    transform: scale(1.02);
+  }
+}
+
+.animate-logo-pulse-glow {
+  animation: logoPulseGlow 3.2s ease-in-out infinite;
+}
+
+/* Rhythmic Pulse Glow for Floating AI Chatbot Icon on Smartphone & All screens */
+@keyframes chatbotPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.5), 0 0 16px rgba(14, 165, 233, 0.3);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.9), 0 0 32px rgba(245, 158, 11, 0.55);
+    transform: translateY(-2px);
+  }
+}
+
+.animate-chatbot-pulse {
+  animation: chatbotPulseGlow 2.4s ease-in-out infinite;
 }
 
 .animate-laser {

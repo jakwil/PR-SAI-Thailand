@@ -19,6 +19,7 @@ export interface PublishedWork {
   publishDate: string;
   views: string;
   badge?: string;
+  mediaType?: 'photo' | 'infographic' | 'video' | 'report';
   updatedAt?: string;
 }
 
@@ -31,6 +32,7 @@ export interface ViralClip {
   thumbnail: string;
   linkUrl: string;
   highlight: string;
+  mediaType?: 'video' | 'motion_graphic' | 'short';
   updatedAt?: string;
 }
 
@@ -56,6 +58,7 @@ export interface HeroStory {
   linkUrl: string;
   date: string;
   badge?: string;
+  mediaType?: 'photo' | 'infographic' | 'video' | 'report';
   order: number;
   updatedAt?: string;
 }

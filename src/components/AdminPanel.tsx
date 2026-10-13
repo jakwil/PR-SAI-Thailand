@@ -405,113 +405,110 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-xl">
       <div className="relative w-full max-w-5xl h-[90vh] bg-[#05112f] border border-cyan-500/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-cyan-500/20 bg-[#06163d]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
+        {/* Header - Compact & Clean without wasting vertical space */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3 border-b border-cyan-500/20 bg-[#06163d]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
               <Layers className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <span>ระบบบริหารจัดการข้อมูล PR - SAI Thailand</span>
                 <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono border border-cyan-400/30">
                   ADMIN
                 </span>
               </h2>
-              <p className="text-[11px] text-slate-300">
-                บัญชีผู้ดูแล: auditpicture.webapp@gmail.com
-              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             {saveSuccess && (
               <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium animate-fadeIn">
                 <CheckCircle className="w-3.5 h-3.5" />
-                บันทึกข้อมูลแล้ว
+                บันทึกแล้ว
               </span>
             )}
             <button
               onClick={onLogout}
-              className="px-3 py-1.5 text-xs text-rose-300 hover:text-white bg-rose-500/15 hover:bg-rose-500/25 rounded-lg border border-rose-500/30 transition-colors"
+              className="px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs text-rose-300 hover:text-white bg-rose-500/15 hover:bg-rose-500/25 rounded-lg border border-rose-500/30 transition-colors"
             >
               ออกจากระบบ
             </button>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-2 px-6 py-2.5 border-b border-cyan-500/20 bg-[#040e28] overflow-x-auto">
+        {/* Tab Navigation - Compact & Streamlined */}
+        <div className="flex items-center gap-1.5 px-4 sm:px-6 py-2 border-b border-cyan-500/20 bg-[#040e28] overflow-x-auto select-none">
           <button
             onClick={() => {
               playDigitalSound('select');
               setActiveTab('summaries');
             }}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
               activeTab === 'summaries'
                 ? 'bg-gradient-to-r from-cyan-500/30 to-blue-600/30 text-cyan-200 border border-cyan-400 font-bold shadow-[0_0_12px_rgba(6,182,212,0.4)]'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
-            <span>แดชบอร์ดภาพรวม (Summaries)</span>
+            <span>Overview</span>
           </button>
           <button
             onClick={() => {
               playDigitalSound('select');
               setActiveTab('stories');
             }}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
               activeTab === 'stories'
                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
             <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span>ภาพข่าวม้าหมุน Hero ({storiesList.length}/10 เรื่อง)</span>
+            <span>Highlight ({storiesList.length}/10)</span>
           </button>
           <button
             onClick={() => setActiveTab('kb')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
               activeTab === 'kb'
                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>คลังความรู้ AI ({data.knowledgeBase.length})</span>
+            <span>AI Training Data ({data.knowledgeBase.length})</span>
           </button>
           <button
             onClick={() => setActiveTab('works')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
               activeTab === 'works'
                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
             <Film className="w-3.5 h-3.5" />
-            <span>คลังสื่อดิจิทัล ({data.publishedWorks.length})</span>
+            <span>Media Library ({data.publishedWorks.length})</span>
           </button>
           <button
             onClick={() => setActiveTab('clips')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
               activeTab === 'clips'
                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
             <Film className="w-3.5 h-3.5" />
-            <span>ข่าว & คลิปไวรัล ({data.viralClips.length})</span>
+            <span>คลิปวิดีโอ ({data.viralClips.length})</span>
           </button>
           <button
             onClick={() => setActiveTab('timeline')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
               activeTab === 'timeline'
                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
@@ -522,14 +519,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('music')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
               activeTab === 'music'
                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
             <Music className="w-3.5 h-3.5 text-cyan-400" />
-            <span>เพลง Google Drive & Firebase 24 ชม.</span>
+            <span>เพลง</span>
           </button>
         </div>
 
@@ -1179,7 +1176,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     className="p-3 rounded-xl bg-[#030c26] hover:bg-cyan-500/20 border border-cyan-500/30 text-left transition-all hover:scale-[1.02]"
                   >
                     <BookOpen className="w-4 h-4 text-indigo-400 mb-1" />
-                    <span className="text-xs font-bold text-white block">คลังความรู้ AI</span>
+                    <span className="text-xs font-bold text-white block">AI Training Data</span>
                     <span className="text-[10px] text-slate-400 font-mono">
                       {data.knowledgeBase.length} หัวข้อ
                     </span>
@@ -1193,7 +1190,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     className="p-3 rounded-xl bg-[#030c26] hover:bg-cyan-500/20 border border-cyan-500/30 text-left transition-all hover:scale-[1.02]"
                   >
                     <Music className="w-4 h-4 text-emerald-400 mb-1" />
-                    <span className="text-xs font-bold text-white block">เพลง 24 ชม.</span>
+                    <span className="text-xs font-bold text-white block">เพลง</span>
                     <span className="text-[10px] text-emerald-400 font-mono">
                       {musicSettings.enabled ? 'เปิดใช้งาน' : 'ปิด'}
                     </span>
@@ -1209,7 +1206,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[#061539] border border-cyan-500/20">
                 <div>
                   <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                    <span>จัดการภาพข่าวม้าหมุน Hero (สูงสุด 10 เรื่อง)</span>
+                    <span>Highlight (ภาพข่าวไฮไลต์ Hero สูงสุด 10 เรื่อง)</span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300">
                       {storiesList.length} / 10 เรื่อง
                     </span>
@@ -1331,7 +1328,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[#061539] border border-cyan-500/20">
                 <div>
                   <h3 className="text-sm font-semibold text-white">
-                    คลังความรู้สำหรับ AI ประชาสัมพันธ์ (Knowledge Base)
+                    AI Training Data (คลังความรู้สำหรับ AI ประชาสัมพันธ์)
                   </h3>
                   <p className="text-xs text-slate-300">
                     ข้อมูลส่วนนี้จะถูกใช้เป็นสมองให้ผู้ช่วย AI นำไปตอบคำถามประชาชนอย่างแม่นยำ
@@ -1436,7 +1433,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[#061539] border border-cyan-500/20">
                 <div>
                   <h3 className="text-sm font-semibold text-white">
-                    คลังสื่อดิจิทัล (Showcase Gallery)
+                    Media Library (คลังสื่อดิจิทัล & ข่าวสาร)
                   </h3>
                   <p className="text-xs text-slate-300">
                     จัดการรายการผลงาน พร้อมรูปภาพ Thumbnail ลิงก์ และคำอธิบาย
@@ -2210,14 +2207,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-slate-300 mb-1">ป้ายกำกับ (Badge)</label>
-                    <input
-                      type="text"
-                      value={editingWork.badge || ''}
-                      onChange={(e) => setEditingWork({ ...editingWork, badge: e.target.value })}
+                    <label className="block text-[11px] text-slate-300 mb-1">รูปแบบสื่อ (Media Type)</label>
+                    <select
+                      value={editingWork.mediaType || 'photo'}
+                      onChange={(e) =>
+                        setEditingWork({
+                          ...editingWork,
+                          mediaType: e.target.value as PublishedWork['mediaType'],
+                        })
+                      }
                       className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-lg text-xs text-white"
-                    />
+                    >
+                      <option value="photo">📷 ภาพนิ่ง (Photo)</option>
+                      <option value="infographic">📊 อินโฟกราฟิก (Infographic)</option>
+                      <option value="video">🎬 วิดีโอ & สารคดี (Video)</option>
+                      <option value="report">📄 รายงาน & ข้อเท็จจริง (Report)</option>
+                    </select>
                   </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] text-slate-300 mb-1">ป้ายกำกับ (Badge)</label>
+                  <input
+                    type="text"
+                    value={editingWork.badge || ''}
+                    onChange={(e) => setEditingWork({ ...editingWork, badge: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-lg text-xs text-white"
+                    placeholder="เช่น 📷 ภาพนิ่งล่าสุด, 📊 Infographic"
+                  />
                 </div>
                 <div>
                   <label className="block text-[11px] text-slate-300 mb-1">คำอธิบายรายละเอียด</label>
@@ -2249,6 +2265,48 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     required
                     className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-lg text-xs text-white"
                   />
+                  {/* Preset quick buttons */}
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditingWork({
+                          ...editingWork,
+                          imageUrl: '/src/assets/images/sai_press_photo_1791791796122.jpg',
+                          mediaType: 'photo',
+                        })
+                      }
+                      className="text-[10px] px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/30"
+                    >
+                      📷 เลือกภาพนิ่ง: คณะผู้ตรวจการ สตง.
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditingWork({
+                          ...editingWork,
+                          imageUrl: '/src/assets/images/sai_infographic_stats_1791791809566.jpg',
+                          mediaType: 'infographic',
+                        })
+                      }
+                      className="text-[10px] px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 hover:bg-amber-500/30"
+                    >
+                      📊 เลือกภาพ: Infographic สรุปงบประมาณ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditingWork({
+                          ...editingWork,
+                          imageUrl: '/src/assets/images/sai_video_broadcast_1791791820641.jpg',
+                          mediaType: 'video',
+                        })
+                      }
+                      className="text-[10px] px-2 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30 hover:bg-rose-500/30"
+                    >
+                      🎬 เลือกภาพ: สตูดิโอวิดีโอ สตง.
+                    </button>
+                  </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <button

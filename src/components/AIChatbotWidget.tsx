@@ -205,9 +205,9 @@ export const AIChatbotWidget: React.FC<AIChatbotWidgetProps> = ({
 
   return (
     <>
-      {/* Floating Circular Trigger - Always Fixed at Bottom-Right on ALL devices and pages */}
+      {/* Floating Circular Trigger - Fixed at Bottom-Right with rhythmic pulse glow, compact on smartphone */}
       {!isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[60] flex items-center gap-2 select-none pointer-events-auto">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[70] flex items-center gap-2 select-none pointer-events-auto">
           {/* Subtle Label Chip on Desktop / Tablet for Maximum Clarity */}
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#040e28]/95 border border-cyan-400/50 shadow-lg shadow-cyan-500/20 text-cyan-300 text-xs font-medium backdrop-blur-md animate-fadeIn">
             <Sparkles className="w-3.5 h-3.5 text-yellow-400 animate-spin" style={{ animationDuration: '4s' }} />
@@ -216,19 +216,23 @@ export const AIChatbotWidget: React.FC<AIChatbotWidgetProps> = ({
 
           <button
             onClick={onToggle}
-            className="relative w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-cyan-400 via-sky-400 to-blue-600 text-slate-950 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.6)] hover:shadow-[0_0_35px_rgba(6,182,212,0.85)] hover:scale-105 active:scale-95 transition-all group focus:outline-none focus:ring-2 focus:ring-cyan-300"
+            className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-cyan-400 via-sky-400 to-blue-600 text-slate-950 flex items-center justify-center animate-chatbot-pulse hover:scale-105 active:scale-95 transition-all group focus:outline-none focus:ring-2 focus:ring-cyan-300 shrink-0 shadow-lg"
             title="คุยกับผู้ช่วย AI ประชาสัมพันธ์องค์กร (พร้อมตอบทุกคำถาม 24 ชม.)"
             aria-label="เปิดแชทผู้ช่วย AI ประชาสัมพันธ์ สตง."
           >
-            {/* Pulsing Cyber Ambient Glow Ring */}
-            <span className="absolute -inset-1 rounded-full bg-cyan-400/40 animate-ping opacity-60 pointer-events-none" />
+            {/* Rhythmic Pulsing Glow Ring */}
+            <span className="absolute -inset-1 rounded-full bg-cyan-400/35 animate-pulse pointer-events-none" />
+            <span
+              className="absolute -inset-2 rounded-full bg-cyan-400/20 animate-ping opacity-40 pointer-events-none"
+              style={{ animationDuration: '3s' }}
+            />
             
             {/* Live Online Dot */}
-            <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 shadow-sm shadow-emerald-400/80 z-10" />
+            <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 shadow-sm shadow-emerald-400/80 z-10 animate-pulse" />
 
-            {/* Icon */}
+            {/* AI Bot Icon - Compact w-5 h-5 on Smartphone, w-7 h-7 on Desktop */}
             <div className="relative z-10 flex items-center justify-center">
-              <Bot className="w-6 h-6 sm:w-7 sm:h-7 text-slate-950 transition-transform group-hover:scale-110" />
+              <Bot className="w-5 h-5 sm:w-7 sm:h-7 text-slate-950 transition-transform group-hover:scale-110" />
             </div>
           </button>
         </div>

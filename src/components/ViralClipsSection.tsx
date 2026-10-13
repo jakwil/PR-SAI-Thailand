@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Film, Play, Eye, Clock, Share2, Sparkles, X, ExternalLink } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Play, Eye, Clock, X, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ViralClip } from '../types';
-import { ShareModal } from './ShareModal';
+import { playDigitalSound } from '../utils/audioEffects';
 
 interface ViralClipsSectionProps {
   clips: ViralClip[];
@@ -10,9 +10,10 @@ interface ViralClipsSectionProps {
 
 export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onPlayingChange }) => {
   const [activeClipModal, setActiveClipModal] = useState<ViralClip | null>(null);
-  const [shareClip, setShareClip] = useState<ViralClip | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleOpenClip = (clip: ViralClip) => {
+    playDigitalSound('select');
     setActiveClipModal(clip);
     onPlayingChange?.(true);
   };
@@ -22,193 +23,188 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
     onPlayingChange?.(false);
   };
 
+  const handleScroll = (direction: 'left' | 'right') => {
+    playDigitalSound('click');
+    if (!scrollRef.current) return;
+    const scrollAmount = 320;
+    scrollRef.current.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
+  };
+
+  // Helper to extract YouTube video ID if URL is from YouTube
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11
+      ? `https://www.youtube.com/embed/${match[2]}?autoplay=1`
+      : null;
+  };
+
   return (
-    <section id="viral-clips" className="relative py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
+    <div id="viral-clips" className="relative pt-0 pb-1 scroll-mt-20">
       {/* Dedicated Blurred Ambient Glow Behind Viral Clips */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl" aria-hidden="true">
-        <div className="absolute top-1/4 right-10 w-[700px] h-[450px] bg-gradient-to-r from-rose-600/18 via-amber-600/15 to-blue-600/15 rounded-full blur-[130px]" />
+        <div className="absolute top-1/4 right-10 w-[700px] h-[350px] bg-gradient-to-r from-amber-600/12 via-rose-600/10 to-blue-600/12 rounded-full blur-[140px]" />
       </div>
 
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 pb-4 border-b border-slate-800/80">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/35 text-rose-300 text-xs font-medium mb-3 backdrop-blur-sm">
-            <Film className="w-3.5 h-3.5" />
-            <span>วิดีโอสร้างสรรค์ยอดนิยม</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-            ข่าวสาร & คลิปไวรัลประชาสัมพันธ์ (Viral Media)
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">
-            สื่อวิดีโอสั้นและสาระน่ารู้การตรวจเงินแผ่นดินที่เข้าใจง่าย ได้รับความนิยมสูงสุด
-          </p>
-        </div>
+      {/* Horizontal Scroll Track: เลื่อนซ้ายขวาได้ ติดกับ Highlight ภาพเต็ม หัวข้อตัวหนาเท่านั้น ไม่มีข้อความเล็ก ไม่มีปุ่มแชร์/ชมคลิป */}
+      <div className="relative group/track">
+        {/* Floating Left Carousel Scroll Arrow */}
+        <button
+          type="button"
+          onClick={() => handleScroll('left')}
+          className="absolute -left-2 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#040e2b]/90 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 hover:text-white transition-all active:scale-90 shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-md flex items-center justify-center cursor-pointer"
+          aria-label="เลื่อนซ้าย"
+          title="เลื่อนซ้าย"
+        >
+          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+        </button>
 
-        <span className="text-xs text-cyan-300 font-mono px-2.5 py-1 rounded-lg bg-[#040e2b]/80 border border-cyan-500/30 backdrop-blur-sm">
-          อัปเดตเรียลไทม์ {clips.length} คลิป
-        </span>
-      </div>
+        {/* Floating Right Carousel Scroll Arrow */}
+        <button
+          type="button"
+          onClick={() => handleScroll('right')}
+          className="absolute -right-2 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#040e2b]/90 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 hover:text-white transition-all active:scale-90 shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-md flex items-center justify-center cursor-pointer"
+          aria-label="เลื่อนขวา"
+          title="เลื่อนขวา"
+        >
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+        </button>
 
-      {/* Grid of Viral Clips with Frosted Glass Blur & Elevated Contrast */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {clips.map((clip) => (
-          <div
-            key={clip.id}
-            onClick={() => handleOpenClip(clip)}
-            className="group cursor-pointer rounded-2xl bg-[#081a44]/85 border border-cyan-400/35 hover:border-amber-400/60 p-3.5 transition-all duration-300 shadow-[0_8px_30px_rgba(0,0,0,0.55)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.2)] backdrop-blur-xl ring-1 ring-white/5 flex flex-col justify-between hover:scale-[1.01]"
-          >
-            <div>
-              {/* Video Thumbnail with Play Button */}
-              <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-900 mb-3">
+        <div
+          ref={scrollRef}
+          className="flex items-stretch gap-3.5 sm:gap-4 lg:gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory py-1 px-1 sm:px-2 no-scrollbar touch-pan-x"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {clips.map((clip) => (
+            <div
+              key={clip.id}
+              onClick={() => handleOpenClip(clip)}
+              className="group cursor-pointer rounded-2xl bg-[#081a44]/90 border border-amber-400/30 hover:border-amber-400/70 transition-all duration-300 shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.25)] backdrop-blur-xl ring-1 ring-white/5 flex flex-col shrink-0 w-[260px] sm:w-[290px] md:w-[320px] snap-start overflow-hidden hover:scale-[1.01] active:scale-[0.99]"
+              title={`กดที่ภาพเพื่อชมคลิป: ${clip.title}`}
+            >
+              {/* ภาพเต็มของคลิป (Full Edge-to-Edge Image with Centered Play Button) */}
+              <div className="relative w-full aspect-video overflow-hidden bg-slate-950">
                 <img
                   src={clip.thumbnail}
                   alt={clip.title}
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
                       '/src/assets/images/sai_public_campaign_1791689820118.jpg';
                   }}
                 />
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full bg-amber-500/90 text-slate-950 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                
+                {/* Central Play Button Overlay */}
+                <div className="absolute inset-0 bg-black/35 group-hover:bg-black/15 transition-colors flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-amber-400 group-hover:bg-yellow-300 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.6)] group-hover:scale-110 transition-transform">
                     <Play className="w-5 h-5 fill-slate-950 translate-x-0.5" />
                   </div>
                 </div>
 
                 {/* Duration Badge */}
-                <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/80 text-[10px] text-white font-mono flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {clip.duration}
+                <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/80 text-[10px] text-white font-mono flex items-center gap-1 backdrop-blur-sm border border-white/10">
+                  <Clock className="w-3 h-3 text-amber-400" />
+                  <span>{clip.duration}</span>
                 </div>
 
                 {/* View count */}
-                <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-amber-300 font-mono flex items-center gap-1">
-                  <Eye className="w-3 h-3" />
-                  {clip.views}
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/75 text-[10px] text-amber-300 font-mono flex items-center gap-1 backdrop-blur-sm border border-amber-400/20">
+                  <Eye className="w-3 h-3 text-amber-400" />
+                  <span>{clip.views}</span>
                 </div>
               </div>
 
-              {/* Title & Creator */}
-              <h3 className="text-xs sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug">
-                {clip.title}
-              </h3>
-              <p className="text-[11px] text-slate-400 mt-1 line-clamp-1">
-                {clip.creator}
-              </p>
-            </div>
-
-            {/* Bottom Highlight Kicker & Actions */}
-            <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-              <span className="text-amber-400 font-medium line-clamp-1 max-w-[170px]">
-                {clip.highlight}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShareClip(clip);
-                  }}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900/90 hover:bg-cyan-500/20 text-cyan-300 hover:text-white border border-cyan-400/40 text-[10px] font-medium transition-colors"
-                  title="แชร์คลิปนี้"
-                >
-                  <Share2 className="w-3 h-3 text-cyan-400" />
-                  <span>แชร์</span>
-                </button>
-                <span className="text-xs text-slate-400 group-hover:text-white transition-colors">
-                  ชมคลิป
-                </span>
+              {/* ด้านล่างมีแค่ชื่อคลิปแบบตัวหนาเท่านั้น (ไม่มีข้อความเล็ก ไม่มีปุ่มแชร์/ชมคลิป) */}
+              <div className="p-3 sm:p-3.5 flex-1 flex items-start">
+                <h3 className="text-xs sm:text-sm md:text-base font-bold text-white group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug">
+                  {clip.title}
+                </h3>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Video Modal Player Preview */}
+      {/* Video Modal Player Preview เมื่อกดที่ภาพ */}
       {activeClipModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
           onClick={handleCloseClip}
         >
           <div
-            className="relative w-full max-w-2xl bg-[#090c16] border border-amber-500/30 rounded-2xl overflow-hidden shadow-2xl"
+            className="relative w-full max-w-2xl bg-[#090c16] border border-amber-500/40 rounded-2xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-slate-800">
-              <span className="text-xs font-semibold text-amber-300">
-                {activeClipModal.creator}
+            <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-slate-800 bg-[#040e28]">
+              <span className="text-xs sm:text-sm font-bold text-amber-300 line-clamp-1 pr-2">
+                {activeClipModal.title}
               </span>
               <button
                 onClick={handleCloseClip}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
+                aria-label="ปิดหน้าต่าง"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="relative aspect-video bg-black flex items-center justify-center">
-              <img
-                src={activeClipModal.thumbnail}
-                alt={activeClipModal.title}
-                className="w-full h-full object-cover opacity-80"
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 p-6 text-center">
-                <div className="w-16 h-16 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center mb-3 shadow-[0_0_30px_rgba(245,158,11,0.5)]">
-                  <Play className="w-7 h-7 fill-slate-950 translate-x-0.5" />
-                </div>
-                <h4 className="text-sm sm:text-base font-bold text-white max-w-md">
-                  {activeClipModal.title}
-                </h4>
-                <p className="text-xs text-slate-300 mt-1 max-w-sm">
-                  {activeClipModal.highlight}
-                </p>
-              </div>
+              {getYouTubeEmbedUrl(activeClipModal.linkUrl) ? (
+                <iframe
+                  src={getYouTubeEmbedUrl(activeClipModal.linkUrl)!}
+                  title={activeClipModal.title}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <>
+                  <img
+                    src={activeClipModal.thumbnail}
+                    alt={activeClipModal.title}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover opacity-85"
+                  />
+                  <a
+                    href={activeClipModal.linkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 p-6 text-center group cursor-pointer"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 flex items-center justify-center mb-3 shadow-[0_0_30px_rgba(245,158,11,0.7)] group-hover:scale-110 transition-transform">
+                      <Play className="w-7 h-7 fill-slate-950 translate-x-0.5" />
+                    </div>
+                    <span className="mt-2 text-xs sm:text-sm text-amber-300 font-semibold inline-flex items-center gap-1.5 bg-black/70 px-3 py-1.5 rounded-full border border-amber-400/40">
+                      <span>เปิดชมวิดีโอบนช่องทางทางการ</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </span>
+                  </a>
+                </>
+              )}
             </div>
 
-            <div className="p-4 flex items-center justify-between bg-slate-950/80">
-              <span className="text-xs text-slate-400">
+            <div className="p-3.5 sm:p-4 flex items-center justify-between bg-slate-950/90 border-t border-slate-800">
+              <span className="text-xs text-slate-400 font-mono">
                 ความยาว {activeClipModal.duration} · ยอดชม {activeClipModal.views}
               </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShareClip(activeClipModal)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 text-xs font-medium transition-colors"
-                >
-                  <Share2 className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>แชร์คลิปนี้</span>
-                </button>
-                <a
-                  href={activeClipModal.linkUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs"
-                >
-                  <span>เปิดดูบนช่องทางทางการ</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
+              <a
+                href={activeClipModal.linkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-bold text-xs transition-all shadow-md active:scale-95"
+              >
+                <span>เปิดดูวิดีโอ</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
         </div>
       )}
-
-      {/* Share Modal Dialog */}
-      <ShareModal
-        isOpen={!!shareClip}
-        onClose={() => setShareClip(null)}
-        item={
-          shareClip
-            ? {
-                id: shareClip.id,
-                title: shareClip.title,
-                category: 'ข่าว & คลิปไวรัล สตง.',
-                description: `${shareClip.creator} · ${shareClip.highlight}`,
-                linkUrl: shareClip.linkUrl,
-              }
-            : null
-        }
-      />
-    </section>
+    </div>
   );
 };

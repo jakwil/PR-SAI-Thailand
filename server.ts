@@ -35,48 +35,64 @@ const DATA_FILE = path.join(__dirname, 'pr_sai_data.json');
 const defaultData = {
   heroStories: [
     {
+      id: 'story-photo-1',
+      title: 'ข่าวภาพนิ่ง: คณะผู้บริหารและผู้ตรวจเงินแผ่นดินลงพื้นที่ตรวจสอบงานโครงสร้างและข้อเท็จจริง',
+      subtitle: 'ภาพชุดการประชุมแถลงข่าวและตรวจสอบแบบแปลนวิศวกรรมร่วมกับ วสท. และกรมโยธาธิการฯ เพื่อความปลอดภัยสูงสุดของบุคลากรและประชาชน',
+      category: 'ข่าวภาพนิ่ง / ภาพกิจกรรม',
+      imageUrl: '/src/assets/images/sai_press_photo_1791791796122.jpg',
+      linkUrl: '#incident-timeline',
+      date: '12 ตุลาคม 2569',
+      badge: '📷 ข่าวภาพนิ่ง',
+      mediaType: 'photo',
+      order: 1
+    },
+    {
+      id: 'story-info-1',
+      title: 'Infographic: สรุปผลสัมฤทธิ์การตรวจเงินแผ่นดิน คืนเงินหลวงกลับสู่ชาติกว่า 1.8 หมื่นล้านบาท',
+      subtitle: 'เปิด 4 ยุทธศาสตร์การตรวจสอบเชิงรุก สถิติการตรวจพบข้อบกพร่อง และดัชนีความโปร่งใสทางการเงินการคลังภาครัฐ 98%',
+      category: 'อินโฟกราฟิกสรุปสาระสำคัญ',
+      imageUrl: '/src/assets/images/sai_infographic_stats_1791791809566.jpg',
+      linkUrl: '#published-works',
+      date: '11 ตุลาคม 2569',
+      badge: '📊 Infographic',
+      mediaType: 'infographic',
+      order: 2
+    },
+    {
+      id: 'story-video-1',
+      title: 'ข่าววิดีโอ: เปิดห้องส่งสตูดิโอ สตง. ถ่ายทอดสดเจาะลึกงบประมาณและข้อมูลการตรวจสอบแบบเรียลไทม์',
+      subtitle: 'รายการพิเศษ PR - SAI Thailand Global Broadcast อัปเดตภารกิจป้องปรามการทุจริตและการใช้จ่ายงบประมาณแผ่นดิน',
+      category: 'รายการโทรทัศน์ / วิดีโอ',
+      imageUrl: '/src/assets/images/sai_video_broadcast_1791791820641.jpg',
+      linkUrl: '#viral-clips',
+      date: '10 ตุลาคม 2569',
+      badge: '🎬 ข่าววิดีโอ',
+      mediaType: 'video',
+      order: 3
+    },
+    {
       id: 'story-1',
-      title: 'นวัตกรรม Digital Audit & MRV พลิกโฉมความโปร่งใสภาครัฐ',
+      title: 'นวัตกรรม Digital Audit & MRV พลิกโฉมความโปร่งใสภาครัฐด้วย Data Analytics',
       subtitle: 'ระบบเชื่อมโยงข้อมูล Data Analytics และมาตรวัดอัจฉริยะ ติดตามการใช้จ่ายงบประมาณแผ่นดินแบบเรียลไทม์',
       category: 'นวัตกรรมดิจิทัล สตง.',
       imageUrl: '/src/assets/images/sai_digital_network_1791693065277.jpg',
       linkUrl: 'https://pr-request-system.vercel.app',
       date: '10 ตุลาคม 2569',
-      badge: 'ข่าวยอดนิยม',
-      order: 1
-    },
-    {
-      id: 'story-2',
-      title: 'เชื่อมโยงเครือข่ายความโปร่งใสไทยสู่มาตรฐานสากล (Global Data Node)',
-      subtitle: 'การประสานพลังองค์กรตรวจเงินแผ่นดินระดับโลก ขับเคลื่อนธรรมาภิบาลและความรับผิดชอบทางการเงิน',
-      category: 'ความร่วมมือสากล',
-      imageUrl: '/src/assets/images/sai_earth_hologram_1791693076088.jpg',
-      linkUrl: 'https://pr-request-system.vercel.app',
-      date: '9 ตุลาคม 2569',
-      badge: 'ยุทธศาสตร์ สตง.',
-      order: 2
-    },
-    {
-      id: 'story-3',
-      title: 'รายงานสถานการณ์และมาตรการวิศวกรรม: อาคาร สตง. ทรุดตัว ล่าสุด',
-      subtitle: 'วสท. และกรมโยธาธิการฯ ยืนยันโครงสร้างแกนกลางมั่นคง แผนความปลอดภัยฉุกเฉินและ Digital Audit 100%',
-      category: 'แถลงการณ์สำคัญ',
-      imageUrl: '/src/assets/images/sai_building_inspection_1791689807795.jpg',
-      linkUrl: '#incident-timeline',
-      date: '8 ตุลาคม 2569',
-      badge: 'ข้อเท็จจริงทางการ',
-      order: 3
+      badge: '📊 Digital Map',
+      mediaType: 'infographic',
+      order: 4
     },
     {
       id: 'story-4',
-      title: 'ศูนย์บัญชาการตรวจเงินแผ่นดิน: เทคโนโลยี AI สกัดกั้นการทุจริต',
+      title: 'ศูนย์บัญชาการตรวจเงินแผ่นดิน: เทคโนโลยี AI สกัดกั้นการทุจริตเชิงรุก',
       subtitle: 'ทีมผู้ตรวจการมืออาชีพใช้ AI ตรวจสอบเส้นทางงบประมาณและข้อมูลการจัดซื้อจัดจ้างภาครัฐ',
       category: 'ภารกิจตรวจสอบ',
       imageUrl: '/src/assets/images/sai_audit_hero_1791689796943.jpg',
       linkUrl: 'https://youtube.com',
-      date: '1 ตุลาคม 2569',
-      badge: 'ผลงานเด่น',
-      order: 4
+      date: '8 ตุลาคม 2569',
+      badge: '🎬 สารคดีวิดีโอ',
+      mediaType: 'video',
+      order: 5
     },
     {
       id: 'story-5',
@@ -85,20 +101,34 @@ const defaultData = {
       category: 'การมีส่วนร่วมประชาชน',
       imageUrl: '/src/assets/images/sai_public_campaign_1791689820118.jpg',
       linkUrl: 'https://pr-request-system.vercel.app',
-      date: '28 กันยายน 2569',
-      badge: 'แคมเปญแห่งปี',
-      order: 5
+      date: '6 ตุลาคม 2569',
+      badge: '📷 ภาพกิจกรรม',
+      mediaType: 'photo',
+      order: 6
     },
     {
-      id: 'story-6',
-      title: 'เปิดระบบขอรับการสนับสนุนสื่อประชาสัมพันธ์และวิทยากร สตง.',
-      subtitle: 'บริการออนไลน์สำหรับสถาบันการศึกษา ชุมชน และหน่วยงานรัฐ ยื่นคำของ่ายใน 3 ขั้นตอน',
-      category: 'บริการองค์กร',
-      imageUrl: '/src/assets/images/sai_digital_innovation_1791689830942.jpg',
+      id: 'story-2',
+      title: 'เชื่อมโยงเครือข่ายความโปร่งใสไทยสู่มาตรฐานสากล (Global Data Node)',
+      subtitle: 'การประสานพลังองค์กรตรวจเงินแผ่นดินระดับโลก ขับเคลื่อนธรรมาภิบาลและความรับผิดชอบทางการเงิน',
+      category: 'ความร่วมมือสากล',
+      imageUrl: '/src/assets/images/sai_earth_hologram_1791693076088.jpg',
       linkUrl: 'https://pr-request-system.vercel.app',
-      date: '25 กันยายน 2569',
-      badge: 'บริการใหม่',
-      order: 6
+      date: '4 ตุลาคม 2569',
+      badge: 'ยุทธศาสตร์ สตง.',
+      mediaType: 'infographic',
+      order: 7
+    },
+    {
+      id: 'story-3',
+      title: 'รายงานสถานการณ์และมาตรการวิศวกรรม: อาคาร สตง. ทรุดตัว ล่าสุด',
+      subtitle: 'วสท. และกรมโยธาธิการฯ ยืนยันโครงสร้างแกนกลางมั่นคง แผนความปลอดภัยฉุกเฉินและ Digital Audit 100%',
+      category: 'แถลงการณ์สำคัญ',
+      imageUrl: '/src/assets/images/sai_building_inspection_1791689807795.jpg',
+      linkUrl: '#incident-timeline',
+      date: '2 ตุลาคม 2569',
+      badge: '📷 ข้อเท็จจริง',
+      mediaType: 'photo',
+      order: 8
     }
   ],
   knowledgeBase: [
@@ -138,80 +168,168 @@ const defaultData = {
   ],
   publishedWorks: [
     {
-      id: 'work-1',
+      id: 'work-photo-1',
+      title: 'ข่าวภาพนิ่ง: คณะผู้ตรวจการ สตง. ลงพื้นที่ตรวจสอบโครงสร้างอาคารและรับฟังสรุปวิศวกรรม',
+      category: 'ข่าวภาพนิ่ง',
+      description: 'ประมวลภาพการลงพื้นที่ตรวจสอบเชิงลึกของทีมวิศวกรผู้เชี่ยวชาญ วสท. ร่วมกับผู้ว่าการตรวจเงินแผ่นดิน ในการตรวจวัดความมั่นคงของโครงสร้างอาคาร สตง.',
+      linkUrl: '/src/assets/images/sai_press_photo_1791791796122.jpg',
+      imageUrl: '/src/assets/images/sai_press_photo_1791791796122.jpg',
+      publishDate: '2026-10-12',
+      views: '142,500',
+      badge: '📷 ภาพนิ่งล่าสุด',
+      mediaType: 'photo'
+    },
+    {
+      id: 'work-info-1',
+      title: 'อินโฟกราฟิก: สรุปผลการตรวจสอบงบประมาณแผ่นดินและการรักษาผลประโยชน์ชาติ ปี 2568-2569',
+      category: 'อินโฟกราฟิก',
+      description: 'แผนภูมิสรุปตัวเลขสถิติ ผลสัมฤทธิ์การตรวจสอบเชิงป้องกัน ข้อสังเกตสำคัญในโครงการจัดซื้อจัดจ้าง และการคืนเงินหลวงกลับสู่แผ่นดิน เข้าใจง่ายในหน้าเดียว',
+      linkUrl: '/src/assets/images/sai_infographic_stats_1791791809566.jpg',
+      imageUrl: '/src/assets/images/sai_infographic_stats_1791791809566.jpg',
+      publishDate: '2026-10-11',
+      views: '218,900',
+      badge: '📊 Infographic เด่น',
+      mediaType: 'infographic'
+    },
+    {
+      id: 'work-video-1',
+      title: 'วิดีโอข่าว: สตูดิโอสื่อสารองค์กร สตง. รายงานความคืบหน้าการทำงานเชิงรุกผ่านระบบคลาวด์',
+      category: 'วิดีโอ & สารคดี',
+      description: 'คลิปวิดีโอรายงานข่าวพิเศษจากศูนย์บัญชาการประชาสัมพันธ์และการสื่อสาร แสดงระบบ Digital Audit ที่ดำเนินงานต่อเนื่อง 100% แม้ในสถานการณ์ฉุกเฉิน',
+      linkUrl: 'https://youtube.com',
+      imageUrl: '/src/assets/images/sai_video_broadcast_1791791820641.jpg',
+      publishDate: '2026-10-10',
+      views: '185,300',
+      badge: '🎬 วิดีโอข่าวสด',
+      mediaType: 'video'
+    },
+    {
+      id: 'work-info-2',
+      title: 'อินโฟกราฟิก: 5 กฎเหล็กโครงการจัดซื้อจัดจ้างภาครัฐที่ประชาชนและหน่วยรับตรวจควรรู้',
+      category: 'อินโฟกราฟิก',
+      description: 'คู่มือภาพอินโฟกราฟิกแสดงขั้นตอนการตรวจสอบความถูกต้องของสัญญา ความโปร่งใสของราคากลาง และเกณฑ์การประเมินความคุ้มค่าตามระเบียบ สตง.',
+      linkUrl: 'https://pr-request-system.vercel.app',
+      imageUrl: '/src/assets/images/sai_digital_network_1791693065277.jpg',
+      publishDate: '2026-10-09',
+      views: '96,400',
+      badge: '📊 คู่มือประชาชน',
+      mediaType: 'infographic'
+    },
+    {
+      id: 'work-photo-2',
+      title: 'ข่าวภาพนิ่ง: ภาพชุดกิจกรรมแคมเปญพลังพลเมือง เฝ้าระวังงบประมาณท้องถิ่นทั่วไทย',
+      category: 'ข่าวภาพนิ่ง',
+      description: 'ภาพบรรยากาศการจัดอบรมและสร้างความร่วมมือระหว่าง สตง. มหาวิทยาลัย และองค์กรภาคประชาสังคมในการมีส่วนร่วมติดตามงบประมาณแผ่นดิน',
+      linkUrl: 'https://pr-request-system.vercel.app',
+      imageUrl: '/src/assets/images/sai_public_campaign_1791689820118.jpg',
+      publishDate: '2026-10-07',
+      views: '73,200',
+      badge: '📷 ภาพกิจกรรม',
+      mediaType: 'photo'
+    },
+    {
+      id: 'work-video-2',
       title: 'สารคดีเจาะลึก: เงินแผ่นดินทุกบาท เพื่อประโยชน์ชาติ',
-      category: 'สารคดีโทรทัศน์ / วิดีโอ',
+      category: 'วิดีโอ & สารคดี',
       description: 'สารคดีชุดพิเศษพาชมเบื้องหลังการทำงานของผู้ว่าการตรวจเงินแผ่นดินและทีมผู้ตรวจการมืออาชีพในการลงพื้นที่ทั่วประเทศ',
       linkUrl: 'https://youtube.com',
       imageUrl: '/src/assets/images/sai_audit_hero_1791689796943.jpg',
-      publishDate: '2026-09-28',
+      publishDate: '2026-10-05',
       views: '128,400',
-      badge: 'ผลงานเด่น'
+      badge: '🎬 สารคดีเด่น',
+      mediaType: 'video'
     },
     {
-      id: 'work-2',
-      title: 'รายงานพิเศษ: ความคืบหน้าการตรวจสอบทางวิศวกรรมอาคาร สตง.',
-      category: 'แถลงการณ์ & รายงานข้อเท็จจริง',
-      description: 'บทสรุปทางวิศวกรรมและแผนฟื้นฟูปรับปรุงโครงสร้างอาคาร สตง. ร่วมกับสถาบันวิชาชีพวิศวกรรมเพื่อความโปร่งใสและปลอดภัย',
+      id: 'work-photo-3',
+      title: 'ข่าวภาพนิ่ง: วสท. ติดตั้งเครื่องตรวจวัดระดับมิลลิเมตร 3D Sensor ตรวจสอบอาคาร สตง.',
+      category: 'ข่าวภาพนิ่ง',
+      description: 'ภาพถ่ายเจ้าหน้าที่วิศวกรขณะติดตั้งเซนเซอร์วัดการเอียงและการเคลื่อนตัวของโครงสร้างหลัก พร้อมตรวจสอบค่าแบบเรียลไทม์ 24 ชม.',
       linkUrl: 'https://pr-request-system.vercel.app',
       imageUrl: '/src/assets/images/sai_building_inspection_1791689807795.jpg',
-      publishDate: '2026-10-08',
-      views: '94,200',
-      badge: 'สถานการณ์สำคัญ'
-    },
-    {
-      id: 'work-3',
-      title: 'แคมเปญพลังพลเมือง: ร่วมเป็นตาสับปะรดเฝ้าระวังงบประมาณท้องถิ่น',
-      category: 'แคมเปญสร้างการมีส่วนร่วม',
-      description: 'สื่ออินโฟกราฟิกและคู่มือประชาชนในการตรวจสอบการจัดซื้อจัดจ้างภาครัฐในระดับท้องถิ่น เข้าใจง่ายใน 3 นาที',
-      linkUrl: 'https://pr-request-system.vercel.app',
-      imageUrl: '/src/assets/images/sai_public_campaign_1791689820118.jpg',
       publishDate: '2026-10-04',
-      views: '67,890',
-      badge: 'ยอดแชร์สูง'
+      views: '112,800',
+      badge: '📷 ภาพข้อเท็จจริง',
+      mediaType: 'photo'
     },
     {
-      id: 'work-4',
-      title: 'นวัตกรรม AI Audit & Data Intelligence ขับเคลื่อนความโปร่งใส',
-      category: 'นวัตกรรมการตรวจสอบ',
-      description: 'การนำเทคโนโลยี AI และ Data Analytics มายกระดับการตรวจเงินแผ่นดินยุคดิจิทัล ตรวจจับความผิดปกติรวดเร็วแม่นยำ',
-      linkUrl: 'https://youtube.com',
-      imageUrl: '/src/assets/images/sai_digital_innovation_1791689830942.jpg',
-      publishDate: '2026-10-01',
-      views: '52,100',
-      badge: 'นวัตกรรมใหม่'
+      id: 'work-info-3',
+      title: 'อินโฟกราฟิก: แผนที่เชื่อมโยงเครือข่ายความโปร่งใสสู่มาตรฐานสากล (Global Data Node)',
+      category: 'อินโฟกราฟิก',
+      description: 'แผนผังแสดงเครือข่ายความร่วมมือของ สตง. ไทยกับองค์กรตรวจเงินแผ่นดินสากล ในการแลกเปลี่ยนข้อมูลป้องกันการฟอกเงินและการตรวจสอบข้ามพรมแดน',
+      linkUrl: 'https://pr-request-system.vercel.app',
+      imageUrl: '/src/assets/images/sai_earth_hologram_1791693076088.jpg',
+      publishDate: '2026-10-02',
+      views: '88,600',
+      badge: '📊 แผนผังสากล',
+      mediaType: 'infographic'
     }
   ],
   viralClips: [
     {
-      id: 'clip-1',
-      title: '1 นาทีเข้าใจ! เงินภาษีของเรา สตง. ตรวจสอบอย่างไร?',
-      creator: 'PR - SAI Thailand Media Team',
-      views: '542K',
-      duration: '01:14',
-      thumbnail: '/src/assets/images/sai_audit_hero_1791689796943.jpg',
+      id: 'clip-v1',
+      title: 'แถลงข่าวอย่างเป็นทางการ: ข้อเท็จจริงและมาตรการวิศวกรรมอาคาร สตง. (Live Studio)',
+      creator: 'ศูนย์สื่อสารภาวะวิกฤต สตง. (Crisis PR Center)',
+      views: '620K',
+      duration: '02:35',
+      thumbnail: '/src/assets/images/sai_video_broadcast_1791791820641.jpg',
       linkUrl: 'https://youtube.com',
-      highlight: 'ยอดวิวทะลุ 5 แสนครั้งบน TikTok & Shorts'
+      highlight: 'ถ่ายทอดสดจากห้องส่งสตูดิโอ สตง. ชี้แจงทุกประเด็นข้อสงสัย',
+      mediaType: 'video'
     },
     {
-      id: 'clip-2',
-      title: 'เจาะมาตรการความปลอดภัย อาคาร สตง. ทรุดตัว ล่าสุด!',
+      id: 'clip-v2',
+      title: '1 นาทีเข้าใจ! เงินภาษีของเรา สตง. ตรวจสอบอย่างไร? (Motion Infographic)',
+      creator: 'PR - SAI Thailand Media Team',
+      views: '580K',
+      duration: '01:14',
+      thumbnail: '/src/assets/images/sai_infographic_stats_1791791809566.jpg',
+      linkUrl: 'https://youtube.com',
+      highlight: 'สรุปแบบอินโฟกราฟิกแอนิเมชันเข้าใจง่าย ยอดวิวทะลุ 5 แสนครั้งบน TikTok',
+      mediaType: 'motion_graphic'
+    },
+    {
+      id: 'clip-v3',
+      title: 'เบื้องหลังทีมผู้ตรวจการ สตง. ลงพื้นที่ตรวจสอบงานวิศวกรรมจริง',
+      creator: 'ทีมข่าวประชาสัมพันธ์ สตง.',
+      views: '445K',
+      duration: '01:50',
+      thumbnail: '/src/assets/images/sai_press_photo_1791791796122.jpg',
+      linkUrl: 'https://youtube.com',
+      highlight: 'ภาพชุดข่าวจริงและฟุตเทจการตรวจรับงานสร้างสะพานและถนนสายหลัก',
+      mediaType: 'video'
+    },
+    {
+      id: 'clip-1',
+      title: 'เจาะลึกมาตรการความปลอดภัย อาคาร สตง. ทรุดตัว ล่าสุด!',
       creator: 'ศูนย์สื่อสารภาวะวิกฤต สตง.',
       views: '389K',
       duration: '02:05',
       thumbnail: '/src/assets/images/sai_building_inspection_1791689807795.jpg',
       linkUrl: 'https://youtube.com',
-      highlight: 'ชี้แจงข้อเท็จจริงเพื่อความโปร่งใสแก่ประชาชน'
+      highlight: 'ชี้แจงข้อเท็จจริงเพื่อความโปร่งใสแก่ประชาชน',
+      mediaType: 'video'
     },
     {
-      id: 'clip-3',
+      id: 'clip-2',
       title: 'เทคนิคดูป้ายโครงการก่อสร้างรัฐ รู้ทันทุจริตใน 3 ขั้นตอน',
       creator: 'PR - SAI Thailand Network',
       views: '410K',
       duration: '01:45',
       thumbnail: '/src/assets/images/sai_public_campaign_1791689820118.jpg',
       linkUrl: 'https://youtube.com',
-      highlight: 'แชร์เป็นไวรัลในกลุ่มชุมชนและเครือข่ายธรรมาภิบาล'
+      highlight: 'แชร์เป็นไวรัลในกลุ่มชุมชนและเครือข่ายธรรมาภิบาล',
+      mediaType: 'short'
+    },
+    {
+      id: 'clip-3',
+      title: 'AI ตรวจสอบเส้นทางงบประมาณ สกัดกั้นการทุจริตแบบเรียลไทม์',
+      creator: 'ฝ่ายพัฒนานวัตกรรมตรวจสอบดิจิทัล สตง.',
+      views: '320K',
+      duration: '02:18',
+      thumbnail: '/src/assets/images/sai_audit_hero_1791689796943.jpg',
+      linkUrl: 'https://youtube.com',
+      highlight: 'ระบบ AI Data Analytics วิเคราะห์ความเสี่ยงงบประมาณแผ่นดิน',
+      mediaType: 'video'
     }
   ],
   incidentTimeline: [
@@ -563,21 +681,29 @@ app.post('/api/tts', async (req, res) => {
   }
 });
 
+// Health Check Routes for Cloud Run & load balancers
+app.get(['/healthz', '/api/health'], (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
+
 // Setup Vite or Static Serving
 async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
+  const distPath = path.join(__dirname, 'dist');
+  const distIndexExists = fs.existsSync(path.join(distPath, 'index.html'));
+  const isProduction = process.env.NODE_ENV === 'production' || distIndexExists;
+
+  if (isProduction && distIndexExists) {
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  } else {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(__dirname, 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
   }
 
   app.listen(PORT, '0.0.0.0', () => {

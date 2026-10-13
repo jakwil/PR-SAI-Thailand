@@ -103,44 +103,45 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      {/* Sleek, Non-Thick Header with Cyber Digital Data Background */}
-      <header className="sticky top-0 z-40 w-full bg-[#030a24]/95 backdrop-blur-2xl border-b border-cyan-400/40 shadow-[0_4px_30px_rgba(0,0,0,0.85),0_0_20px_rgba(6,182,212,0.18)] transition-all select-none overflow-visible">
-        {/* Layer 1: Digital Data Cyber Circuit Grid Pattern */}
-        <div className="absolute inset-0 bg-digital-circuit opacity-35 pointer-events-none" />
+      {/* Sleek, Non-Thick Header with Royal Navy & Gold Luxury Background */}
+      <header className="sticky top-0 z-40 w-full bg-[#03091e]/96 backdrop-blur-2xl border-b border-amber-500/35 shadow-[0_4px_30px_rgba(0,0,0,0.9),0_0_20px_rgba(245,158,11,0.15)] transition-all select-none overflow-visible">
+        {/* Layer 1: Subtle Royal Guilloché Pattern */}
+        <div className="absolute inset-0 bg-digital-grid opacity-15 pointer-events-none" />
 
-        {/* Layer 2: Cyber Digital Dots Matrix */}
-        <div className="absolute inset-0 bg-digital-dots opacity-20 pointer-events-none" />
+        {/* Layer 2: Royal Gold Ambient Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-950/20 via-[#071946]/50 to-blue-950/30 pointer-events-none" />
 
-        {/* Layer 3: Cyber Glowing Ambient Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-950/30 via-[#061539]/50 to-blue-950/30 pointer-events-none" />
+        {/* Layer 3: Top & Bottom Glowing Royal Gold Accent Lines */}
+        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-90 pointer-events-none shadow-[0_0_10px_rgba(245,158,11,0.8)]" />
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/60 to-transparent pointer-events-none" />
 
-        {/* Layer 4: Top & Bottom Glowing Laser Lines */}
-        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-85 pointer-events-none shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/80 to-transparent pointer-events-none" />
-
-        {/* Header Content Container - Compact height (h-14 sm:h-15 lg:h-16) to avoid thick/bloated top bar */}
-        <div className="relative max-w-7xl mx-auto px-2.5 sm:px-5 lg:px-8 h-14 sm:h-15 lg:h-16 flex items-center justify-between gap-1.5 sm:gap-4 lg:gap-6">
-          {/* Zone 1: Brand Wordmark & Radiant Yellow Logo */}
+        {/* Header Content Container - Height adjusted for enlarged logo & 2-line title */}
+        <div className="relative max-w-7xl mx-auto px-2.5 sm:px-5 lg:px-8 h-[80px] sm:h-[92px] lg:h-[98px] flex items-center justify-between gap-1.5 sm:gap-4 lg:gap-6">
+          {/* Zone 1: Brand Wordmark & Red SAI Emblem (Enlarged +30% on Tablet/Desktop: 80px/88px with Subtle Rhythmic Glow) */}
           <a
             href="#"
-            className="flex items-center gap-1.5 sm:gap-2.5 whitespace-nowrap shrink-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 rounded-lg p-0.5 sm:p-1"
+            className="flex items-center gap-2 sm:gap-3 whitespace-nowrap shrink-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-lg p-0.5 sm:p-1"
           >
-            <img
-              src="https://i.postimg.cc/Hx5fGXXX/Untitled-design-2026-07-21T141419-977.png"
-              alt="โลโก้สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง."
-              className="w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 object-contain yellow-logo-filter transition-transform group-hover:scale-105 shrink-0"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
+            <div className="relative shrink-0 flex items-center justify-center">
+              <img
+                src="https://i.postimg.cc/Hx5fGXXX/Untitled-design-2026-07-21T141419-977.png"
+                alt="โลโก้สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง."
+                className="relative z-10 w-[66px] h-[66px] sm:w-[80px] sm:h-[80px] lg:w-[88px] lg:h-[88px] object-contain animate-logo-pulse-glow transition-transform group-hover:scale-105 shrink-0"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+            </div>
             <div className="flex flex-col">
-              <span className="text-xs sm:text-sm lg:text-base font-bold tracking-tight text-white group-hover:text-yellow-300 transition-colors flex items-center gap-1 sm:gap-1.5">
-                <span>PR - SAI Thailand</span>
-                <span className="text-[8px] sm:text-[9px] font-mono px-1 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 hidden xs:inline">
+              <span className="text-[15px] sm:text-[18px] lg:text-[20px] font-bold tracking-tight text-white group-hover:text-amber-300 transition-colors flex items-center gap-1 sm:gap-1.5">
+                <span className="bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
+                  PR - SAI Thailand
+                </span>
+                <span className="text-[8px] sm:text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 hidden xs:inline font-bold">
                   สตง.
                 </span>
               </span>
-              <span className="text-[9px] sm:text-[10px] text-cyan-400/80 hidden md:inline leading-none mt-0.5 font-mono">
+              <span className="text-[9.5px] sm:text-[11px] lg:text-[12.5px] text-amber-300/95 leading-tight mt-0.5 block font-medium">
                 สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง.
               </span>
             </div>
@@ -155,32 +156,32 @@ export const Navbar: React.FC<NavbarProps> = ({
           <nav className="hidden xl:flex items-center gap-4 text-xs font-medium text-slate-300">
             <a
               href="#home"
-              className="hover:text-yellow-300 transition-colors whitespace-nowrap shrink-0 py-1"
+              className="hover:text-amber-300 transition-colors whitespace-nowrap shrink-0 py-1"
             >
               หน้าแรก
             </a>
             <a
-              href="#incident-timeline"
-              className="hover:text-cyan-300 transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5"
+              href="#viral-clips"
+              className="hover:text-amber-300 transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-              <span>สถานการณ์อาคาร สตง.</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+              <span className="text-amber-200 font-semibold">ข่าว & คลิปไวรัล</span>
+            </a>
+            <a
+              href="#incident-timeline"
+              className="hover:text-amber-300 transition-colors whitespace-nowrap shrink-0 py-1"
+            >
+              สถานการณ์อาคาร สตง.
             </a>
             <a
               href="#published-works"
-              className="hover:text-yellow-300 transition-colors whitespace-nowrap shrink-0 py-1"
+              className="hover:text-amber-300 transition-colors whitespace-nowrap shrink-0 py-1"
             >
               คลังสื่อดิจิทัล
             </a>
             <a
-              href="#viral-clips"
-              className="hover:text-yellow-300 transition-colors whitespace-nowrap shrink-0 py-1"
-            >
-              ข่าว & คลิปไวรัล
-            </a>
-            <a
               href="#public-interest"
-              className="hover:text-yellow-300 transition-colors whitespace-nowrap shrink-0 py-1"
+              className="hover:text-amber-300 transition-colors whitespace-nowrap shrink-0 py-1"
             >
               ข้อมูล e-Audit
             </a>
@@ -194,28 +195,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('blip');
                 setMobileSearchOpen(!mobileSearchOpen);
               }}
-              className="md:hidden w-8 h-8 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 flex items-center justify-center transition-all active:scale-95"
+              className="md:hidden w-8 h-8 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 flex items-center justify-center transition-all active:scale-95"
               aria-label="ค้นหาข้อมูล"
               title="ค้นหาข้อมูลด่วน"
             >
               <Search className="w-3.5 h-3.5" />
             </button>
 
-            {/* PR Request Portal CTA - Scaled cleanly on Smartphone */}
+            {/* PR Request Portal CTA - ซ่อนบน Smartphone ตามคำขอ (แสดงบน Tablet & Desktop) */}
             <a
               href="https://pr-request-system.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold text-slate-950 bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-500 hover:from-yellow-300 hover:to-yellow-400 rounded-lg sm:rounded-xl shadow-md shadow-yellow-500/15 hover:shadow-yellow-500/30 transition-all whitespace-nowrap shrink-0 active:scale-95"
+              className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-1.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-500 hover:from-yellow-300 hover:to-yellow-400 rounded-lg sm:rounded-xl shadow-md shadow-yellow-500/15 hover:shadow-yellow-500/30 transition-all whitespace-nowrap shrink-0 active:scale-95"
               title="ระบบขอรับการสนับสนุนสื่อประชาสัมพันธ์และวิทยากร สตง."
             >
-              <span className="hidden sm:inline">ขอสนับสนุนสื่อ</span>
-              <span className="sm:hidden">ขอสื่อ</span>
+              <span>ขอสนับสนุนสื่อ</span>
               <ExternalLink className="w-3 h-3" />
             </a>
 
-            {/* Biometric 2.5-Second Press & Hold Button / Admin Quick Trigger */}
-            <div className="relative flex items-center">
+            {/* Biometric Button / Admin Quick Trigger - ซ่อนบน Smartphone ตามคำขอ (แสดงบน Tablet & Desktop) */}
+            <div className="hidden sm:flex relative items-center">
               {isAdminLoggedIn ? (
                 <button
                   onClick={() => {
@@ -298,7 +298,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('switch');
                 setMobileMenuOpen(!mobileMenuOpen);
               }}
-              className="xl:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-sm shadow-cyan-500/10"
+              className="xl:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-500/10 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-sm shadow-amber-500/10"
               aria-label="Toggle navigation"
               title={mobileMenuOpen ? 'ปิดเมนู' : 'เปิดเมนู'}
             >
@@ -309,7 +309,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile Quick Search Bar Dropdown Overlay (Opens when search icon is clicked) */}
         {mobileSearchOpen && (
-          <div className="md:hidden px-3 py-2.5 bg-[#040e2c]/98 border-t border-cyan-500/30 animate-fadeIn">
+          <div className="md:hidden px-3 py-2.5 bg-[#030a24]/98 border-t border-amber-500/30 animate-fadeIn">
             <div className="relative">
               <QuickSearchBar data={searchData} />
             </div>
@@ -328,27 +328,27 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Compact Right-Aligned Drawer:
           - Reduced size by 40% on Tablet & Mobile (w-[220px] sm:w-[235px] md:w-[250px])
           - Anchored firmly to the right side (right-2 sm:right-3 md:right-4)
-          - Gorgeous digital data cyber background
+          - Gorgeous Royal Navy & Gold background
           - Complete access to all information & features */}
       {mobileMenuOpen && (
-        <div className="fixed top-15 sm:top-16 right-2 sm:right-3 md:right-4 z-50 w-[225px] sm:w-[240px] md:w-[255px] bg-gradient-to-b from-[#071946]/98 via-[#051338]/98 to-[#030c26]/98 backdrop-blur-2xl border-2 border-cyan-400/60 rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(6,182,212,0.35)] p-3 space-y-2 xl:hidden animate-slide-in-right overflow-hidden select-none">
-          {/* Cyber Digital Data Grid Texture */}
-          <div className="absolute inset-0 bg-digital-grid opacity-30 pointer-events-none" />
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_8px_rgba(6,182,212,0.8)] pointer-events-none" />
+        <div className="fixed top-15 sm:top-16 right-2 sm:right-3 md:right-4 z-50 w-[225px] sm:w-[240px] md:w-[255px] bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26]/98 backdrop-blur-2xl border-2 border-amber-400/60 rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.3)] p-3 space-y-2 xl:hidden animate-slide-in-right overflow-hidden select-none">
+          {/* Royal Gold Grid Texture */}
+          <div className="absolute inset-0 bg-digital-grid opacity-20 pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_8px_rgba(245,158,11,0.8)] pointer-events-none" />
 
           {/* Tech Viewport Corner Brackets */}
-          <div className="absolute top-1.5 left-1.5 w-2 h-2 border-t-2 border-l-2 border-cyan-400/80 pointer-events-none" />
-          <div className="absolute top-1.5 right-1.5 w-2 h-2 border-t-2 border-r-2 border-cyan-400/80 pointer-events-none" />
-          <div className="absolute bottom-1.5 left-1.5 w-2 h-2 border-b-2 border-l-2 border-cyan-400/80 pointer-events-none" />
-          <div className="absolute bottom-1.5 right-1.5 w-2 h-2 border-b-2 border-r-2 border-cyan-400/80 pointer-events-none" />
+          <div className="absolute top-1.5 left-1.5 w-2 h-2 border-t-2 border-l-2 border-amber-400/80 pointer-events-none" />
+          <div className="absolute top-1.5 right-1.5 w-2 h-2 border-t-2 border-r-2 border-amber-400/80 pointer-events-none" />
+          <div className="absolute bottom-1.5 left-1.5 w-2 h-2 border-b-2 border-l-2 border-amber-400/80 pointer-events-none" />
+          <div className="absolute bottom-1.5 right-1.5 w-2 h-2 border-b-2 border-r-2 border-amber-400/80 pointer-events-none" />
 
           {/* Drawer Header with Data Telemetry Badge */}
-          <div className="flex items-center justify-between pb-1.5 border-b border-cyan-500/25 relative z-10">
+          <div className="flex items-center justify-between pb-1.5 border-b border-amber-500/25 relative z-10">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
               <span className="text-[11px] font-bold text-white tracking-wide">เมนูหลัก สตง.</span>
-              <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-cyan-400/20 text-cyan-300">
-                DATA NODE
+              <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 font-bold">
+                ROYAL NODE
               </span>
             </div>
             <button
@@ -363,7 +363,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
-          {/* Navigation Links with Icons & Cyber Hover Effects (Complete access to all data) */}
+          {/* Navigation Links with Icons & Royal Hover Effects (Complete access to all data) */}
           <nav className="space-y-1 relative z-10 text-[11px]">
             <a
               href="#home"
@@ -371,10 +371,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-200 hover:text-cyan-300 hover:bg-cyan-500/15 rounded-lg border border-transparent hover:border-cyan-500/30 transition-all"
+              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
             >
-              <Home className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <Home className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span>หน้าแรก (ข่าวม้าหมุน)</span>
+            </a>
+
+            <a
+              href="#viral-clips"
+              onClick={() => {
+                playDigitalSound('select');
+                setMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-amber-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
+            >
+              <Radio className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>ข่าว & คลิปไวรัล สตง.</span>
             </a>
 
             <a
@@ -383,9 +395,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-cyan-300 hover:bg-cyan-500/20 rounded-lg border border-cyan-500/30 transition-all"
+              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-amber-300 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all"
             >
-              <Clock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span>สถานการณ์อาคาร สตง.</span>
             </a>
 
@@ -402,45 +414,33 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
 
             <a
-              href="#viral-clips"
-              onClick={() => {
-                playDigitalSound('select');
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-200 hover:text-rose-300 hover:bg-rose-500/15 rounded-lg border border-transparent hover:border-rose-500/30 transition-all"
-            >
-              <Radio className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-              <span>ข่าว & คลิปไวรัล สตง.</span>
-            </a>
-
-            <a
               href="#public-interest"
               onClick={() => {
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-200 hover:text-cyan-300 hover:bg-cyan-500/15 rounded-lg border border-transparent hover:border-cyan-500/30 transition-all"
+              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
             >
-              <HelpCircle className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <HelpCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span>ข้อมูล e-Audit (ข้อสงสัย)</span>
             </a>
           </nav>
 
           {/* Quick Search Shortcut inside Drawer */}
-          <div className="pt-1.5 border-t border-cyan-500/20 relative z-10">
+          <div className="pt-1.5 border-t border-amber-500/20 relative z-10">
             <button
               onClick={() => {
                 playDigitalSound('blip');
                 setMobileMenuOpen(false);
                 setMobileSearchOpen(true);
               }}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] font-medium text-cyan-300 bg-cyan-950/50 hover:bg-cyan-900/60 border border-cyan-500/40 rounded-lg transition-all"
+              className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 rounded-lg transition-all"
             >
               <span className="flex items-center gap-1.5">
-                <Search className="w-3 h-3 text-cyan-400" />
+                <Search className="w-3 h-3 text-amber-400" />
                 <span>ค้นหาข่าวและสื่อ สตง.</span>
               </span>
-              <span className="text-[9px] font-mono text-cyan-400/80">CTRL+K</span>
+              <span className="text-[9px] font-mono text-amber-300/80">CTRL+K</span>
             </button>
           </div>
 

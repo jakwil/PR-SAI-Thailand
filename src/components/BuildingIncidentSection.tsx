@@ -93,7 +93,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
     }
   };
 
-  // Helper status styling
+  // Helper status styling (Royal Navy & Gold Palette)
   const getStatusStyle = (status: string) => {
     if (status.includes('เรียบร้อย') || status.includes('แล้ว')) {
       return {
@@ -106,20 +106,20 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
     }
     if (status.includes('วิเคราะห์') || status.includes('ตรวจสอบ')) {
       return {
-        bg: 'bg-amber-500/15',
-        border: 'border-amber-400/40',
+        bg: 'bg-amber-500/20',
+        border: 'border-amber-400/50',
         text: 'text-amber-300',
-        glow: 'shadow-[0_0_12px_rgba(245,158,11,0.4)]',
+        glow: 'shadow-[0_0_12px_rgba(245,158,11,0.5)]',
         indicator: 'bg-amber-400',
       };
     }
-    // In progress / latest
+    // In progress / latest (Royal Gold Active Pulse)
     return {
-      bg: 'bg-cyan-500/20',
-      border: 'border-cyan-400/50',
-      text: 'text-cyan-300',
-      glow: 'shadow-[0_0_15px_rgba(6,182,212,0.5)]',
-      indicator: 'bg-cyan-400 animate-pulse',
+      bg: 'bg-amber-500/25',
+      border: 'border-amber-400/60',
+      text: 'text-amber-200 font-bold',
+      glow: 'shadow-[0_0_18px_rgba(245,158,11,0.6)]',
+      indicator: 'bg-amber-400 animate-pulse',
     };
   };
 
@@ -128,26 +128,26 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
       id="incident-timeline"
       className="relative py-10 sm:py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20 select-none"
     >
-      {/* Ambient Blue Background Glow */}
+      {/* Ambient Royal Gold & Sapphire Background Glow */}
       <div
         className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
         aria-hidden="true"
       >
-        <div className="absolute top-10 left-1/4 w-[600px] h-[400px] bg-gradient-to-r from-blue-600/18 via-cyan-500/18 to-blue-800/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-10 right-10 w-[500px] h-[350px] bg-cyan-500/15 rounded-full blur-[110px]" />
+        <div className="absolute top-10 left-1/4 w-[600px] h-[400px] bg-gradient-to-r from-amber-500/12 via-blue-700/15 to-amber-600/10 rounded-full blur-[140px]" />
+        <div className="absolute bottom-10 right-10 w-[500px] h-[350px] bg-amber-500/10 rounded-full blur-[130px]" />
       </div>
 
       {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7 pb-4 border-b border-cyan-500/30">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7 pb-4 border-b border-amber-500/30">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 text-xs font-medium mb-2.5 backdrop-blur-md">
-            <HardHat className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 text-xs font-medium mb-2.5 backdrop-blur-md">
+            <HardHat className="w-3.5 h-3.5 text-amber-400" />
             <span>ศูนย์ข้อมูลสถานการณ์ฉุกเฉินและวิศวกรรมโครงสร้าง สตง.</span>
           </div>
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight flex items-center gap-2.5 flex-wrap">
             <span>สถานการณ์ปัจจุบัน: เหตุการณ์อาคาร สตง. ทรุดตัว</span>
-            <span className="text-xs font-mono font-normal px-2.5 py-0.5 rounded-full bg-blue-500/20 text-cyan-300 border border-cyan-400/30">
-              CONNECTED ROADMAP
+            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40">
+              ROYAL ROADMAP
             </span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
@@ -162,9 +162,9 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               playDigitalSound('select');
               onAskAiAboutIncident();
             }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/25 to-blue-600/25 hover:from-cyan-500/35 hover:to-blue-600/35 text-cyan-300 border border-cyan-400/50 text-xs font-semibold shadow-lg hover:shadow-cyan-500/20 backdrop-blur-md transition-all cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-blue-600/20 hover:from-amber-500/30 hover:to-blue-600/30 text-amber-300 border border-amber-400/50 text-xs font-semibold shadow-lg hover:shadow-amber-500/20 backdrop-blur-md transition-all cursor-pointer active:scale-95"
           >
-            <Info className="w-3.5 h-3.5 text-cyan-400" />
+            <Info className="w-3.5 h-3.5 text-amber-400" />
             <span>สอบถาม AI เกี่ยวกับอาคาร</span>
           </button>
         </div>
@@ -172,42 +172,42 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
       {/* Engineering Live HUD Diagnostics Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div className="p-3 rounded-xl bg-[#041030]/90 border border-cyan-500/30 shadow-inner flex items-center gap-3">
+        <div className="p-3 rounded-xl bg-[#041030]/90 border border-amber-500/30 shadow-inner flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 shrink-0">
             <CheckCircle2 className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[10px] font-mono text-cyan-300/80">ความปลอดภัยบุคลากร</span>
+            <span className="block text-[10px] font-mono text-amber-300/80">ความปลอดภัยบุคลากร</span>
             <span className="text-sm font-bold text-white">100% ปลอดภัยครบทุกคน</span>
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#041030]/90 border border-cyan-500/30 shadow-inner flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0">
+        <div className="p-3 rounded-xl bg-[#041030]/90 border border-amber-500/30 shadow-inner flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
             <Cpu className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[10px] font-mono text-cyan-300/80">งานตรวจเงินแผ่นดิน</span>
+            <span className="block text-[10px] font-mono text-amber-300/80">งานตรวจเงินแผ่นดิน</span>
             <span className="text-sm font-bold text-white">100% ดำเนินการต่อเนื่อง</span>
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#041030]/90 border border-cyan-500/30 shadow-inner flex items-center gap-3">
+        <div className="p-3 rounded-xl bg-[#041030]/90 border border-amber-500/30 shadow-inner flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-300 shrink-0">
             <Activity className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[10px] font-mono text-cyan-300/80">การขยับตัว 7 วันล่าสุด</span>
+            <span className="block text-[10px] font-mono text-amber-300/80">การขยับตัว 7 วันล่าสุด</span>
             <span className="text-sm font-bold text-emerald-400">0.00 มม. (Zero Movement)</span>
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#041030]/90 border border-cyan-500/30 shadow-inner flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300 shrink-0">
+        <div className="p-3 rounded-xl bg-[#041030]/90 border border-amber-500/30 shadow-inner flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
             <Layers className="w-4 h-4" />
           </div>
           <div>
-            <span className="block text-[10px] font-mono text-cyan-300/80">โครงสร้างโหนด Roadmap</span>
+            <span className="block text-[10px] font-mono text-amber-300/80">โครงสร้างโหนด Roadmap</span>
             <span className="text-sm font-bold text-white">
               {timeline.length} โหนดเชื่อมต่อ (สร้างเพิ่มได้)
             </span>
@@ -218,26 +218,26 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
       {/* =========================================================================
           MAIN ROADMAP COMPONENT: TIMELINE UI WITH CONNECTING LINES AND NODES
           ========================================================================= */}
-      <div className="relative mb-7 rounded-2xl bg-gradient-to-b from-[#05143a]/95 via-[#040e2b]/95 to-[#02081d]/98 border-2 border-cyan-500/40 shadow-[0_16px_50px_rgba(0,0,0,0.7),0_0_35px_rgba(6,182,212,0.22)] p-4 sm:p-6 backdrop-blur-2xl ring-1 ring-white/10 overflow-hidden">
-        {/* Holographic Top Laser Line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
+      <div className="relative mb-7 rounded-2xl bg-gradient-to-b from-[#0a1e4d]/95 via-[#061539]/95 to-[#030c26]/98 border-2 border-amber-400/50 shadow-[0_16px_50px_rgba(0,0,0,0.7),0_0_35px_rgba(245,158,11,0.22)] p-4 sm:p-6 backdrop-blur-2xl ring-1 ring-white/10 overflow-hidden">
+        {/* Holographic Top Royal Gold Laser Line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
 
         {/* Roadmap Console Header Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-cyan-500/20">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-amber-500/25">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.3)]">
-              <Compass className="w-4 h-4 text-cyan-400 animate-spin-slow" />
+            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/40 shadow-[0_0_12px_rgba(245,158,11,0.3)]">
+              <Compass className="w-4 h-4 text-amber-400 animate-spin-slow" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="block text-xs sm:text-sm font-bold text-white tracking-wide">
                   Timeline UI with Connecting Lines & Nodes (Roadmap Component)
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 font-mono font-bold">
                   {timeline.length} NODES
                 </span>
               </div>
-              <span className="block text-[11px] text-cyan-300/80 font-mono">
+              <span className="block text-[11px] text-amber-300/80 font-mono">
                 คลิกที่โหนด/กราฟฟิกเพื่อเปิดดูข้อมูลสมบูรณ์เป็นการ์ด (Card Modal) · เพิ่มโหนดได้ไม่จำกัดจาก Admin
               </span>
             </div>
@@ -247,24 +247,24 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrev}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-cyan-500/20 text-slate-200 border border-cyan-500/30 hover:border-cyan-400 transition-all text-xs cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-amber-500/20 text-slate-200 border border-amber-500/30 hover:border-amber-400 transition-all text-xs cursor-pointer active:scale-95"
               title="ก่อนหน้า"
             >
-              <ChevronLeft className="w-3.5 h-3.5 text-cyan-400" />
+              <ChevronLeft className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden sm:inline">ก่อนหน้า</span>
             </button>
 
-            <span className="text-xs font-mono text-cyan-300 px-2.5 py-1 rounded bg-[#030d26] border border-cyan-500/30">
+            <span className="text-xs font-mono text-amber-300 px-2.5 py-1 rounded bg-[#030d26] border border-amber-500/30 font-bold">
               โหนด 0{activeIndex + 1} / 0{timeline.length}
             </span>
 
             <button
               onClick={handleNext}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-cyan-500/20 text-slate-200 border border-cyan-500/30 hover:border-cyan-400 transition-all text-xs cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-amber-500/20 text-slate-200 border border-amber-500/30 hover:border-amber-400 transition-all text-xs cursor-pointer active:scale-95"
               title="ถัดไป"
             >
               <span className="hidden sm:inline">ถัดไป</span>
-              <ChevronRight className="w-3.5 h-3.5 text-cyan-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
             </button>
 
             <button
@@ -272,7 +272,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 playDigitalSound('radar');
                 setIsCardModalOpen(true);
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] active:scale-95 cursor-pointer ml-1"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(245,158,11,0.5)] active:scale-95 cursor-pointer ml-1"
             >
               <Maximize2 className="w-3.5 h-3.5" />
               <span>เปิดการ์ดข้อมูลเต็มจอ</span>
@@ -287,7 +287,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           {/* Scrollable Track Container */}
           <div
             ref={scrollContainerRef}
-            className="overflow-x-auto pb-4 pt-6 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-slate-950/50"
+            className="overflow-x-auto pb-4 pt-6 scrollbar-thin scrollbar-thumb-amber-500/30 scrollbar-track-slate-950/50"
           >
             <div
               className="relative flex items-stretch gap-6 min-w-max px-6"
@@ -300,9 +300,9 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               >
                 <defs>
                   <linearGradient id="roadmapLineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#0284c7" stopOpacity="0.8" />
-                    <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
-                    <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.8" />
+                    <stop offset="0%" stopColor="#d97706" stopOpacity="0.9" />
+                    <stop offset="50%" stopColor="#f59e0b" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#fde047" stopOpacity="0.9" />
                   </linearGradient>
                   <filter id="laserGlow" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="3" result="blur" />
@@ -315,11 +315,11 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                   y1="20"
                   x2="100%"
                   y2="20"
-                  stroke="#082f49"
+                  stroke="#1c1917"
                   strokeWidth="6"
                   strokeLinecap="round"
                 />
-                {/* Glowing Laser Connecting Cable Line */}
+                {/* Glowing Royal Gold Connecting Cable Line */}
                 <line
                   x1="20"
                   y1="20"
@@ -336,7 +336,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                   y1="20"
                   x2="100%"
                   y2="20"
-                  stroke="#67e8f9"
+                  stroke="#fef08a"
                   strokeWidth="2"
                   strokeDasharray="10 15"
                   className="animate-pulse"

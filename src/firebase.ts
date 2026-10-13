@@ -256,38 +256,67 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
   };
 }
 
-// Seed initial data into Firestore if empty
+// Seed initial data or update mock data into Firestore
 export async function seedFirestoreIfEmpty(initialData: AppData) {
   try {
-    const storiesSnap = await getDocs(collection(db, 'heroStories'));
-    if (storiesSnap.empty) {
-      console.log('Seeding initial data into Firestore...');
+    const versionDoc = await getDocFromServer(doc(db, 'settings', 'mockup_version')).catch(() => null);
+    const hasV2 = versionDoc && versionDoc.exists() && versionDoc.data()?.version === 'v2_multimodal_news';
+
+    if (!hasV2) {
+      console.log('Syncing multimodal mock news (photos, infographics, videos) to Firestore...');
       // 1. Stories
       for (const story of initialData.heroStories) {
-        await setDoc(doc(db, 'heroStories', story.id), story);
+        await setDoc(doc(db, 'heroStories', story.id), story, { merge: true });
       }
       // 2. Knowledge
       for (const item of initialData.knowledgeBase) {
-        await setDoc(doc(db, 'knowledgeBase', item.id), item);
+        await setDoc(doc(db, 'knowledgeBase', item.id), item, { merge: true });
       }
       // 3. Published Works
       for (const work of initialData.publishedWorks) {
-        await setDoc(doc(db, 'publishedWorks', work.id), work);
+        await setDoc(doc(db, 'publishedWorks', work.id), work, { merge: true });
       }
       // 4. Viral Clips
       for (const clip of initialData.viralClips) {
-        await setDoc(doc(db, 'viralClips', clip.id), clip);
+        await setDoc(doc(db, 'viralClips', clip.id), clip, { merge: true });
       }
       // 5. Incident Timeline
       for (const item of initialData.incidentTimeline) {
-        await setDoc(doc(db, 'incidentTimeline', item.id), item);
+        await setDoc(doc(db, 'incidentTimeline', item.id), item, { merge: true });
       }
-      // 6. Music Settings
-      await setDoc(doc(db, 'settings', 'music'), defaultMusicSettings);
-      console.log('Firestore seed completed successfully.');
+      // 6. Music Settings & Version Tag
+      await setDoc(doc(db, 'settings', 'music'), defaultMusicSettings, { merge: true });
+      await setDoc(doc(db, 'settings', 'mockup_version'), {
+        version: 'v2_multimodal_news',
+        updatedAt: new Date().toISOString(),
+        categories: ['photo', 'infographic', 'video'],
+      });
+      console.log('Multimodal mock news seeded to Firestore successfully.');
     }
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, 'seed');
+  }
+}
+
+// Force reload mockup data into Firestore
+export async function reloadMockupDataToFirestore(mockData: AppData) {
+  try {
+    for (const story of mockData.heroStories) {
+      await setDoc(doc(db, 'heroStories', story.id), story, { merge: true });
+    }
+    for (const work of mockData.publishedWorks) {
+      await setDoc(doc(db, 'publishedWorks', work.id), work, { merge: true });
+    }
+    for (const clip of mockData.viralClips) {
+      await setDoc(doc(db, 'viralClips', clip.id), clip, { merge: true });
+    }
+    await setDoc(doc(db, 'settings', 'mockup_version'), {
+      version: 'v2_multimodal_news',
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, 'reloadMockup');
+    throw err;
   }
 }
 
