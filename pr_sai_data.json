@@ -1,0 +1,404 @@
+{
+  "heroStories": [
+    {
+      "title": "นวัตกรรม Digital Audit & MRV พลิกโฉมความโปร่งใสภาครัฐ",
+      "badge": "ข่าวยอดนิยม",
+      "category": "นวัตกรรมดิจิทัล สตง.",
+      "linkUrl": "https://pr-request-system.vercel.app",
+      "order": 1,
+      "id": "story-1",
+      "subtitle": "ระบบเชื่อมโยงข้อมูล Data Analytics และมาตรวัดอัจฉริยะ ติดตามการใช้จ่ายงบประมาณแผ่นดินแบบเรียลไทม์",
+      "date": "10 ตุลาคม 2569",
+      "imageUrl": "/src/assets/images/sai_digital_network_1791693065277.jpg"
+    },
+    {
+      "order": 2,
+      "imageUrl": "/src/assets/images/sai_earth_hologram_1791693076088.jpg",
+      "date": "9 ตุลาคม 2569",
+      "title": "เชื่อมโยงเครือข่ายความโปร่งใสไทยสู่มาตรฐานสากล (Global Data Node)",
+      "badge": "ยุทธศาสตร์ สตง.",
+      "subtitle": "การประสานพลังองค์กรตรวจเงินแผ่นดินระดับโลก ขับเคลื่อนธรรมาภิบาลและความรับผิดชอบทางการเงิน",
+      "linkUrl": "https://pr-request-system.vercel.app",
+      "id": "story-2",
+      "category": "ความร่วมมือสากล"
+    },
+    {
+      "order": 3,
+      "title": "รายงานสถานการณ์และมาตรการวิศวกรรม: อาคาร สตง. ทรุดตัว ล่าสุด",
+      "badge": "ข้อเท็จจริงทางการ",
+      "category": "แถลงการณ์สำคัญ",
+      "id": "story-3",
+      "date": "8 ตุลาคม 2569",
+      "imageUrl": "/src/assets/images/sai_building_inspection_1791689807795.jpg",
+      "linkUrl": "#incident-timeline",
+      "subtitle": "วสท. และกรมโยธาธิการฯ ยืนยันโครงสร้างแกนกลางมั่นคง แผนความปลอดภัยฉุกเฉินและ Digital Audit 100%"
+    },
+    {
+      "id": "story-4",
+      "category": "ภารกิจตรวจสอบ",
+      "linkUrl": "https://youtube.com",
+      "badge": "ผลงานเด่น",
+      "title": "ศูนย์บัญชาการตรวจเงินแผ่นดิน: เทคโนโลยี AI สกัดกั้นการทุจริต",
+      "date": "1 ตุลาคม 2569",
+      "subtitle": "ทีมผู้ตรวจการมืออาชีพใช้ AI ตรวจสอบเส้นทางงบประมาณและข้อมูลการจัดซื้อจัดจ้างภาครัฐ",
+      "order": 4,
+      "imageUrl": "/src/assets/images/sai_audit_hero_1791689796943.jpg"
+    },
+    {
+      "imageUrl": "/src/assets/images/sai_public_campaign_1791689820118.jpg",
+      "title": "แคมเปญพลังพลเมือง: ร่วมตรวจสอบงบประมาณท้องถิ่นทั่วไทย",
+      "badge": "แคมเปญแห่งปี",
+      "subtitle": "เปิดช่องทางประชาชนมีส่วนร่วมแจ้งเบาะแสผ่านสายด่วน 1730 และสื่อประชาสัมพันธ์สร้างสรรค์",
+      "order": 5,
+      "linkUrl": "https://pr-request-system.vercel.app",
+      "id": "story-5",
+      "date": "28 กันยายน 2569",
+      "category": "การมีส่วนร่วมประชาชน"
+    },
+    {
+      "badge": "บริการใหม่",
+      "title": "เปิดระบบขอรับการสนับสนุนสื่อประชาสัมพันธ์และวิทยากร สตง.",
+      "id": "story-6",
+      "subtitle": "บริการออนไลน์สำหรับสถาบันการศึกษา ชุมชน และหน่วยงานรัฐ ยื่นคำของ่ายใน 3 ขั้นตอน",
+      "linkUrl": "https://pr-request-system.vercel.app",
+      "order": 6,
+      "imageUrl": "/src/assets/images/sai_digital_innovation_1791689830942.jpg",
+      "category": "บริการองค์กร",
+      "date": "25 กันยายน 2569"
+    },
+    {
+      "imageUrl": "https://s.imgz.io/2026/10/12/___KM__2026052312223399144b26a499b6.th.jpeg",
+      "subtitle": "ืิผิืเเืผืผืผดืผเ_______________",
+      "date": "3 ตุลาคม 2569",
+      "id": "story-1791798073666",
+      "order": 7,
+      "title": "ถถถถถถถasfvalksmvkasmvkasvkasnkvnaskvasvnjasnvsanfvlkafvlnasklfvnaksnbvkalnvakl",
+      "badge": "ข่าวใหม่",
+      "category": "ข่าวเด่น สตง.",
+      "linkUrl": "https://pr-request-system.vercel.app"
+    }
+  ],
+  "knowledgeBase": [
+    {
+      "category": "องค์กรและภารกิจ",
+      "dateAdded": "2026-10-01",
+      "title": "ภารกิจและอำนาจหน้าที่ของ สตง. (SAI Thailand)",
+      "id": "kb-1",
+      "sourceType": "raw_text",
+      "content": "สำนักงานการตรวจเงินแผ่นดิน (สตง.) เป็นองค์กรอิสระตามรัฐธรรมนูญ ทำหน้าที่ตรวจสอบการใช้จ่ายเงินแผ่นดินของหน่วยงานของรัฐทุกแห่ง เพื่อให้การใช้จ่ายเงินงบประมาณเป็นไปอย่างคุ้มค่า โปร่งใส เกิดประโยชน์สูงสุดแก่ประเทศชาติและประชาชน ตามหลักธรรมาภิบาลและความรับผิดชอบต่อสาธารณะ"
+    },
+    {
+      "category": "ข้อมูลทั่วไป",
+      "sourceUrl": "https://www.audit.go.th/th/manager-category/%E0%B8%84%E0%B8%93%E0%B8%B0%E0%B8%81%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%95%E0%B8%A3%E0%B8%A7%E0%B8%88%E0%B9%80%E0%B8%87%E0%B8%B4%E0%B8%99%E0%B9%81%E0%B8%9C%E0%B9%88%E0%B8%99%E0%B8%94%E0%B8%B4%E0%B8%99",
+      "sourceType": "raw_text",
+      "dateAdded": "2026-10-13",
+      "title": "คณะกรรมการตรวจเงินแผ่นดิน ",
+      "id": "kb-1791860265021",
+      "content": "คณะกรรมการตรวจเงินแผ่นดิน "
+    },
+    {
+      "id": "kb-1791860313565",
+      "title": "คณะกรรมการตรวจเงินแผ่นดิน ",
+      "category": "ข้อมูลทั่วไป",
+      "sourceType": "raw_text",
+      "content": "คณะกรรมการตรวจเงินแผ่นดิน ",
+      "sourceUrl": "https://www.audit.go.th/th/manager-category/%E0%B8%84%E0%B8%93%E0%B8%B0%E0%B8%81%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%95%E0%B8%A3%E0%B8%A7%E0%B8%88%E0%B9%80%E0%B8%87%E0%B8%B4%E0%B8%99%E0%B9%81%E0%B8%9C%E0%B9%88%E0%B8%99%E0%B8%94%E0%B8%B4%E0%B8%99",
+      "dateAdded": "2026-10-13"
+    },
+    {
+      "content": "สำนักประชาสัมพันธ์และสื่อสารองค์กร (PR - SAI Thailand) รับผิดชอบการเผยแพร่ข้อมูลข่าวสาร ผลการตรวจสอบ นโยบาย กิจกรรม และสื่อสารสร้างความรู้ความเข้าใจเกี่ยวกับการตรวจเงินแผ่นดินแก่ประชาชน สื่อมวลชน และหน่วยรับตรวจ พร้อมทั้งเปิดช่องทางบริการขอรับการสนับสนุนสื่อประชาสัมพันธ์ผ่านระบบ https://pr-request-system.vercel.app",
+      "dateAdded": "2026-10-02",
+      "sourceUrl": "https://pr-request-system.vercel.app",
+      "id": "kb-2",
+      "sourceType": "url",
+      "category": "งานประชาสัมพันธ์",
+      "title": "บทบาทของสำนักประชาสัมพันธ์และสื่อสารองค์กร"
+    },
+    {
+      "id": "kb-3",
+      "title": "ข้อเท็จจริงและมาตรการ: เหตุการณ์อาคาร สตง. ทรุดตัว",
+      "dateAdded": "2026-10-05",
+      "content": "จากเหตุการณ์ตรวจพบการทรุดตัวของโครงสร้างฐานรากบางจุดของอาคารสำนักงาน สตง. ทางผู้บริหารได้สั่งการอพยพตามแผนความปลอดภัยฉุกเฉินทันที พร้อมแต่งตั้งคณะทำงานร่วมกับวิศวกรรมสถานแห่งประเทศไทย (วสท.) และกรมโยธาธิการและผังเมืองเข้าตรวจสอบเชิงวิศวกรรม ผลการตรวจสอบเบื้องต้นพบว่าเป็นปัญหาการทรุดตัวเฉพาะส่วนฐานรากย่อย ไม่กระทบเสาหลักของอาคารหลัก แต่เพื่อความปลอดภัยสูงสุด ได้สั่งปิดพื้นที่ควบคุมและเปิดระบบศูนย์ปฏิบัติการชั่วคราวและการทำงานแบบ Hybrid/Digital Audit โดยการให้บริการประชาชนและภารกิจตรวจสอบเงินแผ่นดินทั่วประเทศยังดำเนินไปอย่างต่อเนื่อง 100%",
+      "sourceType": "pdf_summary",
+      "category": "สถานการณ์อาคาร สตง."
+    },
+    {
+      "dateAdded": "2026-10-06",
+      "content": "ประชาชนสามารถแจ้งเบาะแสการใช้จ่ายเงินแผ่นดินที่น่าสงสัย หรือติดตามผลการตรวจสอบได้ผ่านสายด่วน สตง. 1730 หรือช่องทางออนไลน์ เว็บไซต์หลัก และสำนักประชาสัมพันธ์และสื่อสารองค์กร",
+      "id": "kb-4",
+      "title": "ช่องทางติดต่อและร้องเรียนเบาะแสการใช้เงินแผ่นดิน",
+      "category": "บริการประชาชน",
+      "sourceType": "raw_text"
+    }
+  ],
+  "publishedWorks": [
+    {
+      "views": "128,400",
+      "category": "สารคดีโทรทัศน์ / วิดีโอ",
+      "linkUrl": "https://youtube.com",
+      "publishDate": "2026-09-28",
+      "description": "สารคดีชุดพิเศษพาชมเบื้องหลังการทำงานของผู้ว่าการตรวจเงินแผ่นดินและทีมผู้ตรวจการมืออาชีพในการลงพื้นที่ทั่วประเทศ",
+      "id": "work-1",
+      "badge": "ผลงานเด่น",
+      "title": "สารคดีเจาะลึก: เงินแผ่นดินทุกบาท เพื่อประโยชน์ชาติ",
+      "imageUrl": "/src/assets/images/sai_audit_hero_1791689796943.jpg"
+    },
+    {
+      "category": "แถลงการณ์ & รายงานข้อเท็จจริง",
+      "badge": "สถานการณ์สำคัญ",
+      "title": "รายงานพิเศษ: ความคืบหน้าการตรวจสอบทางวิศวกรรมอาคาร สตง.",
+      "imageUrl": "/src/assets/images/sai_building_inspection_1791689807795.jpg",
+      "linkUrl": "https://pr-request-system.vercel.app",
+      "id": "work-2",
+      "views": "94,200",
+      "publishDate": "2026-10-08",
+      "description": "บทสรุปทางวิศวกรรมและแผนฟื้นฟูปรับปรุงโครงสร้างอาคาร สตง. ร่วมกับสถาบันวิชาชีพวิศวกรรมเพื่อความโปร่งใสและปลอดภัย"
+    },
+    {
+      "linkUrl": "https://pr-request-system.vercel.app",
+      "category": "แคมเปญสร้างการมีส่วนร่วม",
+      "badge": "ยอดแชร์สูง",
+      "title": "แคมเปญพลังพลเมือง: ร่วมเป็นตาสับปะรดเฝ้าระวังงบประมาณท้องถิ่น",
+      "publishDate": "2026-10-04",
+      "description": "สื่ออินโฟกราฟิกและคู่มือประชาชนในการตรวจสอบการจัดซื้อจัดจ้างภาครัฐในระดับท้องถิ่น เข้าใจง่ายใน 3 นาที",
+      "id": "work-3",
+      "views": "67,890",
+      "imageUrl": "/src/assets/images/sai_public_campaign_1791689820118.jpg"
+    },
+    {
+      "publishDate": "2026-10-01",
+      "description": "การนำเทคโนโลยี AI และ Data Analytics มายกระดับการตรวจเงินแผ่นดินยุคดิจิทัล ตรวจจับความผิดปกติรวดเร็วแม่นยำ",
+      "views": "52,100",
+      "id": "work-4",
+      "imageUrl": "/src/assets/images/sai_digital_innovation_1791689830942.jpg",
+      "category": "นวัตกรรมการตรวจสอบ",
+      "badge": "นวัตกรรมใหม่",
+      "title": "นวัตกรรม AI Audit & Data Intelligence ขับเคลื่อนความโปร่งใส",
+      "linkUrl": "https://youtube.com"
+    }
+  ],
+  "viralClips": [
+    {
+      "thumbnail": "/src/assets/images/sai_audit_hero_1791689796943.jpg",
+      "duration": "01:14",
+      "creator": "PR - SAI Thailand Media Team",
+      "title": "1 นาทีเข้าใจ! เงินภาษีของเรา สตง. ตรวจสอบอย่างไร?",
+      "id": "clip-1",
+      "highlight": "ยอดวิวทะลุ 5 แสนครั้งบน TikTok & Shorts",
+      "views": "542K",
+      "linkUrl": "https://youtube.com"
+    },
+    {
+      "linkUrl": "https://youtube.com",
+      "thumbnail": "/src/assets/images/sai_building_inspection_1791689807795.jpg",
+      "title": "เจาะมาตรการความปลอดภัย อาคาร สตง. ทรุดตัว ล่าสุด!",
+      "highlight": "ชี้แจงข้อเท็จจริงเพื่อความโปร่งใสแก่ประชาชน",
+      "id": "clip-2",
+      "creator": "ศูนย์สื่อสารภาวะวิกฤต สตง.",
+      "views": "389K",
+      "duration": "02:05"
+    },
+    {
+      "thumbnail": "/src/assets/images/sai_public_campaign_1791689820118.jpg",
+      "duration": "01:45",
+      "creator": "PR - SAI Thailand Network",
+      "id": "clip-3",
+      "views": "410K",
+      "title": "เทคนิคดูป้ายโครงการก่อสร้างรัฐ รู้ทันทุจริตใน 3 ขั้นตอน",
+      "linkUrl": "https://youtube.com",
+      "highlight": "แชร์เป็นไวรัลในกลุ่มชุมชนและเครือข่ายธรรมาภิบาล"
+    }
+  ],
+  "incidentTimeline": [
+    {
+      "description": "ทีมวิศวกรประจำอาคารตรวจพบรอยแยกและการเคลื่อนตัวของแผ่นพื้นบริเวณชั้นใต้ดินด้านทิศตะวันออก ผู้บริหารสั่งอพยพเจ้าหน้าที่ทั้งหมดตามแผนฉุกเฉินระดับ 1 ไม่มีผู้ได้รับบาดเจ็บ",
+      "imageUrl": "/src/assets/images/sai_building_inspection_1791689807795.jpg",
+      "date": "28 กันยายน 2569",
+      "time": "09:30 น.",
+      "phase": "ตรวจพบความผิดปกติ",
+      "id": "tl-1",
+      "technicalDetails": "ตรวจพบการทรุดตัวส่วนฐานรากย่อยประมาณ 3.2 ซม. ระบบตัดไฟและแก๊สทำงานอัตโนมัติ",
+      "title": "สัญญาณการทรุดตัวและสั่งการอพยพทันที",
+      "status": "เรียบร้อย"
+    },
+    {
+      "technicalDetails": "ติดตั้ง Tiltmeter 24 จุด และตรวจสอบเสาเข็มเจาะลึก 45 เมตร ไม่พบการหักขาดของเสาเข็มหลัก",
+      "phase": "การตรวจสอบทางวิศวกรรมร่วม",
+      "status": "วิเคราะห์ข้อมูล",
+      "time": "14:00 น.",
+      "title": "วสท. และกรมโยธาธิการฯ เข้าตรวจวัดโครงสร้าง 3D Laser Scanning",
+      "date": "1 ตุลาคม 2569",
+      "imageUrl": "/src/assets/images/sai_audit_hero_1791689796943.jpg",
+      "id": "tl-2",
+      "description": "วิศวกรรมสถานแห่งประเทศไทย (วสท.) และผู้เชี่ยวชาญด้านปฐพีกลศาสตร์ติดตั้งเซนเซอร์วัดการขยับตัวแบบเรียลไทม์ และทำ 3D Laser Scan พบว่าโครงสร้างแกนกลางหลัก (Core Structure) ยังคงมีความมั่นคงแข็งแรง"
+    },
+    {
+      "technicalDetails": "ระบบจัดเก็บข้อมูลการตรวจสอบอยู่บน Secure Cloud ภายนอก ข้อมูลเอกสารราชการปลอดภัยครบถ้วน 100%",
+      "title": "เปิดศูนย์บัญชาการปฏิบัติการชั่วคราว & Digital Audit เต็มรูปแบบ",
+      "phase": "แผนความต่อเนื่องทางธุรกิจ (BCP)",
+      "imageUrl": "/src/assets/images/sai_digital_innovation_1791689830942.jpg",
+      "description": "สำนักงานการตรวจเงินแผ่นดินย้ายการปฏิบัติการหลักไปยังอาคารสำรองและศูนย์ระบบคลาวด์ Digital Audit งานตรวจสอบบัญชีแผ่นดินทั่วประเทศดำเนินไปได้ตามกำหนดการ 100% ประชาชนติดต่อได้ตามปกติ",
+      "status": "ดำเนินการแล้ว",
+      "date": "5 ตุลาคม 2569",
+      "time": "11:00 น.",
+      "id": "tl-3"
+    },
+    {
+      "phase": "งานเสริมความมั่นคงและแผนฟื้นฟู",
+      "technicalDetails": "อัตราการขยับตัวคงที่ (Zero Movement Rate) ในรอบ 7 วันที่ผ่านมา อยู่ระหว่างเตรียมการฟื้นฟูอย่างถาวร",
+      "title": "งานเสริมฐานราก (Underpinning & Micro-piles) และแถลงความคืบหน้า",
+      "id": "tl-4",
+      "date": "ปัจจุบัน (ตุลาคม 2569)",
+      "time": "ล่าสุด",
+      "status": "กำลังปฏิบัติการ",
+      "description": "เริ่มงานฉีดซีเมนต์เกราท์และค้ำยันเชิงป้องกัน ควบคู่กับการแถลงข่าวรายสัปดาห์โดยสำนักประชาสัมพันธ์ฯ เพื่อให้ข้อมูลที่ถูกต้องแก่ประชาชนอย่างต่อเนื่อง",
+      "imageUrl": "/src/assets/images/sai_public_campaign_1791689820118.jpg"
+    }
+  ],
+  "chatbotSettings": {
+    "autoOpen": true,
+    "welcomeMessage": "สวัสดีครับ/ค่ะ ยินดีต้อนรับสู่ PR - SAI Thailand! ผม/ดิฉันคือผู้ช่วย AI ประชาสัมพันธ์องค์กร พร้อมให้ข้อมูลภารกิจการตรวจเงินแผ่นดิน สื่อประชาสัมพันธ์ และรายงานข้อเท็จจริงสถานการณ์อาคาร สตง. ทรุดตัว สอบถามเรื่องใดได้เลยครับ/ค่ะ",
+    "updatedAt": "2026-10-18T04:37:41.631Z",
+    "enabled": true
+  },
+  "smtpSettings": {
+    "enabled": true,
+    "service": "gmail",
+    "host": "smtp.gmail.com",
+    "port": 465,
+    "secure": true,
+    "user": "auditpicture.webapp@gmail.com",
+    "pass": "lshrfqvictfvhxgx",
+    "fromName": "สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง. (PR SAI Thailand)",
+    "fromEmail": "auditpicture.webapp@gmail.com",
+    "updatedAt": "2026-10-18T14:51:01.322Z"
+  },
+  "newsSubscribers": [
+    {
+      "id": "sub_admin_jakwil",
+      "email": "jakwil@jakwil.page",
+      "storyId": "story-photo-1",
+      "storyTitle": "ข่าวภาพนิ่ง: คณะผู้บริหารและผู้ตรวจเงินแผ่นดินลงพื้นที่ตรวจสอบงานโครงสร้างและข้อเท็จจริง",
+      "category": "ข่าวภาพนิ่ง / ภาพกิจกรรม",
+      "subscribedAt": "2026-10-19T02:52:11.711Z",
+      "active": true,
+      "tags": [
+        "ผู้ดูแลระบบ",
+        "ข่าวเด่น สตง.",
+        "ทุกหมวดหมู่"
+      ],
+      "notifyCount": 2,
+      "lastNotifiedAt": "2026-10-19T02:52:31.872Z",
+      "updatedAt": "2026-10-19T02:52:11.711Z"
+    },
+    {
+      "active": true,
+      "notifyCount": 2,
+      "category": "ข่าวเด่น สตง.",
+      "tags": [
+        "ข่าวเด่น สตง.",
+        "สรุปรายสัปดาห์"
+      ],
+      "updatedAt": "2026-10-18T04:16:54.933Z",
+      "email": "rebellion.vip@gmail.com",
+      "lastNotifiedAt": "2026-10-18T04:16:54.933Z",
+      "subscribedAt": "2026-10-18T03:39:50.841Z",
+      "id": "sub_1792294790841_9r1y90",
+      "storyTitle": "เทสทสทสท",
+      "storyId": "story-1791798073666"
+    },
+    {
+      "id": "sub_sender_audit",
+      "email": "auditpicture.webapp@gmail.com",
+      "storyId": "story-photo-1",
+      "storyTitle": "ข่าวเด่น สตง.",
+      "category": "ข่าวเด่น สตง.",
+      "subscribedAt": "2026-10-19T02:52:11.711Z",
+      "active": true,
+      "tags": [
+        "บัญชีส่ง สตง."
+      ],
+      "notifyCount": 0,
+      "updatedAt": "2026-10-19T02:52:11.711Z"
+    }
+  ],
+  "musicSettings": {
+    "duckingVolume": 0.015,
+    "driveUrl": "https://drive.google.com/file/d/1jdUZIsYO69gFRoGisnMX_5nF38xRUCVm/view?usp=sharing",
+    "title": "PR - SAI Thailand Ambient Melody (เพลงบรรเลงประชาสัมพันธ์)",
+    "updatedAt": "2026-10-18T04:37:41.519Z",
+    "enabled": true,
+    "streamUrl": "/api/audio-proxy?id=1jdUZIsYO69gFRoGisnMX_5nF38xRUCVm&url=https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F1jdUZIsYO69gFRoGisnMX_5nF38xRUCVm%2Fview%3Fusp%3Dsharing",
+    "defaultVolume": 0.1
+  },
+  "newsBroadcasts": [
+    {
+      "id": "bcast_1792378351872",
+      "storyId": "story-photo-1",
+      "storyTitle": "คณะผู้บริหารและผู้ตรวจเงินแผ่นดินลงพื้นที่ตรวจสอบงานโครงสร้างและข้อเท็จจริง",
+      "subject": "📢 ข่าวประชาสัมพันธ์ สตง.: คณะผู้บริหารและผู้ตรวจเงินแผ่นดินลงพื้นที่ตรวจสอบ",
+      "summary": "สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง. แจ้งข่าวภารกิจการตรวจเงินแผ่นดินเชิงรุกเพื่อประโยชน์สูงสุดของประชาชน",
+      "recipientCount": 1,
+      "recipients": [
+        "jakwil@jakwil.page"
+      ],
+      "aiGenerated": false,
+      "sentAt": "2026-10-19T02:52:31.872Z",
+      "deliveryStatus": "success",
+      "deliveredEmails": [
+        "jakwil@jakwil.page"
+      ],
+      "failedEmails": [],
+      "previewUrl": null,
+      "smtpUser": "auditpicture.webapp@gmail.com",
+      "isRealDelivery": true
+    },
+    {
+      "id": "bcast_1792378045569",
+      "storyId": "story-photo-1",
+      "storyTitle": "ข่าวภาพนิ่ง: คณะผู้บริหารและผู้ตรวจเงินแผ่นดินลงพื้นที่ตรวจสอบงานโครงสร้าง",
+      "subject": "📢 ข่าวประชาสัมพันธ์ สตง. ล่าสุด: ทดสอบ Broadcast จริง",
+      "summary": "สรุปสาระสำคัญการตรวจสอบเชิงรุก",
+      "recipientCount": 1,
+      "recipients": [
+        "jakwil@jakwil.page"
+      ],
+      "aiGenerated": false,
+      "sentAt": "2026-10-19T02:47:25.569Z",
+      "deliveryStatus": "success",
+      "deliveredEmails": [
+        "jakwil@jakwil.page"
+      ],
+      "failedEmails": [],
+      "previewUrl": null,
+      "smtpUser": "auditpicture.webapp@gmail.com",
+      "isRealDelivery": true
+    },
+    {
+      "recipients": [
+        "rebellion.vip@gmail.com"
+      ],
+      "summary": "เรียน ท่านผู้ติดตามข่าวสารสำนักงานการตรวจเงินแผ่นดิน (สตง.)\n\nสำนักประชาสัมพันธ์และสื่อสารองค์กร สตง. ขอแจ้งข่าวประชาสัมพันธ์ล่าสุด:\n\n• ถถถถถถถasfvalksmvkasmvkas",
+      "subject": "📢 ข่าวประชาสัมพันธ์ สตง. ล่าสุด: ถถถถถถถasfvalksmvkasmvkasvkasnkvnaskvasvnjasnvsanf...",
+      "storyId": "story-1791798073666",
+      "sentAt": "2026-10-18T04:16:53.898Z",
+      "id": "bcast_1792297013898",
+      "aiGenerated": false,
+      "recipientCount": 1,
+      "storyTitle": "ถถถถถถถasfvalksmvkasmvkasvkasnkvnaskvasvnjasnvsanfvlkafvlnasklfvnaksnbvkalnvakl"
+    },
+    {
+      "recipients": [
+        "rebellion.vip@gmail.com"
+      ],
+      "id": "bcast_1792294889156",
+      "sentAt": "2026-10-18T03:41:29.156Z",
+      "storyId": "story-1791798073666",
+      "subject": "📢 ข่าวประชาสัมพันธ์ สตง. ล่าสุด: asfvalksmvkasmvkasvkasnkvnaskvasvnjasnvsanfvlkafvl...",
+      "aiGenerated": false,
+      "summary": "เรียน ท่านผู้ติดตามข่าวสารสำนักงานการตรวจเงินแผ่นดิน (สตง.)\n\nสำนักประชาสัมพันธ์และสื่อสารองค์กร สตง. ขอแจ้งข่าวประชาสัมพันธ์ล่าสุด:\n\n• asfvalksmvkasmvkasvkasnkv",
+      "recipientCount": 1,
+      "storyTitle": "asfvalksmvkasmvkasvkasnkvnaskvasvnjasnvsanfvlkafvlnasklfvnaksnbvkalnvakl"
+    }
+  ]
+}

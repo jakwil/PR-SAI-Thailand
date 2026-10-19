@@ -1,7 +1,7 @@
 // Web Audio API Digital Sound Effects Synthesizer
 // Provides zero-latency, authentic high-tech digital & cyber UI sound effects without external audio files
 
-export type DigitalSoundType = 'click' | 'blip' | 'switch' | 'select' | 'beep' | 'radar' | 'tab';
+export type DigitalSoundType = 'click' | 'blip' | 'switch' | 'select' | 'beep' | 'radar' | 'tab' | 'confirm';
 
 class DigitalAudioEngine {
   private ctx: AudioContext | null = null;
@@ -254,6 +254,23 @@ class DigitalAudioEngine {
 
           osc.start(now);
           osc.stop(now + 0.014);
+          break;
+        }
+
+        case 'confirm': {
+          // Pleasant high-tech success chime (chord 523Hz -> 659Hz -> 784Hz)
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.05);
+          osc.frequency.setValueAtTime(783.99, now + 0.1);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.23);
           break;
         }
 

@@ -73,18 +73,21 @@
   filter: sepia(1) saturate(8) hue-rotate(8deg) brightness(1.25) contrast(1.15) drop-shadow(0 0 18px rgba(212, 175, 55, 0.9));
 }
 
-/* Cinematic Ken Burns Slow Zoom In */
-@keyframes cinematicSlowZoom {
+/* Smooth Carousel Progress Keyframe (Pure CSS, 0% React re-render lag) */
+@keyframes carouselProgress {
   0% {
-    transform: scale(1.0);
+    width: 0%;
   }
   100% {
-    transform: scale(1.14);
+    width: 100%;
   }
 }
 
-.animate-cinematic-zoom {
-  animation: cinematicSlowZoom 6s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+/* GPU Anti-Flicker & Layer Stabilization */
+.transform-gpu {
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 
@@ -240,3 +243,148 @@
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out forwards;
 }
+
+/* 3D Timeline & Interactive Ribbon Styles */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.timeline-chevron-first {
+  clip-path: polygon(0% 0%, calc(100% - 14px) 0%, 100% 50%, calc(100% - 14px) 100%, 0% 100%);
+}
+
+.timeline-chevron-middle {
+  clip-path: polygon(0% 0%, calc(100% - 14px) 0%, 100% 50%, calc(100% - 14px) 100%, 0% 100%, 14px 50%);
+}
+
+.timeline-chevron-last {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 14px 50%);
+}
+
+.timeline-chevron-single {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+@keyframes laserPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+}
+
+.animate-laser-pulse {
+  animation: laserPulseGlow 2.5s ease-in-out infinite;
+}
+
+/* Hero 10-Second 5% Slow Zoom (Ken Burns Effect - ซูมเข้าช้าๆ 5% ในเวลา 10 วินาที เมื่อไม่โดนเมาส์ชี้) */
+@keyframes heroSlowZoom5Percent {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-hero-zoom-5pct {
+  animation: heroSlowZoom5Percent 10s ease-out forwards;
+  will-change: transform;
+}
+
+/* 10-Second Auto-Moving Clip Preview Keyframe */
+@keyframes clipPreviewMotion10s {
+  0% {
+    transform: scale(1.0) translate(0%, 0%);
+    filter: brightness(1);
+  }
+  25% {
+    transform: scale(1.08) translate(-1.5%, -1%);
+    filter: brightness(1.04);
+  }
+  50% {
+    transform: scale(1.14) translate(-3%, -2%);
+    filter: brightness(1.08);
+  }
+  75% {
+    transform: scale(1.08) translate(-1.5%, -1%);
+    filter: brightness(1.04);
+  }
+  100% {
+    transform: scale(1.0) translate(0%, 0%);
+    filter: brightness(1);
+  }
+}
+
+.animate-clip-10s {
+  animation: clipPreviewMotion10s 10s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* 10-Second Progress Bar */
+@keyframes previewProgressBar10s {
+  0% {
+    width: 0%;
+  }
+  98% {
+    width: 100%;
+    opacity: 1;
+  }
+  99% {
+    width: 100%;
+    opacity: 0.2;
+  }
+  100% {
+    width: 0%;
+    opacity: 1;
+  }
+}
+
+.animate-preview-bar-10s {
+  animation: previewProgressBar10s 10s linear infinite;
+}
+
+/* Continuous multi-resolution marquee rows */
+@keyframes marqueeScrollLeft {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marqueeScrollRight {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-marquee-track-left {
+  display: flex;
+  width: max-content;
+  animation: marqueeScrollLeft 50s linear infinite;
+}
+
+.animate-marquee-track-right {
+  display: flex;
+  width: max-content;
+  animation: marqueeScrollRight 50s linear infinite;
+}
+
+.pause-animation {
+  animation-play-state: paused !important;
+}
+

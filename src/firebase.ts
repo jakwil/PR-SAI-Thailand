@@ -18,7 +18,10 @@ import {
   PublishedWork,
   ViralClip,
   IncidentMilestone,
-  MusicSettings
+  MusicSettings,
+  ChatbotSettings,
+  NewsSubscriber,
+  NewsBroadcastLog
 } from './types';
 
 // Initialize Firebase
@@ -142,6 +145,134 @@ export const defaultMusicSettings: MusicSettings = {
   updatedAt: new Date().toISOString(),
 };
 
+// Default Chatbot Settings (เปิดใช้งานและขึ้นมาทันทีแม้อยู่หน้าแรกของทุกมุมมอง)
+export const defaultChatbotSettings: ChatbotSettings = {
+  enabled: true,
+  autoOpen: true,
+  welcomeMessage:
+    'สวัสดีครับ/ค่ะ ยินดีต้อนรับสู่ PR - SAI Thailand! ผม/ดิฉันคือผู้ช่วย AI ประชาสัมพันธ์องค์กร พร้อมให้ข้อมูลภารกิจการตรวจเงินแผ่นดิน สื่อประชาสัมพันธ์ และรายงานข้อเท็จจริงสถานการณ์อาคาร สตง. ทรุดตัว สอบถามเรื่องใดได้เลยครับ/ค่ะ',
+  updatedAt: new Date().toISOString(),
+};
+
+// Default News Subscribers
+export const defaultNewsSubscribers: NewsSubscriber[] = [
+  {
+    id: 'sub-admin-jakwil',
+    email: 'jakwil@jakwil.page',
+    storyId: 'story-photo-1',
+    storyTitle: 'ข่าวภาพนิ่ง: คณะผู้บริหารและผู้ตรวจเงินแผ่นดินลงพื้นที่ตรวจสอบงานโครงสร้างและข้อเท็จจริง',
+    category: 'ข่าวภาพนิ่ง / ภาพกิจกรรม',
+    subscribedAt: '2026-10-18T10:00:00.000Z',
+    active: true,
+    tags: ['ผู้ดูแลระบบ', 'ข่าวเด่น สตง.', 'ทุกหมวดหมู่'],
+    notifyCount: 1,
+    lastNotifiedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sub-1',
+    email: 'somchai.audit@egat.co.th',
+    storyId: 'story-info-1',
+    storyTitle: 'Infographic: สรุปผลสัมฤทธิ์การตรวจเงินแผ่นดิน คืนเงินหลวงกลับสู่ชาติกว่า 1.8 หมื่นล้านบาท',
+    category: 'อินโฟกราฟิกสรุปสาระสำคัญ',
+    subscribedAt: '2026-10-12T09:30:00.000Z',
+    active: true,
+    tags: ['การเงินการคลัง', 'ผลสัมฤทธิ์'],
+    notifyCount: 2,
+    lastNotifiedAt: '2026-10-14T11:00:00.000Z',
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sub-2',
+    email: 'karnjana.p@dpt.go.th',
+    storyId: 'story-photo-1',
+    storyTitle: 'ข่าวภาพนิ่ง: คณะผู้บริหารและผู้ตรวจเงินแผ่นดินลงพื้นที่ตรวจสอบงานโครงสร้างและข้อเท็จจริง',
+    category: 'ข่าวภาพนิ่ง / ภาพกิจกรรม',
+    subscribedAt: '2026-10-13T10:15:00.000Z',
+    active: true,
+    tags: ['วิศวกรรม', 'อาคารสตง', 'ความปลอดภัย'],
+    notifyCount: 1,
+    lastNotifiedAt: '2026-10-14T11:00:00.000Z',
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sub-3',
+    email: 'prasert.finance@bb.go.th',
+    storyId: 'story-1',
+    storyTitle: 'นวัตกรรม Digital Audit & MRV พลิกโฉมความโปร่งใสภาครัฐด้วย Data Analytics',
+    category: 'นวัตกรรมดิจิทัล สตง.',
+    subscribedAt: '2026-10-14T14:20:00.000Z',
+    active: true,
+    tags: ['Digital Audit', 'เทคโนโลยี', 'Data Analytics'],
+    notifyCount: 0,
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sub-4',
+    email: 'wiparat.mcu@gmail.com',
+    storyId: 'story-4',
+    storyTitle: 'ศูนย์บัญชาการตรวจเงินแผ่นดิน: เทคโนโลยี AI สกัดกั้นการทุจริตเชิงรุก',
+    category: 'ภารกิจตรวจสอบ',
+    subscribedAt: '2026-10-15T08:45:00.000Z',
+    active: true,
+    tags: ['AI', 'ป้องปรามทุจริต'],
+    notifyCount: 1,
+    lastNotifiedAt: '2026-10-15T16:00:00.000Z',
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sub-5',
+    email: 'nattapol.news@thaipbs.or.th',
+    storyId: 'story-video-1',
+    storyTitle: 'ข่าววิดีโอ: เปิดห้องส่งสตูดิโอ สตง. ถ่ายทอดสดเจาะลึกงบประมาณและข้อมูลการตรวจสอบแบบเรียลไทม์',
+    category: 'รายการโทรทัศน์ / วิดีโอ',
+    subscribedAt: '2026-10-15T11:10:00.000Z',
+    active: true,
+    tags: ['สื่อมวลชน', 'วิดีโอสตูดิโอ', 'ถ่ายทอดสด'],
+    notifyCount: 0,
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sub-6',
+    email: 'anchalee.civil@eit.or.th',
+    storyId: 'story-3',
+    storyTitle: 'รายงานสถานการณ์และมาตรการวิศวกรรม: อาคาร สตง. ทรุดตัว ล่าสุด',
+    category: 'แถลงการณ์สำคัญ',
+    subscribedAt: '2026-10-16T13:00:00.000Z',
+    active: true,
+    tags: ['วิศวกรรมสถาน', 'แถลงการณ์', 'มาตรการความปลอดภัย'],
+    notifyCount: 1,
+    lastNotifiedAt: '2026-10-16T17:00:00.000Z',
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sub-7',
+    email: 'pr.officer@mof.go.th',
+    storyId: 'story-5',
+    storyTitle: 'แคมเปญพลังพลเมือง: ร่วมตรวจสอบงบประมาณท้องถิ่นทั่วไทย',
+    category: 'การมีส่วนร่วมประชาชน',
+    subscribedAt: '2026-10-16T15:30:00.000Z',
+    active: true,
+    tags: ['ภาคประชาชน', 'สายด่วน1730'],
+    notifyCount: 0,
+    updatedAt: new Date().toISOString(),
+  }
+];
+
+export const defaultNewsBroadcasts: NewsBroadcastLog[] = [
+  {
+    id: 'bcast-1',
+    storyId: 'story-photo-1',
+    storyTitle: 'ข่าวภาพนิ่ง: คณะผู้บริหารและผู้ตรวจเงินแผ่นดินลงพื้นที่ตรวจสอบงานโครงสร้างและข้อเท็จจริง',
+    subject: '📢 แจ้งเตือนข่าวสำคัญ สตง.: คณะผู้บริหารลงพื้นที่ตรวจสอบงานโครงสร้างและแถลงความคืบหน้า',
+    summary: 'สรุปผลการตรวจสอบร่วมกับ วสท. และกรมโยธาธิการฯ ยืนยันโครงสร้างปลอดภัย บุคลากรและประชาชนมั่นใจได้',
+    recipientCount: 3,
+    recipients: ['karnjana.p@dpt.go.th', 'anchalee.civil@eit.or.th', 'somchai.audit@egat.co.th'],
+    aiGenerated: true,
+    sentAt: '2026-10-14T11:00:00.000Z'
+  }
+];
+
 // Sync and Subscribe to Entire App State in Firestore
 export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
   const unsubscribers: (() => void)[] = [];
@@ -251,6 +382,62 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
   );
   unsubscribers.push(unsubMusic);
 
+  // 7. Chatbot Settings (เปิด/ปิด และเปิดหน้าต่างทันทีเมื่อเข้าชม)
+  const unsubChatbot = onSnapshot(
+    doc(db, 'settings', 'chatbot'),
+    (docSnap) => {
+      if (docSnap.exists()) {
+        onUpdate({ chatbotSettings: docSnap.data() as ChatbotSettings });
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.GET, 'settings/chatbot');
+    }
+  );
+  unsubscribers.push(unsubChatbot);
+
+  // 8. News Subscribers (ระบบผู้ติดตามข่าว Hero)
+  const unsubSubscribers = onSnapshot(
+    collection(db, 'newsSubscribers'),
+    (snapshot) => {
+      if (!snapshot.empty) {
+        const subs: NewsSubscriber[] = [];
+        snapshot.forEach((docSnap) => {
+          subs.push(docSnap.data() as NewsSubscriber);
+        });
+        subs.sort((a, b) => new Date(b.subscribedAt || 0).getTime() - new Date(a.subscribedAt || 0).getTime());
+        onUpdate({ newsSubscribers: subs });
+      } else {
+        onUpdate({ newsSubscribers: defaultNewsSubscribers });
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'newsSubscribers');
+    }
+  );
+  unsubscribers.push(unsubSubscribers);
+
+  // 9. News Broadcast Logs (ประวัติการส่งข่าวสารแจ้งเตือน)
+  const unsubBroadcasts = onSnapshot(
+    collection(db, 'newsBroadcasts'),
+    (snapshot) => {
+      if (!snapshot.empty) {
+        const logs: NewsBroadcastLog[] = [];
+        snapshot.forEach((docSnap) => {
+          logs.push(docSnap.data() as NewsBroadcastLog);
+        });
+        logs.sort((a, b) => new Date(b.sentAt || 0).getTime() - new Date(a.sentAt || 0).getTime());
+        onUpdate({ newsBroadcasts: logs });
+      } else {
+        onUpdate({ newsBroadcasts: defaultNewsBroadcasts });
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'newsBroadcasts');
+    }
+  );
+  unsubscribers.push(unsubBroadcasts);
+
   return () => {
     unsubscribers.forEach((unsub) => unsub());
   };
@@ -284,8 +471,9 @@ export async function seedFirestoreIfEmpty(initialData: AppData) {
       for (const item of initialData.incidentTimeline) {
         await setDoc(doc(db, 'incidentTimeline', item.id), item, { merge: true });
       }
-      // 6. Music Settings & Version Tag
+      // 6. Music Settings & Chatbot Settings & Version Tag
       await setDoc(doc(db, 'settings', 'music'), defaultMusicSettings, { merge: true });
+      await setDoc(doc(db, 'settings', 'chatbot'), defaultChatbotSettings, { merge: true });
       await setDoc(doc(db, 'settings', 'mockup_version'), {
         version: 'v2_multimodal_news',
         updatedAt: new Date().toISOString(),
@@ -337,6 +525,21 @@ export async function saveMusicSettings(settings: MusicSettings) {
   }
 }
 
+// Save Chatbot Settings to Firestore
+export async function saveChatbotSettings(settings: ChatbotSettings) {
+  try {
+    const dataToSave: ChatbotSettings = {
+      ...settings,
+      updatedAt: new Date().toISOString(),
+    };
+    await setDoc(doc(db, 'settings', 'chatbot'), dataToSave);
+    return dataToSave;
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, 'settings/chatbot');
+    throw err;
+  }
+}
+
 // Save Full App Data to Firestore
 export async function syncAllDataToFirestore(data: AppData) {
   try {
@@ -368,8 +571,56 @@ export async function syncAllDataToFirestore(data: AppData) {
     if (data.musicSettings) {
       await saveMusicSettings(data.musicSettings);
     }
+    if (data.chatbotSettings) {
+      await saveChatbotSettings(data.chatbotSettings);
+    }
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, 'bulkSync');
+  }
+}
+
+// News Subscriber Persistence (บันทึกผู้ติดตามข่าว)
+export async function saveNewsSubscriber(subscriber: NewsSubscriber): Promise<void> {
+  try {
+    const id = subscriber.id || `sub_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    const subToSave: NewsSubscriber = {
+      ...subscriber,
+      id,
+      active: subscriber.active !== false,
+      notifyCount: subscriber.notifyCount || 0,
+      subscribedAt: subscriber.subscribedAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await setDoc(doc(db, 'newsSubscribers', id), subToSave, { merge: true });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, 'newsSubscribers');
+    throw err;
+  }
+}
+
+// Delete News Subscriber
+export async function deleteNewsSubscriber(id: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, 'newsSubscribers', id));
+  } catch (err) {
+    handleFirestoreError(err, OperationType.DELETE, `newsSubscribers/${id}`);
+    throw err;
+  }
+}
+
+// Save News Broadcast Log (บันทึกประวัติการส่งกระจายข่าวสาร)
+export async function saveNewsBroadcast(broadcast: NewsBroadcastLog): Promise<void> {
+  try {
+    const id = broadcast.id || `bcast_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    const bcastToSave: NewsBroadcastLog = {
+      ...broadcast,
+      id,
+      sentAt: broadcast.sentAt || new Date().toISOString(),
+    };
+    await setDoc(doc(db, 'newsBroadcasts', id), bcastToSave, { merge: true });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, 'newsBroadcasts');
+    throw err;
   }
 }
 
@@ -387,3 +638,4 @@ export async function logVisitorAction(action: string, page: string = 'home') {
     // Non-blocking log failure
   }
 }
+

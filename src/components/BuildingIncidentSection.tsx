@@ -23,7 +23,16 @@ import {
   Compass,
   MapPin,
   TrendingUp,
-  ExternalLink
+  ExternalLink,
+  Lightbulb,
+  Building2,
+  Handshake,
+  Users,
+  Video,
+  Image as ImageIcon,
+  Play,
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 import { IncidentMilestone } from '../types';
 import { playDigitalSound } from '../utils/audioEffects';
@@ -49,17 +58,18 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
     timeline[activeIndex] ||
     timeline[0] || {
       id: 'default-tl',
-      date: 'ปัจจุบัน',
+      date: 'ปัจจุบัน (ตุลาคม 2569)',
       time: 'ล่าสุด',
-      phase: 'รายงานสถานการณ์',
-      title: 'ข้อมูลกำลังปรับปรุง',
-      description: 'กำลังตรวจสอบสถานการณ์',
+      phase: 'รายงานสถานการณ์ฉุกเฉิน',
+      title: 'ข้อมูลกำลังปรับปรุงตามรอบรายงาน วสท.',
+      description: 'วิศวกรผู้เชี่ยวชาญเข้าตรวจสอบพื้นที่ต่อเนื่อง',
       status: 'ดำเนินการ',
       imageUrl: '/src/assets/images/sai_building_inspection_1791689807795.jpg',
-      technicalDetails: 'ระบบกำลังดึงข้อมูลเซนเซอร์ล่าสุด',
+      technicalDetails: 'ระบบเซนเซอร์วัดการขยับตัว 0.00 มม.',
+      colorAccent: 'orange',
     };
 
-  // Scroll into view when activeIndex changes in horizontal track
+  // Scroll into view when activeIndex changes
   useEffect(() => {
     if (scrollContainerRef.current) {
       const activeElement = scrollContainerRef.current.querySelector(
@@ -85,7 +95,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
     setActiveIndex((prev) => (prev < timeline.length - 1 ? prev + 1 : 0));
   };
 
-  const handleSelectNode = (idx: number, openModal: boolean = false) => {
+  const handleSelectNode = (idx: number, openModal: boolean = true) => {
     playDigitalSound('radar');
     setActiveIndex(idx);
     if (openModal) {
@@ -93,938 +103,1041 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
     }
   };
 
-  // Helper status styling (Royal Navy & Gold Palette)
+  // Color Palette mapping for the 3D connected milestone blocks (Matching Visme attached mockup)
+  const getBlockColorTheme = (colorAccent?: string, index: number = 0) => {
+    const defaultCycle = ['orange', 'amber', 'teal', 'cyan', 'emerald', 'rose', 'purple'];
+    const chosen = colorAccent || defaultCycle[index % defaultCycle.length];
+
+    switch (chosen) {
+      case 'orange':
+        return {
+          bg: 'bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600',
+          text: 'text-orange-300',
+          border: 'border-orange-400/60',
+          glow: 'shadow-[0_0_20px_rgba(249,115,22,0.6)]',
+          badgeBg: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
+          lineColor: '#f97316',
+          dotBg: 'bg-orange-500',
+        };
+      case 'amber':
+        return {
+          bg: 'bg-gradient-to-r from-amber-600 via-amber-700 to-yellow-600',
+          text: 'text-amber-300',
+          border: 'border-amber-400/60',
+          glow: 'shadow-[0_0_20px_rgba(245,158,11,0.6)]',
+          badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          lineColor: '#d97706',
+          dotBg: 'bg-amber-500',
+        };
+      case 'teal':
+        return {
+          bg: 'bg-gradient-to-r from-teal-500 via-cyan-600 to-teal-600',
+          text: 'text-teal-300',
+          border: 'border-teal-400/60',
+          glow: 'shadow-[0_0_20px_rgba(20,184,166,0.6)]',
+          badgeBg: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
+          lineColor: '#14b8a6',
+          dotBg: 'bg-teal-400',
+        };
+      case 'cyan':
+        return {
+          bg: 'bg-gradient-to-r from-cyan-400 via-sky-500 to-cyan-500',
+          text: 'text-cyan-300',
+          border: 'border-cyan-400/60',
+          glow: 'shadow-[0_0_20px_rgba(6,182,212,0.6)]',
+          badgeBg: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+          lineColor: '#06b6d4',
+          dotBg: 'bg-cyan-400',
+        };
+      case 'emerald':
+        return {
+          bg: 'bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-700',
+          text: 'text-emerald-300',
+          border: 'border-emerald-400/60',
+          glow: 'shadow-[0_0_20px_rgba(16,185,129,0.6)]',
+          badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          lineColor: '#10b981',
+          dotBg: 'bg-emerald-400',
+        };
+      case 'rose':
+        return {
+          bg: 'bg-gradient-to-r from-rose-500 via-red-600 to-rose-600',
+          text: 'text-rose-300',
+          border: 'border-rose-400/60',
+          glow: 'shadow-[0_0_20px_rgba(244,63,94,0.6)]',
+          badgeBg: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+          lineColor: '#f43f5e',
+          dotBg: 'bg-rose-400',
+        };
+      case 'purple':
+        return {
+          bg: 'bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-600',
+          text: 'text-purple-300',
+          border: 'border-purple-400/60',
+          glow: 'shadow-[0_0_20px_rgba(168,85,247,0.6)]',
+          badgeBg: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+          lineColor: '#a855f7',
+          dotBg: 'bg-purple-400',
+        };
+      default:
+        return {
+          bg: 'bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600',
+          text: 'text-orange-300',
+          border: 'border-orange-400/60',
+          glow: 'shadow-[0_0_20px_rgba(249,115,22,0.6)]',
+          badgeBg: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
+          lineColor: '#f97316',
+          dotBg: 'bg-orange-500',
+        };
+    }
+  };
+
+  // Status Badge Styling (High Visibility Emergency Palette)
   const getStatusStyle = (status: string) => {
-    if (status.includes('เรียบร้อย') || status.includes('แล้ว')) {
+    if (status.includes('เรียบร้อย') || status.includes('แล้ว') || status.includes('ปลอดภัย')) {
       return {
-        bg: 'bg-emerald-500/15',
-        border: 'border-emerald-400/40',
+        bg: 'bg-emerald-500/20',
+        border: 'border-emerald-400/50',
         text: 'text-emerald-300',
-        glow: 'shadow-[0_0_12px_rgba(16,185,129,0.4)]',
+        glow: 'shadow-[0_0_12px_rgba(16,185,129,0.5)]',
         indicator: 'bg-emerald-400',
       };
     }
-    if (status.includes('วิเคราะห์') || status.includes('ตรวจสอบ')) {
+    if (status.includes('วิเคราะห์') || status.includes('ตรวจสอบ') || status.includes('ดำเนินการ')) {
       return {
-        bg: 'bg-amber-500/20',
-        border: 'border-amber-400/50',
+        bg: 'bg-amber-500/25',
+        border: 'border-amber-400/60',
         text: 'text-amber-300',
         glow: 'shadow-[0_0_12px_rgba(245,158,11,0.5)]',
         indicator: 'bg-amber-400',
       };
     }
-    // In progress / latest (Royal Gold Active Pulse)
+    // High Alert / Active Emergency
     return {
-      bg: 'bg-amber-500/25',
-      border: 'border-amber-400/60',
-      text: 'text-amber-200 font-bold',
-      glow: 'shadow-[0_0_18px_rgba(245,158,11,0.6)]',
-      indicator: 'bg-amber-400 animate-pulse',
+      bg: 'bg-rose-500/25',
+      border: 'border-rose-400/60',
+      text: 'text-rose-300 font-bold',
+      glow: 'shadow-[0_0_15px_rgba(244,63,94,0.6)]',
+      indicator: 'bg-rose-400 animate-pulse',
     };
+  };
+
+  // Render appropriate Icon for milestone
+  const renderMilestoneIcon = (iconName?: string, className: string = 'w-4 h-4') => {
+    switch (iconName) {
+      case 'lightbulb':
+        return <Lightbulb className={className} />;
+      case 'building':
+        return <Building2 className={className} />;
+      case 'handshake':
+        return <Handshake className={className} />;
+      case 'target':
+        return <Target className={className} />;
+      case 'users':
+        return <Users className={className} />;
+      case 'shield':
+        return <Shield className={className} />;
+      case 'alert':
+        return <AlertTriangle className={className} />;
+      default:
+        return <Activity className={className} />;
+    }
+  };
+
+  // Extract Milestone Year or Short Label for Block
+  const getBlockYearLabel = (item: IncidentMilestone, idx: number) => {
+    if (item.shortTitle && /^\d{4}/.test(item.shortTitle)) {
+      return item.shortTitle.split(' ')[0];
+    }
+    const yearMatch = item.date.match(/25\d{2}|20\d{2}/);
+    if (yearMatch) {
+      return yearMatch[0];
+    }
+    return `PHASE 0${idx + 1}`;
   };
 
   return (
     <section
       id="incident-timeline"
-      className="relative py-10 sm:py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20 select-none"
+      className="relative pt-8 sm:pt-12 pb-2 sm:pb-3 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20 select-none"
     >
-      {/* Ambient Royal Gold & Sapphire Background Glow */}
+      {/* =========================================================================
+          THEME: TACTICAL EMERGENCY COMMAND & CRISIS INTELLIGENCE CENTER (EOC)
+          Distinct High-Contrast Tactical Theme (Obsidian + Emergency Crimson & Amber)
+          ========================================================================= */}
       <div
         className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
         aria-hidden="true"
       >
-        <div className="absolute top-10 left-1/4 w-[600px] h-[400px] bg-gradient-to-r from-amber-500/12 via-blue-700/15 to-amber-600/10 rounded-full blur-[140px]" />
-        <div className="absolute bottom-10 right-10 w-[500px] h-[350px] bg-amber-500/10 rounded-full blur-[130px]" />
+        {/* Tactical Emergency Glows: Crimson Alert & High-Visibility Amber */}
+        <div className="absolute top-10 left-10 w-[600px] h-[450px] bg-gradient-to-r from-rose-600/18 via-orange-600/14 to-amber-500/10 rounded-full blur-[160px]" />
+        <div className="absolute bottom-10 right-10 w-[550px] h-[400px] bg-gradient-to-r from-amber-500/12 via-rose-600/10 to-blue-600/10 rounded-full blur-[150px]" />
+        {/* Tactical grid background overlay */}
+        <div className="absolute inset-0 bg-digital-grid opacity-35" />
       </div>
 
-      {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7 pb-4 border-b border-amber-500/30">
+      {/* SECTION HEADER: TACTICAL CRISIS CENTER BADGE (No divider, compact spacing to dashboard) */}
+      <div className="flex items-center justify-between mb-3.5 sm:mb-4 relative">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 text-xs font-medium mb-2.5 backdrop-blur-md">
-            <HardHat className="w-3.5 h-3.5 text-amber-400" />
-            <span>ศูนย์ข้อมูลสถานการณ์ฉุกเฉินและวิศวกรรมโครงสร้าง สตง.</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight flex items-center gap-2.5 flex-wrap">
-            <span>สถานการณ์ปัจจุบัน: เหตุการณ์อาคาร สตง. ทรุดตัว</span>
-            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40">
-              ROYAL ROADMAP
+          {/* Tactical Crisis Center Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#160b13]/90 border border-rose-500/60 shadow-[0_0_15px_rgba(244,63,94,0.35)] text-rose-200 text-xs sm:text-sm font-bold backdrop-blur-md">
+            <span className="relative flex h-2.5 w-2.5 items-center justify-center shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,1)]" />
             </span>
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-            ติดตามข้อเท็จจริง แผนฟื้นฟูเชิงวิศวกรรมร่วมกับวิศวกรรมสถานแห่งประเทศไทย (วสท.)
-            แบบ Timeline Roadmap เชื่อมโยงทุกขั้นตอนด้วยเส้นนำสัญญาณและโหนดข้อมูลสมบูรณ์
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
-          <button
-            onClick={() => {
-              playDigitalSound('select');
-              onAskAiAboutIncident();
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-blue-600/20 hover:from-amber-500/30 hover:to-blue-600/30 text-amber-300 border border-amber-400/50 text-xs font-semibold shadow-lg hover:shadow-amber-500/20 backdrop-blur-md transition-all cursor-pointer active:scale-95"
-          >
-            <Info className="w-3.5 h-3.5 text-amber-400" />
-            <span>สอบถาม AI เกี่ยวกับอาคาร</span>
-          </button>
+            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span className="tracking-wide">
+              ศูนย์ข้อมูลสถานการณ์ เหตุการณ์อาคาร สตง. ทรุดตัวจากแผ่นดินไหว
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Engineering Live HUD Diagnostics Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div className="p-3 rounded-xl bg-[#041030]/90 border border-amber-500/30 shadow-inner flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 shrink-0">
-            <CheckCircle2 className="w-4 h-4" />
+      {/* Engineering Live HUD Diagnostics Strip (ตัวเลขใหญ่ ชัดเจน มีข้อความบอกด้านล่าง) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 mb-5 sm:mb-6">
+        {/* Card 1: ความปลอดภัยบุคลากร */}
+        <div className="p-3 sm:p-4 rounded-2xl bg-[#0b1222]/90 border border-emerald-500/40 shadow-md hover:border-emerald-400/60 transition-all flex flex-col justify-between gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] sm:text-[11px] font-mono text-emerald-300/80 font-medium">ความปลอดภัย</span>
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 shrink-0">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
           </div>
           <div>
-            <span className="block text-[10px] font-mono text-amber-300/80">ความปลอดภัยบุคลากร</span>
-            <span className="text-sm font-bold text-white">100% ปลอดภัยครบทุกคน</span>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-emerald-400 font-mono tracking-tight">
+              100%
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5 leading-snug">
+              บุคลากรปลอดภัยครบทุกคน
+            </p>
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#041030]/90 border border-amber-500/30 shadow-inner flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
-            <Cpu className="w-4 h-4" />
+        {/* Card 2: อัตราการขยับตัว 7 วัน */}
+        <div className="p-3 sm:p-4 rounded-2xl bg-[#0b1222]/90 border border-cyan-500/40 shadow-md hover:border-cyan-400/60 transition-all flex flex-col justify-between gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] sm:text-[11px] font-mono text-cyan-300/80 font-medium">การขยับตัว (7 วัน)</span>
+            <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0">
+              <Activity className="w-4 h-4" />
+            </div>
           </div>
           <div>
-            <span className="block text-[10px] font-mono text-amber-300/80">งานตรวจเงินแผ่นดิน</span>
-            <span className="text-sm font-bold text-white">100% ดำเนินการต่อเนื่อง</span>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-cyan-300 font-mono tracking-tight flex items-baseline gap-1">
+              <span>0.00</span>
+              <span className="text-xs sm:text-sm font-semibold text-cyan-400 font-sans">มม.</span>
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5 leading-snug">
+              โครงสร้างนิ่ง ไม่พบการขยับตัว
+            </p>
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#041030]/90 border border-amber-500/30 shadow-inner flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-300 shrink-0">
-            <Activity className="w-4 h-4" />
+        {/* Card 3: ภารกิจ Digital Audit (BCP) */}
+        <div className="p-3 sm:p-4 rounded-2xl bg-[#0b1222]/90 border border-amber-500/40 shadow-md hover:border-amber-400/60 transition-all flex flex-col justify-between gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] sm:text-[11px] font-mono text-amber-300/80 font-medium">ระบบงาน BCP</span>
+            <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
+              <Cpu className="w-4 h-4" />
+            </div>
           </div>
           <div>
-            <span className="block text-[10px] font-mono text-amber-300/80">การขยับตัว 7 วันล่าสุด</span>
-            <span className="text-sm font-bold text-emerald-400">0.00 มม. (Zero Movement)</span>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-amber-300 font-mono tracking-tight">
+              100%
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5 leading-snug">
+              ตรวจเงินแผ่นดินดำเนินการต่อเนื่อง
+            </p>
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#041030]/90 border border-amber-500/30 shadow-inner flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
-            <Layers className="w-4 h-4" />
+        {/* Card 4: Roadmap Milestones */}
+        <div className="p-3 sm:p-4 rounded-2xl bg-[#0b1222]/90 border border-rose-500/40 shadow-md hover:border-rose-400/60 transition-all flex flex-col justify-between gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] sm:text-[11px] font-mono text-rose-300/80 font-medium">ไทม์ไลน์</span>
+            <div className="w-7 h-7 rounded-lg bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-300 shrink-0">
+              <Layers className="w-4 h-4" />
+            </div>
           </div>
           <div>
-            <span className="block text-[10px] font-mono text-amber-300/80">โครงสร้างโหนด Roadmap</span>
-            <span className="text-sm font-bold text-white">
-              {timeline.length} โหนดเชื่อมต่อ (สร้างเพิ่มได้)
-            </span>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-rose-300 font-mono tracking-tight flex items-baseline gap-1">
+              <span>{timeline.length}</span>
+              <span className="text-xs sm:text-sm font-semibold text-rose-400 font-sans">ช่วง</span>
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5 leading-snug">
+              เหตุการณ์สำคัญติดตามต่อเนื่อง
+            </p>
           </div>
         </div>
       </div>
 
       {/* =========================================================================
-          MAIN ROADMAP COMPONENT: TIMELINE UI WITH CONNECTING LINES AND NODES
+          MAIN 3D INTERACTIVE CONNECTED TIMELINE (Matching Visme Layout)
+          ฉากหลัง: เมือง เงาตึก (City Skyline & Building Silhouettes) โทนสว่างกว่าเดิม 30%
+          Horizontal Ribbon of Connected Chevron Milestone Blocks + Alternating Branches
           ========================================================================= */}
-      <div className="relative mb-7 rounded-2xl bg-gradient-to-b from-[#0a1e4d]/95 via-[#061539]/95 to-[#030c26]/98 border-2 border-amber-400/50 shadow-[0_16px_50px_rgba(0,0,0,0.7),0_0_35px_rgba(245,158,11,0.22)] p-4 sm:p-6 backdrop-blur-2xl ring-1 ring-white/10 overflow-hidden">
-        {/* Holographic Top Royal Gold Laser Line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+      <div className="relative mb-0 rounded-3xl bg-gradient-to-b from-[#1b253c]/95 via-[#233352]/95 to-[#162238]/98 border-2 border-rose-500/45 shadow-[0_20px_70px_rgba(15,23,42,0.65),0_0_45px_rgba(244,63,94,0.22)] p-4 sm:p-6 lg:p-7 backdrop-blur-2xl ring-1 ring-white/10 overflow-hidden">
+        {/* Holographic Top Laser Accent Line */}
+        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 z-10" />
 
-        {/* Roadmap Console Header Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-amber-500/25">
+        {/* =========================================================================
+            ฉากเมือง เงาตึก โทนสว่างกว่าเดิม 30% (CITY SKYLINE & BUILDING SILHOUETTES)
+            ========================================================================= */}
+        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0" aria-hidden="true">
+          {/* 30% Brighter Horizon Dawn/Dusk Atmospheric Light Wash */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-amber-400/20 via-sky-500/15 to-transparent" />
+          
+          {/* Subtle Ambient City Glow */}
+          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#1b253d]/80 via-[#233454]/40 to-transparent" />
+
+          {/* Architectural City Skyline Vector SVG (Multi-layer Building Silhouettes & Windows) */}
+          <svg
+            className="absolute bottom-0 left-0 right-0 w-full h-[280px] sm:h-[340px] opacity-85"
+            preserveAspectRatio="none"
+            viewBox="0 0 1440 340"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              {/* Sky Twilight Gradient */}
+              <linearGradient id="citySkylineFarGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3b4f7a" stopOpacity="0.55" />
+                <stop offset="100%" stopColor="#223254" stopOpacity="0.4" />
+              </linearGradient>
+
+              {/* Midground Building Silhouette Gradient (Brightened 30%) */}
+              <linearGradient id="citySkylineMidGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2c3c61" stopOpacity="0.9" />
+                <stop offset="100%" stopColor="#18243d" stopOpacity="0.85" />
+              </linearGradient>
+
+              {/* Foreground Building Silhouette Gradient */}
+              <linearGradient id="citySkylineNearGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#1e2b47" stopOpacity="0.95" />
+                <stop offset="100%" stopColor="#111a2d" stopOpacity="0.98" />
+              </linearGradient>
+
+              {/* Horizon Warm Light Bar */}
+              <linearGradient id="horizonLightBar" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.3" />
+                <stop offset="50%" stopColor="#f43f5e" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+              </linearGradient>
+
+              {/* Window Glow Pattern */}
+              <pattern id="cityWindows" width="16" height="18" patternUnits="userSpaceOnUse">
+                <rect x="2" y="2" width="4" height="5" rx="0.5" fill="#fde68a" fillOpacity="0.45" />
+                <rect x="9" y="2" width="4" height="5" rx="0.5" fill="#bae6fd" fillOpacity="0.35" />
+                <rect x="2" y="10" width="4" height="5" rx="0.5" fill="#bae6fd" fillOpacity="0.3" />
+                <rect x="9" y="10" width="4" height="5" rx="0.5" fill="#fde68a" fillOpacity="0.4" />
+              </pattern>
+            </defs>
+
+            {/* Ambient Base Horizon Glow */}
+            <rect y="180" width="1440" height="160" fill="url(#horizonLightBar)" />
+
+            {/* LAYER 1: Distant City Towers & Antennas (Far Skyline - 30% Lighter Silhouette) */}
+            <g fill="url(#citySkylineFarGrad)">
+              {/* Spire 1 */}
+              <rect x="40" y="70" width="2" height="70" fill="#f43f5e" fillOpacity="0.6" />
+              <circle cx="41" cy="70" r="2.5" fill="#f43f5e" className="animate-ping" />
+              <polygon points="25,140 40,80 42,80 57,140" />
+              <rect x="20" y="140" width="42" height="200" />
+
+              <rect x="80" y="110" width="35" height="230" />
+              <polygon points="80,110 97,85 115,110" />
+
+              <rect x="150" y="90" width="55" height="250" />
+              <rect x="175" y="45" width="2" height="45" fill="#f59e0b" fillOpacity="0.7" />
+              <circle cx="176" cy="45" r="2" fill="#f59e0b" />
+
+              <rect x="230" y="130" width="40" height="210" />
+              <rect x="290" y="100" width="60" height="240" />
+              <polygon points="290,100 320,65 350,100" />
+
+              {/* Center City Highrises */}
+              <rect x="420" y="80" width="70" height="260" />
+              <rect x="454" y="30" width="2" height="50" fill="#f43f5e" fillOpacity="0.7" />
+              <circle cx="455" cy="30" r="2.5" fill="#f43f5e" />
+
+              <rect x="520" y="110" width="50" height="230" />
+              <rect x="600" y="75" width="80" height="265" />
+              <polygon points="600,75 640,40 680,75" />
+
+              <rect x="710" y="125" width="45" height="215" />
+              <rect x="780" y="95" width="65" height="245" />
+
+              {/* Eastern Metropolis Towers */}
+              <rect x="870" y="60" width="75" height="280" />
+              <rect x="906" y="20" width="2.5" height="40" fill="#f43f5e" fillOpacity="0.7" />
+              <circle cx="907" cy="20" r="2.5" fill="#f43f5e" />
+
+              <rect x="970" y="115" width="55" height="225" />
+              <rect x="1050" y="85" width="70" height="255" />
+              <polygon points="1050,85 1085,55 1120,85" />
+
+              <rect x="1150" y="120" width="45" height="220" />
+              <rect x="1220" y="90" width="60" height="250" />
+              <rect x="1310" y="70" width="70" height="270" />
+              <rect x="1344" y="35" width="2" height="35" fill="#f43f5e" fillOpacity="0.7" />
+              <circle cx="1345" cy="35" r="2" fill="#f43f5e" />
+            </g>
+
+            {/* LAYER 2: Midground Building Silhouettes with Office Window Grids */}
+            <g fill="url(#citySkylineMidGrad)">
+              <rect x="0" y="170" width="65" height="170" />
+              <rect x="50" y="150" width="45" height="190" />
+              <polygon points="50,150 72,130 95,150" />
+
+              <rect x="110" y="130" width="65" height="210" />
+              {/* Window grid for building 110 */}
+              <rect x="115" y="145" width="55" height="90" fill="url(#cityWindows)" />
+
+              <rect x="190" y="160" width="55" height="180" />
+              <rect x="260" y="140" width="75" height="200" />
+              <rect x="270" y="155" width="55" height="85" fill="url(#cityWindows)" />
+
+              <rect x="350" y="120" width="60" height="220" />
+              <polygon points="350,120 380,95 410,120" />
+
+              {/* Major Corporate Towers */}
+              <rect x="430" y="135" width="80" height="205" />
+              <rect x="440" y="150" width="60" height="90" fill="url(#cityWindows)" />
+
+              <rect x="530" y="150" width="65" height="190" />
+              <rect x="615" y="110" width="85" height="230" />
+              <polygon points="615,110 657,80 700,110" />
+              <rect x="630" y="125" width="55" height="110" fill="url(#cityWindows)" />
+
+              <rect x="720" y="145" width="55" height="195" />
+              <rect x="795" y="130" width="70" height="210" />
+              <rect x="805" y="145" width="50" height="95" fill="url(#cityWindows)" />
+
+              <rect x="885" y="115" width="80" height="225" />
+              <polygon points="885,115 925,85 965,115" />
+              <rect x="898" y="130" width="55" height="110" fill="url(#cityWindows)" />
+
+              <rect x="985" y="150" width="60" height="190" />
+              <rect x="1065" y="135" width="75" height="205" />
+              <rect x="1075" y="150" width="55" height="90" fill="url(#cityWindows)" />
+
+              <rect x="1160" y="160" width="55" height="180" />
+              <rect x="1235" y="125" width="80" height="215" />
+              <polygon points="1235,125 1275,95 1315,125" />
+              <rect x="1250" y="140" width="50" height="100" fill="url(#cityWindows)" />
+
+              <rect x="1335" y="155" width="65" height="185" />
+              <rect x="1390" y="140" width="50" height="200" />
+            </g>
+
+            {/* LAYER 3: Foreground Architectural Building Silhouettes & Structural Framework */}
+            <g fill="url(#citySkylineNearGrad)">
+              <rect x="15" y="210" width="55" height="130" />
+              <rect x="80" y="195" width="70" height="145" />
+              <rect x="165" y="180" width="85" height="160" />
+              <polygon points="165,180 207,160 250,180" />
+
+              <rect x="270" y="200" width="70" height="140" />
+              <rect x="360" y="175" width="90" height="165" />
+              <rect x="375" y="190" width="60" height="80" fill="url(#cityWindows)" fillOpacity="0.4" />
+
+              <rect x="470" y="195" width="65" height="145" />
+              <rect x="555" y="180" width="85" height="160" />
+              <polygon points="555,180 597,155 640,180" />
+
+              <rect x="660" y="205" width="75" height="135" />
+              <rect x="755" y="185" width="85" height="155" />
+              <rect x="770" y="200" width="55" height="75" fill="url(#cityWindows)" fillOpacity="0.4" />
+
+              <rect x="860" y="195" width="70" height="145" />
+              <rect x="950" y="175" width="90" height="165" />
+              <polygon points="950,175 995,150 1040,175" />
+
+              <rect x="1060" y="200" width="75" height="140" />
+              <rect x="1155" y="185" width="85" height="155" />
+              <rect x="1170" y="200" width="55" height="75" fill="url(#cityWindows)" fillOpacity="0.4" />
+
+              <rect x="1260" y="210" width="70" height="130" />
+              <rect x="1350" y="190" width="90" height="150" />
+            </g>
+
+            {/* Architectural Grid / Structural Alignment Lines (Engineering Building Accents) */}
+            <path
+              d="M0 240 L1440 240 M0 290 L1440 290"
+              stroke="#64748b"
+              strokeWidth="0.8"
+              strokeDasharray="4 8"
+              strokeOpacity="0.25"
+            />
+          </svg>
+
+          {/* Bottom Ground Blend (Ensures crisp contrast for timeline chevrons) */}
+          <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#162238] via-[#1a263e]/75 to-transparent" />
+        </div>
+
+        {/* Console Header Bar */}
+        <div className="flex items-center justify-between pb-4 mb-4 border-b border-rose-500/25">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/40 shadow-[0_0_12px_rgba(245,158,11,0.3)]">
-              <Compass className="w-4 h-4 text-amber-400 animate-spin-slow" />
+            <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-400/40 shadow-[0_0_12px_rgba(244,63,94,0.35)]">
+              <Compass className="w-4 h-4 text-rose-400 animate-spin-slow" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="block text-xs sm:text-sm font-bold text-white tracking-wide">
-                  Timeline UI with Connecting Lines & Nodes (Roadmap Component)
+                <span className="block text-sm sm:text-base font-bold text-white tracking-wide">
+                  Timeline เหตุการณ์
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 font-mono font-bold">
-                  {timeline.length} NODES
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 font-mono font-bold">
+                  {timeline.length} MILESTONES
                 </span>
               </div>
-              <span className="block text-[11px] text-amber-300/80 font-mono">
-                คลิกที่โหนด/กราฟฟิกเพื่อเปิดดูข้อมูลสมบูรณ์เป็นการ์ด (Card Modal) · เพิ่มโหนดได้ไม่จำกัดจาก Admin
-              </span>
             </div>
-          </div>
-
-          {/* Quick Step Navigation Controls */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handlePrev}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-amber-500/20 text-slate-200 border border-amber-500/30 hover:border-amber-400 transition-all text-xs cursor-pointer active:scale-95"
-              title="ก่อนหน้า"
-            >
-              <ChevronLeft className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">ก่อนหน้า</span>
-            </button>
-
-            <span className="text-xs font-mono text-amber-300 px-2.5 py-1 rounded bg-[#030d26] border border-amber-500/30 font-bold">
-              โหนด 0{activeIndex + 1} / 0{timeline.length}
-            </span>
-
-            <button
-              onClick={handleNext}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-amber-500/20 text-slate-200 border border-amber-500/30 hover:border-amber-400 transition-all text-xs cursor-pointer active:scale-95"
-              title="ถัดไป"
-            >
-              <span className="hidden sm:inline">ถัดไป</span>
-              <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
-            </button>
-
-            <button
-              onClick={() => {
-                playDigitalSound('radar');
-                setIsCardModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(245,158,11,0.5)] active:scale-95 cursor-pointer ml-1"
-            >
-              <Maximize2 className="w-3.5 h-3.5" />
-              <span>เปิดการ์ดข้อมูลเต็มจอ</span>
-            </button>
           </div>
         </div>
 
         {/* -----------------------------------------------------------------------
-            DESKTOP & TABLET VIEW: HORIZONTAL CONNECTED ROADMAP (Nodes & Lines)
+            HORIZONTAL 3D INTERACTIVE TIMELINE RIBBON (Desktop & Tablet View)
             ----------------------------------------------------------------------- */}
-        <div className="hidden md:block relative pb-4">
+        <div className="hidden sm:block relative pb-2 pt-2">
           {/* Scrollable Track Container */}
           <div
             ref={scrollContainerRef}
-            className="overflow-x-auto pb-4 pt-6 scrollbar-thin scrollbar-thumb-amber-500/30 scrollbar-track-slate-950/50"
+            className="overflow-x-auto pb-4 pt-4 scrollbar-thin scrollbar-thumb-rose-500/30 scrollbar-track-slate-950/50"
           >
             <div
-              className="relative flex items-stretch gap-6 min-w-max px-6"
-              style={{ minHeight: '340px' }}
+              className="relative flex items-center justify-start min-w-max px-8 py-10 perspective-1200 preserve-3d"
+              style={{ minHeight: '390px' }}
             >
-              {/* THE SVG CONNECTING LINE THAT SPANS ACROSS ALL NODES */}
-              <svg
-                className="absolute top-[36px] left-8 right-8 h-12 pointer-events-none z-0"
-                style={{ width: 'calc(100% - 4rem)' }}
-              >
-                <defs>
-                  <linearGradient id="roadmapLineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#d97706" stopOpacity="0.9" />
-                    <stop offset="50%" stopColor="#f59e0b" stopOpacity="1" />
-                    <stop offset="100%" stopColor="#fde047" stopOpacity="0.9" />
-                  </linearGradient>
-                  <filter id="laserGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-                </defs>
-                {/* Background Track Line */}
-                <line
-                  x1="20"
-                  y1="20"
-                  x2="100%"
-                  y2="20"
-                  stroke="#1c1917"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                />
-                {/* Glowing Royal Gold Connecting Cable Line */}
-                <line
-                  x1="20"
-                  y1="20"
-                  x2="100%"
-                  y2="20"
-                  stroke="url(#roadmapLineGradient)"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  filter="url(#laserGlow)"
-                />
-                {/* Animated Pulsing Signal Line */}
-                <line
-                  x1="20"
-                  y1="20"
-                  x2="100%"
-                  y2="20"
-                  stroke="#fef08a"
-                  strokeWidth="2"
-                  strokeDasharray="10 15"
-                  className="animate-pulse"
-                />
-              </svg>
+              {/* START TAG at the far left */}
+              <div className="flex items-center shrink-0 mr-2 z-10">
+                <div className="px-3 py-1.5 rounded-l-xl bg-[#090e1f] border-y border-l border-slate-600/60 text-slate-300 font-mono text-[11px] font-bold tracking-widest shadow-md">
+                  START
+                </div>
+                <div className="w-5 h-[2px] bg-gradient-to-r from-slate-600 to-orange-500" />
+              </div>
 
-              {/* DYNAMIC NODES MAPPED SEQUENTIALLY FROM ADMIN TIMELINE */}
+              {/* CONNECTED MILESTONES CHAIN (Matching Visme Layout) */}
+              <div className="flex items-center shrink-0">
+                {timeline.map((item, idx) => {
+                  const isActive = idx === activeIndex;
+                  const theme = getBlockColorTheme(item.colorAccent, idx);
+                  const yearLabel = getBlockYearLabel(item, idx);
+                  const isTopBranch = idx % 2 !== 0; // Alternating Top/Bottom branch like Visme
+                  const isFirst = idx === 0;
+                  const isLast = idx === timeline.length - 1;
+
+                  // Chevron class: first item has rounded-l-xl, middle has chevron left & right, last has chevron left and rounded-r-xl
+                  let chevronClass = 'timeline-chevron-middle';
+                  if (timeline.length === 1) {
+                    chevronClass = 'timeline-chevron-single rounded-xl';
+                  } else if (isFirst) {
+                    chevronClass = 'timeline-chevron-first rounded-l-xl';
+                  } else if (isLast) {
+                    chevronClass = 'timeline-chevron-last rounded-r-xl';
+                  }
+
+                  return (
+                    <div
+                      key={item.id}
+                      data-node-index={idx}
+                      className="relative flex flex-col items-center justify-center shrink-0 z-10 select-none group"
+                      style={{ width: '180px' }}
+                    >
+                      {/* =========================================================
+                          TOP BRANCH (If isTopBranch === true)
+                          Vertical Leader Line pointing UP + Icon + Date + Concise Text
+                          ========================================================= */}
+                      {isTopBranch ? (
+                        <div
+                          onClick={() => handleSelectNode(idx, true)}
+                          className={`absolute bottom-[calc(50%+28px)] flex flex-col items-center text-center cursor-pointer transition-all duration-300 group-hover:-translate-y-2.5 ${
+                            isActive ? 'scale-105' : 'opacity-85 hover:opacity-100'
+                          }`}
+                          style={{ width: '160px' }}
+                          title={`คลิกเปิดการ์ด: ${item.title}`}
+                        >
+                          {/* Circular Icon Hub */}
+                          <div
+                            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 mb-2 border-2 shadow-lg ${
+                              isActive
+                                ? `${theme.bg} text-slate-950 border-white ring-4 ring-white/30 scale-110 ${theme.glow}`
+                                : 'bg-[#0a1024] text-white border-slate-600/80 group-hover:border-white group-hover:scale-105'
+                            }`}
+                          >
+                            {renderMilestoneIcon(item.icon, 'w-5 h-5')}
+                          </div>
+
+                          {/* Concise Month/Date Tag */}
+                          <span className={`text-[11px] font-bold tracking-tight mb-0.5 ${theme.text}`}>
+                            {item.date}
+                          </span>
+
+                          {/* Concise Title (1-2 lines) */}
+                          <h4
+                            className={`text-xs font-bold leading-tight line-clamp-2 px-1 ${
+                              isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'
+                            }`}
+                          >
+                            {item.title}
+                          </h4>
+
+                          {/* Concise short description */}
+                          <p className="text-[10px] text-slate-300 line-clamp-2 mt-1 leading-snug px-1">
+                            {item.description}
+                          </p>
+
+                          {/* Click Hint */}
+                          <span className="text-[9px] font-mono text-slate-400 group-hover:text-amber-300 mt-1 flex items-center gap-0.5">
+                            แตะเปิดการ์ด ↗
+                          </span>
+
+                          {/* Vertical Connector Line from block to top content */}
+                          <div
+                            className="w-[2px] h-7 transition-colors duration-300 mt-2"
+                            style={{
+                              backgroundColor: isActive ? theme.lineColor : 'rgba(148, 163, 184, 0.4)',
+                              boxShadow: isActive ? `0 0 10px ${theme.lineColor}` : 'none',
+                            }}
+                          />
+                        </div>
+                      ) : null}
+
+                      {/* =========================================================
+                          CENTER CONNECTED 3D CHEVRON BLOCK
+                          (The interlocking ribbon milestone piece)
+                          ========================================================= */}
+                      <button
+                        type="button"
+                        onClick={() => handleSelectNode(idx, true)}
+                        className={`relative w-full h-14 ${chevronClass} ${theme.bg} flex items-center justify-center px-4 transition-all duration-300 cursor-pointer shadow-lg active:scale-95 group-hover:brightness-110 ${
+                          isActive
+                            ? `ring-2 ring-white/80 scale-105 z-30 ${theme.glow}`
+                            : 'opacity-95 hover:opacity-100 z-10'
+                        }`}
+                        style={{
+                          transform: isActive ? 'translateZ(25px) scale(1.05)' : 'translateZ(0px)',
+                          boxShadow: isActive
+                            ? `0 12px 25px -4px ${theme.lineColor}88, inset 0 2px 0 rgba(255,255,255,0.6)`
+                            : '0 6px 15px -3px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.4)',
+                        }}
+                        title={`คลิกเปิดการ์ดข้อมูล ${yearLabel}: ${item.title}`}
+                      >
+                        {/* Embossed Year / Milestone Text */}
+                        <span className="text-sm sm:text-base font-extrabold text-white tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-mono">
+                          {yearLabel}
+                        </span>
+
+                        {/* Top Gloss Edge Highlight */}
+                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/40 pointer-events-none" />
+
+                        {/* Active Selection Beacon Dot */}
+                        {isActive && (
+                          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_#fff]" />
+                        )}
+                      </button>
+
+                      {/* =========================================================
+                          BOTTOM BRANCH (If isTopBranch === false)
+                          Vertical Leader Line pointing DOWN + Icon + Date + Concise Text
+                          ========================================================= */}
+                      {!isTopBranch ? (
+                        <div
+                          onClick={() => handleSelectNode(idx, true)}
+                          className={`absolute top-[calc(50%+28px)] flex flex-col items-center text-center cursor-pointer transition-all duration-300 group-hover:translate-y-2.5 ${
+                            isActive ? 'scale-105' : 'opacity-85 hover:opacity-100'
+                          }`}
+                          style={{ width: '160px' }}
+                          title={`คลิกเปิดการ์ด: ${item.title}`}
+                        >
+                          {/* Vertical Connector Line from block to bottom content */}
+                          <div
+                            className="w-[2px] h-7 transition-colors duration-300 mb-2"
+                            style={{
+                              backgroundColor: isActive ? theme.lineColor : 'rgba(148, 163, 184, 0.4)',
+                              boxShadow: isActive ? `0 0 10px ${theme.lineColor}` : 'none',
+                            }}
+                          />
+
+                          {/* Circular Icon Hub */}
+                          <div
+                            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 mb-2 border-2 shadow-lg ${
+                              isActive
+                                ? `${theme.bg} text-slate-950 border-white ring-4 ring-white/30 scale-110 ${theme.glow}`
+                                : 'bg-[#0a1024] text-white border-slate-600/80 group-hover:border-white group-hover:scale-105'
+                            }`}
+                          >
+                            {renderMilestoneIcon(item.icon, 'w-5 h-5')}
+                          </div>
+
+                          {/* Concise Month/Date Tag */}
+                          <span className={`text-[11px] font-bold tracking-tight mb-0.5 ${theme.text}`}>
+                            {item.date}
+                          </span>
+
+                          {/* Concise Title (1-2 lines) */}
+                          <h4
+                            className={`text-xs font-bold leading-tight line-clamp-2 px-1 ${
+                              isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'
+                            }`}
+                          >
+                            {item.title}
+                          </h4>
+
+                          {/* Concise short description */}
+                          <p className="text-[10px] text-slate-300 line-clamp-2 mt-1 leading-snug px-1">
+                            {item.description}
+                          </p>
+
+                          {/* Click Hint */}
+                          <span className="text-[9px] font-mono text-slate-400 group-hover:text-amber-300 mt-1 flex items-center gap-0.5">
+                            แตะเปิดการ์ด ↗
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* FINISH / ONGOING TAG at the far right */}
+              <div className="flex items-center shrink-0 ml-2 z-10">
+                <div className="w-5 h-[2px] bg-gradient-to-r from-emerald-500 to-slate-600" />
+                <div className="px-3 py-1.5 rounded-r-xl bg-[#090e1f] border-y border-r border-slate-600/60 text-emerald-400 font-mono text-[11px] font-bold tracking-widest shadow-md flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>ONGOING</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* -----------------------------------------------------------------------
+            VERTICAL CONNECTED TIMELINE (Smartphone View เฉพาะมุมมองสมาร์ทโฟน)
+            ----------------------------------------------------------------------- */}
+        <div className="block sm:hidden relative pb-1 pt-1">
+          <div className="relative pl-1 pr-1">
+            {/* Glowing Vertical Continuous Ribbon Laser Line */}
+            <div className="absolute left-[24px] top-4 bottom-4 w-[2.5px] bg-gradient-to-b from-orange-500 via-rose-500 to-emerald-400 rounded-full shadow-[0_0_12px_rgba(244,63,94,0.7)]" />
+
+            {/* START TAG at top */}
+            <div className="flex items-center gap-2 mb-4 pl-1 relative z-10">
+              <div className="px-2.5 py-1 rounded-lg bg-[#090e1f] border border-orange-500/60 text-orange-300 font-mono text-[10px] font-bold tracking-widest shadow-md">
+                START
+              </div>
+              <div className="text-[10px] font-mono text-slate-400">จุดเริ่มต้นเหตุการณ์</div>
+            </div>
+
+            {/* VERTICAL MILESTONES STACK */}
+            <div className="space-y-3.5 relative z-10">
               {timeline.map((item, idx) => {
                 const isActive = idx === activeIndex;
-                const statusTheme = getStatusStyle(item.status);
-                const stepNum = idx + 1 < 10 ? `0${idx + 1}` : `${idx + 1}`;
+                const theme = getBlockColorTheme(item.colorAccent, idx);
+                const yearLabel = getBlockYearLabel(item, idx);
 
                 return (
                   <div
-                    key={item.id}
-                    data-node-index={idx}
-                    className="relative flex flex-col items-center w-72 lg:w-80 shrink-0 z-10 select-none group"
+                    key={`mobile-milestone-${item.id}`}
+                    onClick={() => handleSelectNode(idx, true)}
+                    className={`relative pl-11 pr-1 transition-all duration-300 cursor-pointer active:scale-[0.98] ${
+                      isActive ? 'scale-[1.01]' : 'opacity-90 hover:opacity-100'
+                    }`}
                   >
-                    {/* 1. NODE HUB (CIRCULAR ANCHOR ON THE CONNECTING LINE) */}
-                    <button
-                      type="button"
-                      onClick={() => handleSelectNode(idx, true)}
-                      className={`relative z-20 w-14 h-14 rounded-full flex flex-col items-center justify-center font-mono font-bold text-xs transition-all duration-300 cursor-pointer shadow-xl ${
-                        isActive
-                          ? 'bg-gradient-to-tr from-cyan-400 to-blue-500 text-slate-950 ring-4 ring-cyan-400/50 shadow-[0_0_25px_rgba(6,182,212,0.9)] scale-110'
-                          : 'bg-[#04112e] text-cyan-300 border-2 border-cyan-400/50 hover:border-cyan-300 hover:scale-105 group-hover:shadow-[0_0_18px_rgba(6,182,212,0.5)]'
-                      }`}
-                      title={`คลิกเปิดการ์ดข้อมูลโหนด ${stepNum}`}
-                    >
-                      {/* Pulse Ring when Active */}
-                      {isActive && (
-                        <span className="absolute -inset-1.5 rounded-full border-2 border-cyan-300 animate-ping opacity-60" />
-                      )}
-                      <span className="text-[10px] opacity-80">NODE</span>
-                      <span className="text-sm font-extrabold">{stepNum}</span>
-                    </button>
-
-                    {/* Connector stem line from hub to card */}
+                    {/* Node Circular Connector Dot on the vertical line */}
                     <div
-                      className={`w-0.5 h-6 transition-colors duration-300 ${
+                      className={`absolute left-[13px] top-3.5 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-20 ${
                         isActive
-                          ? 'bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]'
-                          : 'bg-cyan-500/30 group-hover:bg-cyan-400/60'
-                      }`}
-                    />
-
-                    {/* 2. PROMINENT DATE & TIME BADGE (VERY CLEAR) */}
-                    <div
-                      className={`mb-2 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 border transition-all ${
-                        isActive
-                          ? 'bg-cyan-400 text-slate-950 border-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.6)] font-bold'
-                          : 'bg-[#030e26] text-cyan-300 border-cyan-500/30 group-hover:border-cyan-400/60'
+                          ? `${theme.bg} text-slate-950 border-white ring-4 ring-rose-500/50 scale-110 shadow-[0_0_15px_rgba(255,255,255,0.8)]`
+                          : 'bg-[#0a1024] text-white border-slate-600 hover:border-white shadow-md'
                       }`}
                     >
-                      <Calendar className="w-3.5 h-3.5 shrink-0" />
-                      <span className="tracking-tight">{item.date}</span>
-                      {item.time && (
-                        <>
-                          <span className="opacity-40">|</span>
-                          <span className="font-mono text-[11px] opacity-90">{item.time}</span>
-                        </>
-                      )}
+                      {renderMilestoneIcon(item.icon, 'w-3.5 h-3.5')}
                     </div>
 
-                    {/* 3. ROADMAP NODE CARD (GRAPHIC & DETAILS) */}
+                    {/* Milestone Card Container */}
                     <div
-                      onClick={() => handleSelectNode(idx, true)}
-                      className={`w-full flex-1 p-4 rounded-2xl text-left transition-all duration-300 cursor-pointer flex flex-col justify-between border ${
+                      className={`p-3.5 rounded-2xl border transition-all duration-300 shadow-md ${
                         isActive
-                          ? 'bg-gradient-to-b from-[#0b245e]/95 via-[#071946]/95 to-[#041030]/98 border-2 border-cyan-400 shadow-[0_12px_35px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.4)] backdrop-blur-xl scale-[1.02]'
-                          : 'bg-[#061539]/80 hover:bg-[#0a2052]/90 border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_6px_20px_rgba(0,0,0,0.4)]'
+                          ? `bg-gradient-to-br from-[#1a233d]/95 via-[#202c4b]/95 to-[#151f36]/98 border-rose-400/80 shadow-[0_8px_25px_rgba(0,0,0,0.6),0_0_20px_rgba(244,63,94,0.3)] ring-1 ring-white/20`
+                          : `bg-[#0f172a]/90 hover:bg-[#152038]/95 border-slate-700/60 hover:border-slate-500`
                       }`}
                     >
-                      {/* Top Badges: Phase & Status */}
-                      <div>
-                        <div className="flex items-center justify-between gap-1.5 mb-2.5">
-                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 truncate max-w-[150px]">
-                            {item.phase}
-                          </span>
+                      {/* Top Bar: Year/Milestone Chevron Badge + Date + Status */}
+                      <div className="flex items-center justify-between gap-1.5 flex-wrap mb-2">
+                        <div className="flex items-center gap-1.5">
                           <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full font-medium border flex items-center gap-1 shrink-0 ${statusTheme.bg} ${statusTheme.border} ${statusTheme.text}`}
+                            className={`px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold font-mono tracking-wider text-white shadow-sm ${theme.bg}`}
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full ${statusTheme.indicator}`} />
-                            <span>{item.status}</span>
+                            {yearLabel}
+                          </span>
+                          <span className={`text-[11px] font-bold ${theme.text}`}>
+                            {item.date}
                           </span>
                         </div>
 
-                        {/* Title */}
-                        <h4
-                          className={`text-xs font-bold leading-snug line-clamp-2 mb-2 ${
-                            isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'
-                          }`}
+                        <span
+                          className={`text-[9px] px-2 py-0.5 rounded-full border font-medium ${getStatusStyle(item.status).bg} ${getStatusStyle(item.status).border} ${getStatusStyle(item.status).text}`}
                         >
-                          {item.title}
-                        </h4>
-
-                        {/* Graphic Thumbnail with holographic frame */}
-                        <div className="relative h-28 rounded-xl overflow-hidden border border-cyan-500/30 bg-slate-950 mb-2.5">
-                          <img
-                            src={item.imageUrl}
-                            alt={item.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                '/src/assets/images/sai_building_inspection_1791689807795.jpg';
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
-                          <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between text-[10px] text-slate-300 font-mono">
-                            <span className="bg-black/60 px-1.5 py-0.5 rounded backdrop-blur-sm">
-                              NODE 0{idx + 1}
-                            </span>
-                            <span className="text-cyan-300 font-semibold bg-black/60 px-1.5 py-0.5 rounded backdrop-blur-sm">
-                              คลิกเพื่อเปิดการ์ด ↗
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Short Description */}
-                        <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
-                          {item.description}
-                        </p>
+                          {item.status}
+                        </span>
                       </div>
 
-                      {/* Card Action Footer */}
-                      <div className="mt-3 pt-2.5 border-t border-cyan-500/20 flex items-center justify-between text-[11px]">
-                        <span className="text-cyan-300 font-medium flex items-center gap-1 group-hover:text-cyan-200">
-                          <span>เปิดดูข้อมูลฉบับสมบูรณ์</span>
-                          <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      {/* Title */}
+                      <h4 className="text-xs sm:text-sm font-bold text-white leading-snug line-clamp-2 mb-1 group-hover:text-amber-300 transition-colors">
+                        {item.title}
+                      </h4>
+
+                      {/* Concise Description */}
+                      <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
+                        {item.description}
+                      </p>
+
+                      {/* Tap Action Row */}
+                      <div className="mt-2.5 pt-2 border-t border-slate-700/50 flex items-center justify-between text-[10px]">
+                        <span className="text-rose-300 font-medium flex items-center gap-1">
+                          <Maximize2 className="w-3 h-3 text-rose-400" />
+                          <span>แตะเพื่อเปิดการ์ดรายงานฉบับเต็ม</span>
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">
-                          {isActive ? '● กำลังเลือก' : 'คลิกเพื่ออ่าน'}
-                        </span>
+                        <span className="text-slate-400 font-mono">ช่วง {idx + 1}/{timeline.length} ↗</span>
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
+
+            {/* ONGOING / FINISH TAG at bottom */}
+            <div className="flex items-center gap-2 mt-4 pl-1 relative z-10">
+              <div className="px-2.5 py-1 rounded-lg bg-[#090e1f] border border-emerald-500/60 text-emerald-400 font-mono text-[10px] font-bold tracking-widest shadow-md flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                <span>ONGOING</span>
+              </div>
+              <div className="text-[10px] font-mono text-slate-400">สถานะปัจจุบัน ติดตามต่อเนื่อง</div>
+            </div>
           </div>
         </div>
 
-        {/* -----------------------------------------------------------------------
-            SMARTPHONE & MOBILE VIEW: VERTICAL CONNECTED ROADMAP (Nodes & Lines)
-            ----------------------------------------------------------------------- */}
-        <div className="md:hidden relative pl-6 pr-2 py-3 space-y-6">
-          {/* Vertical Glowing Connecting Line running down the left */}
-          <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-gradient-to-b from-blue-600 via-cyan-400 to-blue-500 rounded-full shadow-[0_0_12px_rgba(6,182,212,0.8)]" />
 
-          {timeline.map((item, idx) => {
-            const isActive = idx === activeIndex;
-            const statusTheme = getStatusStyle(item.status);
-            const stepNum = idx + 1 < 10 ? `0${idx + 1}` : `${idx + 1}`;
+      </div>
 
-            return (
-              <div key={item.id} className="relative select-none group">
-                {/* Node Anchor on the vertical line */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectNode(idx, true)}
-                  className={`absolute -left-[27px] top-4 w-9 h-9 rounded-full flex items-center justify-center font-mono font-bold text-xs transition-all duration-300 cursor-pointer shadow-lg z-10 ${
-                    isActive
-                      ? 'bg-gradient-to-tr from-cyan-400 to-blue-500 text-slate-950 ring-4 ring-cyan-400/50 shadow-[0_0_20px_rgba(6,182,212,0.9)] scale-110'
-                      : 'bg-[#04112e] text-cyan-300 border-2 border-cyan-400/50'
-                  }`}
-                  title={`เปิดการ์ดโหนด ${stepNum}`}
+
+
+      {/* =========================================================================
+          FULL MODAL: CARD VIEW MODAL DIALOG (Card รายละเอียดครบถ้วน พร้อมภาพ/คลิป/แชร์)
+          ========================================================================= */}
+      {isCardModalOpen && currentItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-xl animate-fadeIn">
+          <div
+            className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl bg-gradient-to-b from-[#0e1429] via-[#090e20] to-[#050814] border-2 border-rose-500/60 p-5 sm:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.95),0_0_50px_rgba(244,63,94,0.3)] text-left ring-1 ring-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Modal Header */}
+            <div className="flex items-center justify-between pb-4 mb-5 border-b border-rose-500/30">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-rose-500/25 to-orange-500/25 text-rose-300 border border-rose-400/40 text-xs font-bold font-mono">
+                  ช่วง {getBlockYearLabel(currentItem, activeIndex)} · {currentItem.phase}
+                </span>
+
+                <span className="text-xs text-rose-200 flex items-center gap-1 bg-[#050816] px-2.5 py-1 rounded-lg border border-rose-500/30">
+                  <Calendar className="w-3.5 h-3.5 text-rose-400" />
+                  <span>{currentItem.date}</span>
+                </span>
+
+                {currentItem.time && (
+                  <span className="text-xs text-slate-300 flex items-center gap-1 bg-[#050816] px-2 py-1 rounded-lg border border-slate-700">
+                    <Clock className="w-3 h-3 text-slate-400" />
+                    <span>{currentItem.time}</span>
+                  </span>
+                )}
+
+                <span
+                  className={`text-[11px] px-2.5 py-0.5 rounded-full border ${getStatusStyle(currentItem.status).bg} ${getStatusStyle(currentItem.status).border} ${getStatusStyle(currentItem.status).text}`}
                 >
-                  {stepNum}
+                  สถานะ: {currentItem.status}
+                </span>
+              </div>
+
+              {/* Close Button & Share */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    playDigitalSound('radar');
+                    setShareMilestone(currentItem);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/40 text-xs font-bold transition-colors cursor-pointer"
+                  title="แชร์โหนดนี้"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">แชร์</span>
                 </button>
 
-                {/* Mobile Roadmap Card */}
-                <div
-                  onClick={() => handleSelectNode(idx, true)}
-                  className={`p-4 rounded-xl text-left transition-all duration-200 cursor-pointer border ${
-                    isActive
-                      ? 'bg-gradient-to-b from-[#0a235c]/95 via-[#061742]/95 to-[#040e2b]/98 border-2 border-cyan-400 shadow-[0_8px_25px_rgba(0,0,0,0.6),0_0_20px_rgba(6,182,212,0.4)]'
-                      : 'bg-[#061539]/80 border-cyan-500/30'
-                  }`}
+                <button
+                  onClick={() => setIsCardModalOpen(false)}
+                  className="p-2 rounded-xl bg-slate-900/90 hover:bg-rose-500 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer active:scale-95"
+                  title="ปิดหน้าต่าง"
                 >
-                  {/* Date and Time Header */}
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-200">
-                      <Calendar className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                      <span>{item.date}</span>
-                      {item.time && (
-                        <span className="text-[10px] font-mono text-cyan-300/80">({item.time})</span>
-                      )}
-                    </div>
-                    <span
-                      className={`text-[9px] px-2 py-0.5 rounded-full border ${statusTheme.bg} ${statusTheme.border} ${statusTheme.text}`}
-                    >
-                      {item.status}
-                    </span>
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content Body */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg sm:text-2xl font-extrabold text-white leading-tight mb-2">
+                  {currentItem.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
+                  {currentItem.description}
+                </p>
+              </div>
+
+              {/* Media Section: Video or Photo */}
+              <div className="rounded-2xl overflow-hidden border-2 border-rose-500/40 bg-slate-950 shadow-xl">
+                {currentItem.mediaType === 'video' && currentItem.videoUrl ? (
+                  <div className="relative aspect-video w-full bg-black">
+                    <iframe
+                      src={currentItem.videoUrl.replace('watch?v=', 'embed/')}
+                      title={currentItem.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full border-0"
+                    />
                   </div>
-
-                  <span className="inline-block text-[10px] font-mono text-cyan-300 px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/20 mb-1">
-                    {item.phase}
-                  </span>
-
-                  <h4 className="text-xs font-bold text-white mb-1.5 leading-snug">{item.title}</h4>
-
-                  {/* Thumbnail */}
-                  <div className="relative h-28 rounded-lg overflow-hidden border border-cyan-500/30 bg-slate-950 my-2">
+                ) : (
+                  <div className="relative h-64 sm:h-96 w-full">
                     <img
-                      src={item.imageUrl}
-                      alt={item.title}
+                      src={currentItem.imageUrl}
+                      alt={currentItem.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
                           '/src/assets/images/sai_building_inspection_1791689807795.jpg';
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
-                    <div className="absolute bottom-1 right-2 text-[10px] text-cyan-300 font-mono bg-black/60 px-1.5 py-0.5 rounded">
-                      แตะเพื่อเปิดการ์ด ↗
-                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                    <button
+                      onClick={() => setShowImageLightbox(true)}
+                      className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/75 hover:bg-rose-500 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all cursor-pointer"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      <span>ขยายรูปภาพขนาดเต็ม</span>
+                    </button>
                   </div>
+                )}
+              </div>
 
-                  <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
-                    {item.description}
-                  </p>
-
-                  <div className="mt-3 pt-2 border-t border-cyan-500/20 flex items-center justify-between text-xs text-cyan-300 font-semibold">
-                    <span>เปิดอ่านการ์ดข้อมูลสมบูรณ์</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+              {/* Full Official Statement */}
+              {currentItem.fullStatement && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#060a18] border border-rose-400/40 space-y-2 shadow-inner">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-rose-300">
+                    <FileText className="w-4 h-4 text-rose-400" />
+                    <span>แถลงการณ์และข้อเท็จจริงฉบับสมบูรณ์ (Official Statement):</span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-slate-100 leading-relaxed whitespace-pre-line pl-4 font-normal">
+                    {currentItem.fullStatement}
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Roadmap Footer Info Bar */}
-        <div className="mt-5 pt-3.5 pb-2.5 px-4 rounded-xl bg-[#061438]/90 border border-cyan-500/35 shadow-inner flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-slate-300 text-xs font-mono">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.9)]" />
-            <span className="text-cyan-400 font-semibold">โหนดที่กำลังเลือก:</span>
-            <span className="text-white font-medium line-clamp-1">
-              [โหนด 0{activeIndex + 1}] {currentItem.date} · {currentItem.title}
-            </span>
-          </div>
-
-          <button
-            onClick={() => {
-              playDigitalSound('radar');
-              setIsCardModalOpen(true);
-            }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 text-cyan-300 border border-cyan-400/40 text-xs font-medium transition-colors cursor-pointer"
-          >
-            <Maximize2 className="w-3.5 h-3.5 text-cyan-400" />
-            <span>เปิดการ์ดข้อมูลสมบูรณ์ (Card View)</span>
-          </button>
-        </div>
-      </div>
-
-      {/* =========================================================================
-          IN-PAGE PINNED ACTIVE CARD: ข้อมูลสมบูรณ์ประจำโหนดที่เลือกอยู่
-          ========================================================================= */}
-      {currentItem && (
-        <div className="relative rounded-2xl bg-gradient-to-b from-[#0b2154]/95 via-[#07173e]/95 to-[#040e28]/98 border-2 border-cyan-400/60 p-4 sm:p-6 lg:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.75),0_0_40px_rgba(6,182,212,0.22)] backdrop-blur-2xl ring-1 ring-white/10">
-          {/* Card Top Action Bar */}
-          <div className="flex items-center justify-between pb-4 mb-6 border-b border-cyan-500/25 flex-wrap gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-1 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-[11px] font-semibold font-mono">
-                โหนด 0{activeIndex + 1} · {currentItem.phase}
-              </span>
-              <span className="text-slate-500 hidden sm:inline">·</span>
-
-              {/* Prominent Date in Detail Bar */}
-              <span className="text-xs sm:text-sm text-cyan-200 flex items-center gap-1.5 font-bold bg-[#040e2a] px-3 py-1 rounded-lg border border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.2)]">
-                <Calendar className="w-4 h-4 text-cyan-400" />
-                <span>วันที่: {currentItem.date}</span>
-              </span>
-
-              {currentItem.time && (
-                <span className="text-xs text-slate-300 flex items-center gap-1 bg-[#040e2a] px-2.5 py-1 rounded-lg border border-cyan-500/20">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  <span>เวลา {currentItem.time}</span>
-                </span>
               )}
 
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium border bg-emerald-500/20 border-emerald-400/40 text-emerald-300">
-                สถานะ: {currentItem.status}
-              </span>
+              {/* Engineering Verification Spec Box */}
+              <div className="p-4 rounded-2xl bg-[#070b1a] border border-amber-400/40 space-y-2 shadow-inner">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-300">
+                  <Activity className="w-4 h-4 text-amber-400 animate-pulse" />
+                  <span>ข้อมูลทางวิศวกรรมและการตรวจวัด (Engineering Verification):</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-200 font-mono leading-relaxed pl-4">
+                  {currentItem.technicalDetails}
+                </p>
+              </div>
+
+              {/* Reference Citations */}
+              {currentItem.referenceTitle && (
+                <div className="p-3 rounded-xl bg-[#040714] border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <ExternalLink className="w-4 h-4 text-rose-400 shrink-0" />
+                    <div>
+                      <span className="font-bold text-rose-200 block sm:inline mr-2">
+                        เอกสารอ้างอิงทางการ:
+                      </span>
+                      <span>{currentItem.referenceTitle}</span>
+                    </div>
+                  </div>
+                  {currentItem.referenceUrl && (
+                    <a
+                      href={currentItem.referenceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold shrink-0 transition-colors text-center"
+                    >
+                      เปิดดูเอกสารฉบับจริง ↗
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Quick Next/Prev and Full Card button */}
-            <div className="flex items-center gap-2">
+            {/* Modal Bottom Stepper Bar */}
+            <div className="mt-7 pt-4 border-t border-rose-500/25 flex items-center justify-between gap-3 flex-wrap">
               <button
                 onClick={handlePrev}
-                className="p-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 hover:border-cyan-400/60 transition-colors cursor-pointer active:scale-95"
-                title="ย้อนกลับ"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 hover:border-rose-400/60 transition-colors text-xs font-semibold cursor-pointer active:scale-95"
               >
-                <ChevronLeft className="w-4 h-4 text-cyan-400" />
+                <ChevronLeft className="w-4 h-4 text-rose-400" />
+                <span>โหนดก่อนหน้า</span>
               </button>
-              <span className="text-xs text-cyan-300 font-mono px-1">
-                {activeIndex + 1} / {timeline.length}
-              </span>
+
+              <div className="text-xs font-mono text-rose-300">
+                โหนด {activeIndex + 1} จากทั้งหมด {timeline.length}
+              </div>
+
               <button
                 onClick={handleNext}
-                className="p-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 hover:border-cyan-400/60 transition-colors cursor-pointer active:scale-95"
-                title="ถัดไป"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 hover:border-rose-400/60 transition-colors text-xs font-semibold cursor-pointer active:scale-95"
               >
-                <ChevronRight className="w-4 h-4 text-cyan-400" />
-              </button>
-
-              <button
-                onClick={() => {
-                  playDigitalSound('radar');
-                  setIsCardModalOpen(true);
-                }}
-                className="p-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 transition-colors cursor-pointer"
-                title="ขยายเป็นการ์ด Modal แบบเต็ม"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Main Grid: Visual Frame + Technical Report */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-            {/* Visual Frame */}
-            <div className="lg:col-span-5 relative group rounded-xl overflow-hidden border-2 border-cyan-500/40 shadow-xl bg-slate-950">
-              <img
-                src={currentItem.imageUrl}
-                alt={currentItem.title}
-                className="w-full h-64 sm:h-72 object-cover transition-transform duration-500 group-hover:scale-105"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    '/src/assets/images/sai_building_inspection_1791689807795.jpg';
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent pointer-events-none" />
-
-              <button
-                onClick={() => {
-                  playDigitalSound('radar');
-                  setShowImageLightbox(true);
-                }}
-                className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/70 hover:bg-cyan-400 text-white hover:text-slate-950 border border-white/20 hover:border-cyan-300 transition-all cursor-pointer shadow-lg active:scale-95"
-                title="ขยายภาพบันทึกวิศวกรรม"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </button>
-
-              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs">
-                <span className="px-2.5 py-1 rounded bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 font-medium backdrop-blur-sm">
-                  สถานะ: {currentItem.status}
-                </span>
-                <span className="text-[11px] text-slate-300 bg-black/50 px-2 py-0.5 rounded backdrop-blur-sm">
-                  ภาพบันทึกวิศวกรรม สตง.
-                </span>
-              </div>
-            </div>
-
-            {/* Technical Report & Details */}
-            <div className="lg:col-span-7 space-y-4 text-left">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-white leading-snug">
-                {currentItem.title}
-              </h3>
-
-              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                {currentItem.description}
-              </p>
-
-              {/* Technical Engineering Spec Box */}
-              <div className="p-3.5 rounded-xl bg-[#030b20]/90 border border-cyan-400/40 space-y-2 shadow-inner backdrop-blur-md">
-                <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
-                  <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                  <span>ข้อมูลทางวิศวกรรมและการตรวจวัด (Engineering Verification):</span>
-                </div>
-                <p className="text-xs text-slate-300 font-mono leading-relaxed pl-5">
-                  {currentItem.technicalDetails}
-                </p>
-              </div>
-
-              {/* Assurances List */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-emerald-500/15 border border-emerald-400/40 backdrop-blur-md">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="block text-xs font-semibold text-emerald-300">
-                      ความปลอดภัยบุคลากร 100%
-                    </span>
-                    <span className="text-[11px] text-slate-300">
-                      ปฏิบัติตามแผนอพยพฉุกเฉินระดับ 1 ไม่มีผู้บาดเจ็บ
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-cyan-500/15 border border-cyan-400/40 backdrop-blur-md">
-                  <Shield className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="block text-xs font-semibold text-cyan-300">
-                      Digital Audit ไม่สะดุด
-                    </span>
-                    <span className="text-[11px] text-slate-300">
-                      งานตรวจเงินแผ่นดินทั่วประเทศดำเนินได้ต่อเนื่อง 100%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Card Footer with Share & AI trigger */}
-          <div className="mt-6 pt-3 border-t border-cyan-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-400 font-mono">
-            <span>สำนักงานการตรวจเงินแผ่นดิน (สตง.) · ศูนย์บัญชาการข้อมูลอาคาร</span>
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={() => {
-                  playDigitalSound('select');
-                  onAskAiAboutIncident();
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-cyan-300 border border-blue-400/40 text-xs font-sans font-medium transition-colors cursor-pointer"
-              >
-                <Info className="w-3.5 h-3.5 text-cyan-400" />
-                <span>ถาม AI เกี่ยวกับโหนดนี้</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShareMilestone(currentItem)}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 text-xs font-sans font-medium transition-colors cursor-pointer"
-                title="แชร์ข้อมูลเหตุการณ์นี้"
-              >
-                <Share2 className="w-3.5 h-3.5 text-cyan-400" />
-                <span>แชร์รายงานการ์ดนี้</span>
+                <span>โหนดถัดไป</span>
+                <ChevronRight className="w-4 h-4 text-rose-400" />
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* =========================================================================
-          DEDICATED FULL CARD MODAL: เปิดออกมาเป็นการ์ดข้อมูลสมบูรณ์เมื่อคลิกที่กราฟฟิค
-          ========================================================================= */}
-      {isCardModalOpen && currentItem && (
+      {/* Lightbox Modal for Full Image Zoom */}
+      {showImageLightbox && currentItem && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-xl animate-fadeIn"
-          onClick={() => {
-            playDigitalSound('blip');
-            setIsCardModalOpen(false);
-          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl animate-fadeIn"
+          onClick={() => setShowImageLightbox(false)}
         >
-          <div
-            className="relative w-full max-w-3xl max-h-[90vh] bg-gradient-to-b from-[#081f54] via-[#05143a] to-[#02091e] border-2 border-cyan-400 rounded-3xl shadow-[0_25px_80px_rgba(0,0,0,0.9),0_0_50px_rgba(6,182,212,0.35)] overflow-hidden flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Card Laser Top Strip */}
-            <div className="h-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-sky-300 w-full" />
-
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-cyan-500/30 bg-[#040e2c]">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="w-8 h-8 rounded-full bg-cyan-500 text-slate-950 font-mono font-extrabold flex items-center justify-center text-xs shadow-[0_0_12px_rgba(6,182,212,0.8)]">
-                  0{activeIndex + 1}
-                </span>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs sm:text-sm font-bold text-white">
-                      การ์ดข้อมูลเหตุการณ์สมบูรณ์ (Roadmap Node Card)
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 font-mono">
-                      {currentItem.phase}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-cyan-200 mt-0.5 font-bold">
-                    <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>วันที่: {currentItem.date}</span>
-                    {currentItem.time && (
-                      <>
-                        <span className="text-slate-500">·</span>
-                        <span className="text-slate-300 font-mono">เวลา {currentItem.time}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Close Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  playDigitalSound('blip');
-                  setIsCardModalOpen(false);
-                }}
-                className="p-2 rounded-xl text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                title="ปิดการ์ด"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body (Scrollable) */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 text-left">
-              {/* Image Preview with Lightbox Trigger */}
-              <div className="relative rounded-2xl overflow-hidden border border-cyan-500/40 bg-slate-950 h-56 sm:h-72">
-                <img
-                  src={currentItem.imageUrl}
-                  alt={currentItem.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      '/src/assets/images/sai_building_inspection_1791689807795.jpg';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-
-                <button
-                  type="button"
-                  onClick={() => setShowImageLightbox(true)}
-                  className="absolute top-3 right-3 p-2 rounded-xl bg-black/75 hover:bg-cyan-400 text-white hover:text-slate-950 border border-white/20 transition-all cursor-pointer shadow-lg active:scale-95"
-                  title="ดูภาพขนาดเต็ม"
-                >
-                  <Maximize2 className="w-4 h-4" />
-                </button>
-
-                <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs">
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 font-medium backdrop-blur-md">
-                    สถานะ: {currentItem.status}
-                  </span>
-                  <span className="text-[11px] text-slate-300 bg-black/60 px-2.5 py-1 rounded-md backdrop-blur-md">
-                    สตง. บันทึกภาพวิศวกรรม
-                  </span>
-                </div>
-              </div>
-
-              {/* Full Title */}
-              <h3 className="text-base sm:text-xl font-bold text-white leading-snug">
-                {currentItem.title}
-              </h3>
-
-              {/* Detailed Narrative */}
-              <div className="p-4 rounded-xl bg-[#040e2b]/80 border border-cyan-500/30">
-                <span className="block text-xs font-semibold text-cyan-300 mb-1.5 font-mono">
-                  สรุปเหตุการณ์และข้อเท็จจริง:
-                </span>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                  {currentItem.description}
-                </p>
-              </div>
-
-              {/* Engineering Telemetry Specifications */}
-              <div className="p-4 rounded-xl bg-[#03091e] border border-cyan-400/40 shadow-inner space-y-2">
-                <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
-                  <Activity className="w-4 h-4 text-cyan-400 animate-pulse" />
-                  <span>ข้อมูลทางวิศวกรรมและการตรวจวัด (Engineering Verification):</span>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-300 font-mono leading-relaxed pl-6">
-                  {currentItem.technicalDetails}
-                </p>
-              </div>
-
-              {/* Assurances Badges */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-emerald-500/15 border border-emerald-400/40">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="block text-xs font-bold text-emerald-300">
-                      ความปลอดภัยบุคลากร 100%
-                    </span>
-                    <span className="text-[11px] text-slate-300">
-                      ปฏิบัติตามแผนอพยพฉุกเฉินระดับ 1 ไม่มีผู้บาดเจ็บ
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-cyan-500/15 border border-cyan-400/40">
-                  <Shield className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="block text-xs font-bold text-cyan-300">
-                      Digital Audit ไม่สะดุด
-                    </span>
-                    <span className="text-[11px] text-slate-300">
-                      งานตรวจเงินแผ่นดินทั่วประเทศดำเนินได้ต่อเนื่อง 100%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer Controls */}
-            <div className="p-4 sm:p-5 border-t border-cyan-500/30 bg-[#040e2c] flex flex-col sm:flex-row items-center justify-between gap-3">
-              {/* Prev / Next within Modal */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 hover:border-cyan-400 text-xs transition-colors cursor-pointer"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>โหนดก่อนหน้า</span>
-                </button>
-                <span className="text-xs font-mono text-cyan-300 px-2">
-                  {activeIndex + 1} / {timeline.length}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 hover:border-cyan-400 text-xs transition-colors cursor-pointer"
-                >
-                  <span>โหนดถัดไป</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-cyan-400" />
-                </button>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShareMilestone(currentItem)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 text-xs font-medium transition-colors cursor-pointer"
-                >
-                  <Share2 className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>แชร์การ์ดนี้</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    playDigitalSound('select');
-                    setIsCardModalOpen(false);
-                    onAskAiAboutIncident();
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 text-xs font-bold transition-all shadow-[0_0_12px_rgba(6,182,212,0.4)] cursor-pointer"
-                >
-                  <Info className="w-3.5 h-3.5" />
-                  <span>สอบถาม AI</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Image Lightbox Modal */}
-      {showImageLightbox && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fadeIn"
-          onClick={() => {
-            playDigitalSound('blip');
-            setShowImageLightbox(false);
-          }}
-        >
-          <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="relative max-w-5xl max-h-[90vh]">
+            <button
+              onClick={() => setShowImageLightbox(false)}
+              className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white rounded-full bg-slate-800/80 cursor-pointer"
+            >
+              <X className="w-6 h-6" />
+            </button>
             <img
               src={currentItem.imageUrl}
               alt={currentItem.title}
-              className="w-full h-auto max-h-[85vh] object-contain rounded-2xl border-2 border-cyan-500/40 shadow-2xl"
+              className="max-h-[85vh] w-auto rounded-xl border border-rose-500/50 shadow-2xl"
             />
-            <div className="p-3 text-center text-xs text-slate-300 flex items-center justify-between">
-              <span>
-                {currentItem.title} · {currentItem.date}
-              </span>
-              <button
-                onClick={() => {
-                  playDigitalSound('blip');
-                  setShowImageLightbox(false);
-                }}
-                className="px-3 py-1 rounded bg-slate-800 text-slate-200 hover:bg-slate-700 text-xs cursor-pointer"
-              >
-                ปิดภาพ
-              </button>
+            <div className="mt-3 text-center text-xs text-slate-300 font-mono">
+              {currentItem.date} · {currentItem.title}
             </div>
           </div>
         </div>
       )}
 
       {/* Share Modal Dialog */}
-      <ShareModal
-        isOpen={!!shareMilestone}
-        onClose={() => setShareMilestone(null)}
-        item={
-          shareMilestone
-            ? {
-                id: shareMilestone.id,
-                title: `${shareMilestone.title} (${shareMilestone.date} เวลา ${shareMilestone.time})`,
-                category: `สถานการณ์อาคาร สตง. [${shareMilestone.phase}]`,
-                description: `${shareMilestone.description} - ${shareMilestone.technicalDetails}`,
-                linkUrl: `${
-                  typeof window !== 'undefined' ? window.location.origin : ''
-                }#incident-timeline`,
-              }
-            : null
-        }
-      />
+      {shareMilestone && (
+        <ShareModal
+          isOpen={!!shareMilestone}
+          onClose={() => setShareMilestone(null)}
+          item={{
+            id: shareMilestone.id,
+            title: `[สถานการณ์อาคาร สตง.] ${shareMilestone.title} (${shareMilestone.date})`,
+            category: 'สถานการณ์ฉุกเฉินและวิศวกรรมโครงสร้าง สตง.',
+            linkUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/#incident-timeline`,
+          }}
+        />
+      )}
     </section>
   );
 };

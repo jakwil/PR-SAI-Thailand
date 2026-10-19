@@ -99,6 +99,33 @@ service cloud.firestore {
              data.enabled is bool;
     }
 
+    function isValidChatbotSettings(data) {
+      return data.keys().hasAll(['enabled']) &&
+             data.keys().hasOnly(['enabled', 'autoOpen', 'welcomeMessage', 'updatedAt']) &&
+             data.enabled is bool &&
+             (!('autoOpen' in data) || data.autoOpen is bool) &&
+             (!('welcomeMessage' in data) || (data.welcomeMessage is string && data.welcomeMessage.size() <= 2000)) &&
+             (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
+    }
+
+    function isValidNewsSubscriber(data) {
+      return data.keys().hasAll(['id', 'email', 'storyId', 'storyTitle', 'subscribedAt']) &&
+             data.keys().hasOnly(['id', 'email', 'storyId', 'storyTitle', 'category', 'subscribedAt', 'active', 'tags', 'lastNotifiedAt', 'notifyCount', 'updatedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.email is string && data.email.size() <= 200 &&
+             data.storyId is string && data.storyId.size() <= 128 &&
+             data.storyTitle is string && data.storyTitle.size() <= 300 &&
+             data.subscribedAt is string && data.subscribedAt.size() <= 60;
+    }
+
+    function isValidNewsBroadcast(data) {
+      return data.keys().hasAll(['id', 'storyId', 'storyTitle', 'subject', 'sentAt', 'recipientCount']) &&
+             data.keys().hasOnly(['id', 'storyId', 'storyTitle', 'subject', 'summary', 'recipientCount', 'recipients', 'aiGenerated', 'sentAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.storyId is string && data.storyId.size() <= 128 &&
+             data.subject is string && data.subject.size() <= 300;
+    }
+
     function isValidVisitorLog(data) {
       return data.keys().hasAll(['timestamp', 'action']) &&
              data.keys().hasOnly(['timestamp', 'action', 'page', 'userAgent']) &&
@@ -141,10 +168,27 @@ service cloud.firestore {
       allow delete: if isAdmin() || !isSignedIn();
     }
 
-    // Settings Collection (Music etc.)
+    // News Subscribers Collection (ระบบติดตามข่าว Hero)
+    match /newsSubscribers/{subscriberId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || !isSignedIn()) && isValidNewsSubscriber(incoming());
+      allow delete: if isAdmin() || !isSignedIn();
+    }
+
+    // News Broadcasts Collection (ประวัติส่งข่าวแจ้งเตือน)
+    match /newsBroadcasts/{broadcastId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || !isSignedIn()) && isValidNewsBroadcast(incoming());
+      allow delete: if isAdmin() || !isSignedIn();
+    }
+
+    // Settings Collection (Music, Chatbot, etc.)
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if (settingId == 'music' && isValidMusicSettings(incoming())) || isAdmin();
+      allow write: if (settingId == 'music' && isValidMusicSettings(incoming())) ||
+                      (settingId == 'chatbot' && isValidChatbotSettings(incoming())) ||
+                      settingId == 'mockup_version' ||
+                      isAdmin() || !isSignedIn();
     }
 
     // Visitor Logs Collection

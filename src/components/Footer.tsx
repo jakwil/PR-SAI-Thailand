@@ -12,9 +12,10 @@ export const Footer: React.FC = () => {
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <img
-              src="https://i.postimg.cc/Hx5fGXXX/Untitled-design-2026-07-21T141419-977.png"
+              src="https://i.postimg.cc/90TgPftw/Untitled-design-2026-10-13T095211-499.png"
               alt="Logo SAI Thailand"
-              className="w-14 h-14 sm:w-16 sm:h-16 object-contain yellow-logo-filter"
+              referrerPolicy="no-referrer"
+              className="h-9 sm:h-[43px] w-auto max-w-[90px] object-contain drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)]"
               onError={(e) => {
                 (e.target as HTMLElement).style.display = 'none';
               }}
