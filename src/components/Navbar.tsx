@@ -130,7 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
 
         {/* Header Content Container - Ultra-Slim & Compact (44px - 48px Apple Navbar Height) */}
-        <div className="relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-11 sm:h-12 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="relative w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto h-11 sm:h-12 flex items-center justify-between gap-2 sm:gap-4">
           {/* Zone 1: Brand Logo & Title (Slim, Compact & Minimal) */}
           <a
             href="#home"

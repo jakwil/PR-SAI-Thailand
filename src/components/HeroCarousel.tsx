@@ -100,10 +100,10 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
         {/* Holographic Top Royal Gold Laser Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
 
-        {/* Main Carousel Display (Grid 12-cols) - ขยายภาพไปทางขวา 40% (lg:col-span-9) ข้อความชิดด้านบน */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 lg:h-[370px] xl:h-[395px] items-stretch">
-          {/* Left Column: Image Slides with Dissolve Transition & 5% Slow Zoom (Ken Burns Effect) */}
-          <div className="lg:col-span-9 relative h-[210px] sm:h-[260px] md:h-[360px] lg:h-full overflow-hidden group">
+        {/* Main Carousel Display (Grid 12-cols) - ขยายภาพไปทางขวา 40% (lg:col-span-9) ข้อความชิดด้านบน - สูงขึ้น 15% */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 lg:h-[426px] xl:h-[455px] 2xl:h-[490px] items-stretch">
+          {/* Left Column: Image Slides with Dissolve Transition & 5% Slow Zoom (Ken Burns Effect) - สูงขึ้น 15% */}
+          <div className="lg:col-span-9 relative h-[242px] sm:h-[300px] md:h-[415px] lg:h-full overflow-hidden group">
             {/* Dissolve Cross-Fade Layers for All Stories */}
             {validStories.map((story, idx) => {
               const isActive = idx === currentIndex;

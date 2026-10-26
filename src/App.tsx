@@ -8,7 +8,6 @@ import { PublicInterestSection } from './components/PublicInterestSection';
 import { AIChatbotWidget } from './components/AIChatbotWidget';
 import { AdminPanel } from './components/AdminPanel';
 import { Footer } from './components/Footer';
-import { BackgroundMusicPlayer } from './components/BackgroundMusicPlayer';
 import { ExecutiveDashboardModal } from './components/ExecutiveDashboardModal';
 import {
   subscribeToAppData,
@@ -18,7 +17,8 @@ import {
   defaultMusicSettings,
   defaultChatbotSettings,
   defaultNewsSubscribers,
-  defaultNewsBroadcasts
+  defaultNewsBroadcasts,
+  defaultMarqueeTicker
 } from './firebase';
 import { AppData } from './types';
 import { ShieldCheck } from 'lucide-react';
@@ -30,6 +30,7 @@ const initialData: AppData = {
   chatbotSettings: defaultChatbotSettings,
   newsSubscribers: defaultNewsSubscribers,
   newsBroadcasts: defaultNewsBroadcasts,
+  marqueeTicker: defaultMarqueeTicker,
   heroStories: [
     {
       id: 'story-photo-1',
@@ -664,19 +665,15 @@ export default function App() {
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
   const isChatbotEnabled = data.chatbotSettings?.enabled ?? true;
-  // If enabled, chatbot pops open immediately on load across all viewports
-  const [isChatbotOpen, setIsChatbotOpen] = useState(true);
+  // Default: icon button only (closed window) - user requested "เมื่อเปิดเวบขึ้นมาให้ส่วนของ AI Chatbot เป็น Icon ยังไม่ต้องเปิดหน้าต่างchat"
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
-  // Sync chatbot open state when settings change
+  // Sync chatbot enabled state: if disabled in settings, ensure chat window is closed
   useEffect(() => {
-    if (data.chatbotSettings) {
-      if (data.chatbotSettings.enabled === false) {
-        setIsChatbotOpen(false);
-      } else if (data.chatbotSettings.enabled === true && data.chatbotSettings.autoOpen !== false) {
-        setIsChatbotOpen(true);
-      }
+    if (data.chatbotSettings?.enabled === false) {
+      setIsChatbotOpen(false);
     }
-  }, [data.chatbotSettings?.enabled, data.chatbotSettings?.autoOpen]);
+  }, [data.chatbotSettings?.enabled]);
 
   const [externalChatPrompt, setExternalChatPrompt] = useState<string | null>(null);
   const [loginToast, setLoginToast] = useState(false);
@@ -850,10 +847,11 @@ export default function App() {
         )}
 
         <main className="flex-1">
-          {/* 1. Hero Carousel (Highlight ภาพข่าวหมุน) & 2. วิดีโอคลิปไวรัล (ติดๆ กัน) */}
+          {/* 1. Hero Carousel (Highlight ภาพข่าวหมุน) & 2. วิดีโอคลิปไวรัล (ติดๆ กัน) พร้อมแถบประกาศวิ่ง Marquee Ticker */}
           <HeroSection
             stories={data.heroStories || []}
             clips={data.viralClips || []}
+            marqueeTicker={data.marqueeTicker || defaultMarqueeTicker}
             onPlayingChange={setIsMediaPlaying}
           />
 
@@ -873,14 +871,6 @@ export default function App() {
         </main>
 
         <Footer />
-
-        {/* Ambient Background Music Player (Google Drive Audio with Audio Ducking & Gentle Default Volume - Hidden for users as admin controls it) */}
-        <BackgroundMusicPlayer
-          settings={data.musicSettings}
-          isDucked={isMediaPlaying}
-          onOpenSettings={() => setIsAdminPanelOpen(true)}
-          showWidget={false}
-        />
 
         {/* Admin Management Dashboard (Directly opened upon 3-second biometric hold) */}
         <AdminPanel

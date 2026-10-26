@@ -204,10 +204,13 @@ export const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({
       }
 
       if (data.isReal) {
+        const isJakwil = recipient.toLowerCase().endsWith('@jakwil.page');
         setStatusMessage({
-          type: 'success',
-          title: 'ส่งอีเมลจริงสำเร็จ!',
-          description: `ระบบได้ส่งอีเมลทดสอบไปยัง "${recipient}" เรียบร้อยแล้ว กรุณาเปิดดูในกล่องจดหมาย (Inbox / Junk) ของท่าน`,
+          type: isJakwil ? 'warning' : 'success',
+          title: isJakwil ? 'ส่งออกจากเซิร์ฟเวอร์แล้ว (โปรดดูคำแนะนำ)' : 'ส่งอีเมลจริงสำเร็จ!',
+          description: isJakwil
+            ? `เซิร์ฟเวอร์ส่งคำขอไปยัง "${recipient}" สำเร็จแล้ว แต่เนื่องจากโดเมน @jakwil.page ไม่มีระบบเซิร์ฟเวอร์รับอีเมล (ไม่มี DNS MX Records) ข้อความจึงไม่สามารถส่งเข้ากล่องจดหมายได้ กรุณาระบุเป็นอีเมลจริง เช่น Gmail (@gmail.com) หรือ Hotmail ที่ท่านเปิดอ่านอยู่`
+            : `ระบบได้ส่งอีเมลทดสอบไปยัง "${recipient}" เรียบร้อยแล้ว กรุณาเปิดดูในกล่องจดหมาย (Inbox / Junk) ของท่าน`,
         });
         playDigitalSound('confirm');
       } else {
@@ -553,7 +556,7 @@ export const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({
                     type="email"
                     value={testEmail}
                     onChange={(e) => setTestEmail(e.target.value)}
-                    placeholder="ใส่อีเมลปลายทาง เช่น jakwil@jakwil.page"
+                    placeholder="ใส่อีเมลจริง เช่น your-name@gmail.com"
                     className="px-2.5 py-1.5 bg-[#02071a] border border-cyan-500/40 rounded-lg text-xs text-white placeholder-slate-500 w-full sm:w-64 outline-none focus:border-cyan-400 font-mono"
                   />
                   <button
@@ -570,14 +573,14 @@ export const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({
                   <span>เลือกส่งด่วน:</span>
                   <button
                     type="button"
-                    onClick={() => setTestEmail('jakwil@jakwil.page')}
+                    onClick={() => setTestEmail('rebellion.vip@gmail.com')}
                     className={`px-1.5 py-0.5 rounded border transition-colors ${
-                      testEmail === 'jakwil@jakwil.page'
+                      testEmail === 'rebellion.vip@gmail.com'
                         ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 font-semibold'
                         : 'bg-white/5 text-slate-400 border-slate-700 hover:text-white'
                     }`}
                   >
-                    jakwil@jakwil.page
+                    rebellion.vip@gmail.com
                   </button>
                   <button
                     type="button"

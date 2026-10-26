@@ -208,64 +208,39 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
   return (
     <section
       id="published-works"
-      className="relative pt-6 sm:pt-8 pb-10 sm:pb-14 mt-1 sm:mt-2 mb-8 sm:mb-12 w-full bg-gradient-to-b from-[#2e3542] via-[#242b36] to-[#1c222c] border-t-2 border-slate-600/60 shadow-[0_20px_50px_rgba(0,0,0,0.35)] overflow-hidden text-slate-100 scroll-mt-20"
+      className="relative pt-10 sm:pt-14 pb-14 sm:pb-20 mt-8 sm:mt-14 mb-10 sm:mb-16 w-full bg-gradient-to-b from-[#061433] via-[#040e26] to-[#020718] border-y border-cyan-500/25 shadow-[0_20px_70px_rgba(0,0,0,0.85)] overflow-hidden text-slate-100 scroll-mt-24"
     >
-      {/* Luxury Luminous Top Accent Line */}
-      <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-slate-500 via-sky-400 to-slate-500 shadow-[0_0_15px_rgba(56,189,248,0.5)] z-10" />
+      {/* Refined Luxury Luminous Top Accent Line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/80 via-amber-400/70 to-transparent shadow-[0_0_15px_rgba(56,189,248,0.4)] z-10" />
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent pointer-events-none" />
 
-      {/* DIGITAL DATA BACKGROUND PATTERN (ลวดลาย Digital Data: Binary, Circuit Bus & Data Nodes with Glow) */}
+      {/* SUBTLE DIGITAL MEDIA ARCHIVE BACKGROUND (Harmonious with the rest of the site, subtle distinction) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
-        <svg className="absolute inset-0 w-full h-full opacity-40" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <filter id="cyberGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="1.5" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <pattern id="digitalDataPattern" width="160" height="160" patternUnits="userSpaceOnUse">
-              {/* Circuit Data Bus Routing with Glow */}
-              <path
-                d="M0 40 h60 l20 20 h80 M0 120 h40 l20 -20 h100 M80 0 v40 M120 80 v80"
-                fill="none"
-                stroke="#38bdf8"
-                strokeWidth="0.9"
-                strokeOpacity="0.55"
-                filter="url(#cyberGlow)"
-              />
-              {/* Data Node Terminals */}
-              <circle cx="80" cy="60" r="3" fill="#38bdf8" fillOpacity="0.9" />
-              <circle cx="80" cy="60" r="1.5" fill="#e0f2fe" />
-              <circle cx="60" cy="100" r="2.5" fill="#06b6d4" fillOpacity="0.85" />
-              <circle cx="140" cy="60" r="2" fill="#38bdf8" fillOpacity="0.8" />
-              <circle cx="20" cy="120" r="2" fill="#38bdf8" fillOpacity="0.8" />
-              
-              {/* Binary Digital Data Streams */}
-              <text x="10" y="24" fill="#cbd5e1" fontSize="8" fontFamily="monospace" letterSpacing="2" opacity="0.6" fontWeight="bold">01011001</text>
-              <text x="85" y="32" fill="#38bdf8" fontSize="7" fontFamily="monospace" letterSpacing="1.5" opacity="0.8" fontWeight="bold">DATA_STREAM</text>
-              <text x="15" y="75" fill="#94a3b8" fontSize="7" fontFamily="monospace" letterSpacing="2" opacity="0.5" fontWeight="bold">10010110</text>
-              <text x="90" y="110" fill="#cbd5e1" fontSize="8" fontFamily="monospace" letterSpacing="2" opacity="0.6" fontWeight="bold">01101100</text>
-              <text x="10" y="145" fill="#38bdf8" fontSize="7.5" fontFamily="monospace" letterSpacing="1.5" opacity="0.8" fontWeight="bold">0x7F_SYNC</text>
-              <text x="95" y="150" fill="#94a3b8" fontSize="7" fontFamily="monospace" letterSpacing="2" opacity="0.5" fontWeight="bold">11001010</text>
+        {/* Subtle Fine Micro-Grid */}
+        <div className="absolute inset-0 bg-digital-grid opacity-15" />
 
-              {/* Micro Data Grid */}
-              <path d="M0 0 h160 v160 h-160 Z" fill="none" stroke="#64748b" strokeWidth="0.5" strokeOpacity="0.2" strokeDasharray="3 6" />
+        {/* Elegant Minimalist Media Geometric Lattice */}
+        <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="refinedMediaPattern" width="60" height="60" patternUnits="userSpaceOnUse">
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#38bdf8" strokeWidth="0.5" strokeOpacity="0.4" />
+              <circle cx="60" cy="0" r="1" fill="#38bdf8" fillOpacity="0.5" />
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#digitalDataPattern)" />
+          <rect width="100%" height="100%" fill="url(#refinedMediaPattern)" />
         </svg>
 
-        {/* Ambient Vibrant Cyber Glows for Luxury Digital Atmosphere */}
-        <div className="absolute -top-16 left-1/4 w-[550px] h-[280px] bg-sky-400/20 rounded-full blur-[120px]" />
-        <div className="absolute top-1/3 right-1/4 w-[600px] h-[300px] bg-cyan-400/18 rounded-full blur-[120px]" />
-        <div className="absolute -bottom-20 left-1/3 w-[550px] h-[280px] bg-blue-500/15 rounded-full blur-[130px]" />
+        {/* Soft Ambient Glows: Midnight Cyan, Royal Sapphire & Warm Amber */}
+        <div className="absolute -top-16 left-1/4 w-[600px] h-[350px] bg-cyan-600/12 rounded-full blur-[150px]" />
+        <div className="absolute top-1/2 right-1/4 w-[650px] h-[360px] bg-blue-700/14 rounded-full blur-[160px]" />
+        <div className="absolute -bottom-16 left-1/3 w-[550px] h-[320px] bg-indigo-700/10 rounded-full blur-[150px]" />
+        <div className="absolute top-1/3 right-10 w-[400px] h-[260px] bg-amber-500/8 rounded-full blur-[140px]" />
       </div>
 
       {/* Header & Comprehensive Search Container */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4 sm:mb-6">
+      <div className="relative w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto mb-4 sm:mb-6">
         {/* Top Header & Search Bar Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-5 pb-3 border-b border-slate-600/50">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-5 pb-3 border-b border-cyan-500/25">
           <div className="w-full sm:w-auto overflow-hidden">
             <h2
               className="text-[14px] min-[360px]:text-[15px] min-[400px]:text-base min-[480px]:text-lg sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight whitespace-nowrap truncate drop-shadow-sm"
@@ -279,14 +254,14 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
           <div className="w-full sm:w-auto flex items-center">
             <div className="relative w-full sm:w-[320px] lg:w-[380px]">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Search className="w-4 h-4 text-sky-400" />
+                <Search className="w-4 h-4 text-cyan-400" />
               </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ค้นหาคลิป สารคดี อินโฟกราฟิก หรือหัวข้อข่าว..."
-                className="w-full pl-10 pr-9 py-2 rounded-xl bg-[#161d28]/90 border border-slate-600/80 focus:border-sky-400 focus:outline-none text-xs sm:text-sm text-white placeholder-slate-400 shadow-inner transition-all focus:ring-4 focus:ring-sky-500/20"
+                className="w-full pl-10 pr-9 py-2 rounded-xl bg-[#061430]/90 border border-cyan-500/35 focus:border-cyan-300 focus:outline-none text-xs sm:text-sm text-white placeholder-slate-400 shadow-inner transition-all focus:ring-4 focus:ring-cyan-500/20"
               />
               {searchQuery && (
                 <button
@@ -311,7 +286,7 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
           <button
             type="button"
             onClick={() => handleScrollRow(row1Ref, 'left')}
-            className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-slate-900/95 hover:bg-slate-800 text-slate-200 hover:text-sky-300 border border-slate-700 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row1:opacity-100"
+            className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#05112c]/95 hover:bg-cyan-500/30 text-cyan-300 hover:text-white border border-cyan-400/40 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row1:opacity-100"
             title="เลื่อนซ้ายแถวที่ 1"
             aria-label="เลื่อนซ้ายแถวที่ 1"
           >
@@ -322,7 +297,7 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
           <button
             type="button"
             onClick={() => handleScrollRow(row1Ref, 'right')}
-            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-slate-900/95 hover:bg-slate-800 text-slate-200 hover:text-sky-300 border border-slate-700 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row1:opacity-100"
+            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#05112c]/95 hover:bg-cyan-500/30 text-cyan-300 hover:text-white border border-cyan-400/40 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row1:opacity-100"
             title="เลื่อนขวาแถวที่ 1"
             aria-label="เลื่อนขวาแถวที่ 1"
           >
@@ -388,7 +363,7 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
             <button
               type="button"
               onClick={() => handleScrollRow(row2Ref, 'left')}
-              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-slate-900/95 hover:bg-slate-800 text-slate-200 hover:text-rose-300 border border-slate-700 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row2:opacity-100"
+              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#05112c]/95 hover:bg-rose-500/30 text-rose-300 hover:text-white border border-rose-400/40 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row2:opacity-100"
               title="เลื่อนซ้ายแถวที่ 2"
               aria-label="เลื่อนซ้ายแถวที่ 2"
             >
@@ -399,7 +374,7 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
             <button
               type="button"
               onClick={() => handleScrollRow(row2Ref, 'right')}
-              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-slate-900/95 hover:bg-slate-800 text-slate-200 hover:text-rose-300 border border-slate-700 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row2:opacity-100"
+              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#05112c]/95 hover:bg-rose-500/30 text-rose-300 hover:text-white border border-rose-400/40 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row2:opacity-100"
               title="เลื่อนขวาแถวที่ 2"
               aria-label="เลื่อนขวาแถวที่ 2"
             >

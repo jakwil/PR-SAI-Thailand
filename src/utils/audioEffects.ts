@@ -5,9 +5,12 @@ export type DigitalSoundType = 'click' | 'blip' | 'switch' | 'select' | 'beep' |
 
 class DigitalAudioEngine {
   private ctx: AudioContext | null = null;
+  private masterGain: GainNode | null = null;
   private soundEnabled: boolean = true;
   private lastClickTime: number = 0;
   private globalListenerAttached: boolean = false;
+  // Volume scaled down by 30% (gain set to 0.70)
+  private volumeScale: number = 0.70;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -24,6 +27,9 @@ class DigitalAudioEngine {
           (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         if (AudioContextClass) {
           this.ctx = new AudioContextClass();
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.setValueAtTime(this.volumeScale, this.ctx.currentTime);
+          this.masterGain.connect(this.ctx.destination);
         }
       }
       if (this.ctx && this.ctx.state === 'suspended') {
@@ -35,12 +41,28 @@ class DigitalAudioEngine {
     }
   }
 
+  private getDestination(ctx: AudioContext): AudioNode {
+    if (!this.masterGain) {
+      this.masterGain = ctx.createGain();
+      this.masterGain.gain.setValueAtTime(this.volumeScale, ctx.currentTime);
+      this.masterGain.connect(ctx.destination);
+    }
+    return this.masterGain;
+  }
+
   public isEnabled(): boolean {
     return this.soundEnabled;
   }
 
   public setEnabled(enabled: boolean): void {
     this.soundEnabled = enabled;
+  }
+
+  public setVolumeScale(scale: number): void {
+    this.volumeScale = Math.max(0, Math.min(1, scale));
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setValueAtTime(this.volumeScale, this.ctx.currentTime);
+    }
   }
 
   public toggle(): boolean {
@@ -86,6 +108,7 @@ class DigitalAudioEngine {
     if (!ctx) return;
 
     const now = ctx.currentTime;
+    const dest = this.getDestination(ctx);
 
     try {
       switch (type) {
@@ -105,7 +128,7 @@ class DigitalAudioEngine {
           gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
 
           osc1.connect(gain1);
-          gain1.connect(ctx.destination);
+          gain1.connect(dest);
 
           osc1.start(now);
           osc1.stop(now + 0.02);
@@ -127,7 +150,7 @@ class DigitalAudioEngine {
 
           osc2.connect(filter);
           filter.connect(gain2);
-          gain2.connect(ctx.destination);
+          gain2.connect(dest);
 
           osc2.start(now);
           osc2.stop(now + 0.018);
@@ -147,7 +170,7 @@ class DigitalAudioEngine {
           gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.028);
 
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(dest);
 
           osc.start(now);
           osc.stop(now + 0.03);
@@ -167,7 +190,7 @@ class DigitalAudioEngine {
           gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.016);
 
           osc1.connect(gain1);
-          gain1.connect(ctx.destination);
+          gain1.connect(dest);
           osc1.start(now);
           osc1.stop(now + 0.018);
 
@@ -183,7 +206,7 @@ class DigitalAudioEngine {
           gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.038);
 
           osc2.connect(gain2);
-          gain2.connect(ctx.destination);
+          gain2.connect(dest);
           osc2.start(now + 0.018);
           osc2.stop(now + 0.04);
           break;
@@ -209,7 +232,7 @@ class DigitalAudioEngine {
 
           osc1.connect(gain);
           osc2.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(dest);
 
           osc1.start(now);
           osc1.stop(now + 0.05);
@@ -230,7 +253,7 @@ class DigitalAudioEngine {
           gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
 
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(dest);
 
           osc.start(now);
           osc.stop(now + 0.065);
@@ -250,7 +273,7 @@ class DigitalAudioEngine {
           gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.012);
 
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(dest);
 
           osc.start(now);
           osc.stop(now + 0.014);
@@ -268,7 +291,7 @@ class DigitalAudioEngine {
           gain.gain.setValueAtTime(0.12, now);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(dest);
           osc.start(now);
           osc.stop(now + 0.23);
           break;
@@ -292,7 +315,7 @@ class DigitalAudioEngine {
 
           osc.connect(filter);
           filter.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(dest);
 
           osc.start(now);
           osc.stop(now + 0.075);

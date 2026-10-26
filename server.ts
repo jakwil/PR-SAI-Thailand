@@ -381,7 +381,7 @@ const defaultData = {
   ],
   chatbotSettings: {
     enabled: true,
-    autoOpen: true,
+    autoOpen: false,
     welcomeMessage:
       'สวัสดีครับ/ค่ะ ยินดีต้อนรับสู่ PR - SAI Thailand! ผม/ดิฉันคือผู้ช่วย AI ประชาสัมพันธ์องค์กร พร้อมให้ข้อมูลภารกิจการตรวจเงินแผ่นดิน สื่อประชาสัมพันธ์ และรายงานข้อเท็จจริงสถานการณ์อาคาร สตง. ทรุดตัว สอบถามเรื่องใดได้เลยครับ/ค่ะ',
     updatedAt: new Date().toISOString(),

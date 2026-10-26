@@ -19,7 +19,6 @@ import {
   ArrowDown,
   Sparkles,
   Radio,
-  Music,
   Volume2,
   Database,
   BarChart3,
@@ -56,17 +55,17 @@ import {
   ViralClip,
   IncidentMilestone,
   HeroStory,
-  MusicSettings,
   ChatbotSettings,
   NewsSubscriber,
-  NewsBroadcastLog
+  NewsBroadcastLog,
+  MarqueeTickerSettings,
+  MarqueeMessageItem
 } from '../types';
 import {
-  defaultMusicSettings,
   defaultChatbotSettings,
   defaultNewsSubscribers,
   defaultNewsBroadcasts,
-  parseGoogleDriveAudioUrl,
+  defaultMarqueeTicker,
   saveNewsSubscriber,
   deleteNewsSubscriber,
   saveNewsBroadcast
@@ -76,6 +75,9 @@ import { ShareModal } from './ShareModal';
 import { PublishBroadcastConfirmModal } from './PublishBroadcastConfirmModal';
 import { SmtpConfigModal } from './SmtpConfigModal';
 import { AICoverStudioModal } from './AICoverStudioModal';
+import { BeaconRippleDot } from './BeaconRippleDot';
+import { MarqueeTicker } from './MarqueeTicker';
+import { AdminTickerTab } from './AdminTickerTab';
 import { playDigitalSound } from '../utils/audioEffects';
 
 interface AdminPanelProps {
@@ -93,12 +95,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onUpdateData,
   onLogout,
 }) => {
-  const [activeTab, setActiveTab] = useState<'summaries' | 'chatbot' | 'stories' | 'subscribers' | 'kb' | 'works' | 'clips' | 'timeline' | 'music'>('summaries');
+  const [activeTab, setActiveTab] = useState<'summaries' | 'ticker' | 'chatbot' | 'stories' | 'subscribers' | 'kb' | 'works' | 'clips' | 'timeline'>('summaries');
   const [timeframe, setTimeframe] = useState<'today' | '7days' | '30days' | 'all'>('7days');
   const [analyticsData, setAnalyticsData] = useState<AnalyticsSummary>(getAnalyticsSummary());
   const [isRefreshingStats, setIsRefreshingStats] = useState(false);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [testShareItem, setTestShareItem] = useState<{ id: string; title: string; category?: string; linkUrl?: string } | null>(null);
+
+  // Marquee Ticker Settings state (แถบประกาศวิ่งใต้บาร์บน)
+  const [tickerSettings, setTickerSettings] = useState<MarqueeTickerSettings>(
+    data.marqueeTicker || defaultMarqueeTicker
+  );
+  const [editingTickerMsg, setEditingTickerMsg] = useState<Partial<MarqueeMessageItem> | null>(null);
+  const [isAddTickerOpen, setIsAddTickerOpen] = useState(false);
+  const [tickerSaveNotice, setTickerSaveNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (data.marqueeTicker) {
+      setTickerSettings(data.marqueeTicker);
+    }
+  }, [data.marqueeTicker]);
 
   // News Subscribers Management & Pre-Publish Broadcast Confirmation
   const [pendingPublishStory, setPendingPublishStory] = useState<HeroStory | null>(null);
@@ -142,17 +158,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   }, [isOpen]);
 
-  // Direct Audio Quick Controller inside Admin
-  const [isAdminAudioPlaying, setIsAdminAudioPlaying] = useState(false);
-  const adminAudioRef = useRef<HTMLAudioElement | null>(null);
-
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // Background Music state
-  const [musicSettings, setMusicSettings] = useState<MusicSettings>(
-    data.musicSettings || defaultMusicSettings
-  );
 
   // Chatbot Settings state (ควบคุมการเปิด/ปิด AI Chatbot)
   const [chatbotSettings, setChatbotSettings] = useState<ChatbotSettings>(
@@ -257,7 +264,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const updated: ChatbotSettings = {
       ...chatbotSettings,
       enabled: enabledState,
-      autoOpen: enabledState ? true : chatbotSettings.autoOpen,
+      autoOpen: false, // Default is icon only - do not auto-open window
       updatedAt: new Date().toISOString(),
     };
     setChatbotSettings(updated);
@@ -282,6 +289,138 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
     await triggerSave(updatedData);
   };
+
+  // Marquee Ticker Handlers (จัดการแถบประกาศวิ่งใต้บาร์บน)
+  const handleSaveTickerSettings = async (newSettings: MarqueeTickerSettings) => {
+    setTickerSettings(newSettings);
+    const updatedData: AppData = {
+      ...data,
+      marqueeTicker: newSettings,
+    };
+    await triggerSave(updatedData);
+    setTickerSaveNotice('บันทึกการตั้งค่าแถบประกาศวิ่งเรียบร้อยแล้ว');
+    setTimeout(() => setTickerSaveNotice(null), 3000);
+  };
+
+  const handleToggleTicker = async (enabledState: boolean) => {
+    playDigitalSound(enabledState ? 'select' : 'blip');
+    const updated: MarqueeTickerSettings = {
+      ...tickerSettings,
+      enabled: enabledState,
+      updatedAt: new Date().toISOString(),
+    };
+    await handleSaveTickerSettings(updated);
+  };
+
+  const handleChangeTickerDirection = async (direction: 'left-to-right' | 'right-to-left') => {
+    playDigitalSound('blip');
+    const updated: MarqueeTickerSettings = {
+      ...tickerSettings,
+      direction,
+      updatedAt: new Date().toISOString(),
+    };
+    await handleSaveTickerSettings(updated);
+  };
+
+  const handleChangeTickerSpeed = async (seconds: number) => {
+    const updated: MarqueeTickerSettings = {
+      ...tickerSettings,
+      speedSeconds: seconds,
+      updatedAt: new Date().toISOString(),
+    };
+    await handleSaveTickerSettings(updated);
+  };
+
+  const handleToggleTickerPauseOnHover = async (pause: boolean) => {
+    playDigitalSound('blip');
+    const updated: MarqueeTickerSettings = {
+      ...tickerSettings,
+      pauseOnHover: pause,
+      updatedAt: new Date().toISOString(),
+    };
+    await handleSaveTickerSettings(updated);
+  };
+
+  const handleToggleTickerMessageActive = async (msgId: string) => {
+    playDigitalSound('blip');
+    const updatedMessages = tickerSettings.messages.map((m) =>
+      m.id === msgId ? { ...m, active: !m.active } : m
+    );
+    const updated: MarqueeTickerSettings = {
+      ...tickerSettings,
+      messages: updatedMessages,
+      updatedAt: new Date().toISOString(),
+    };
+    await handleSaveTickerSettings(updated);
+  };
+
+  const handleDeleteTickerMessage = async (msgId: string) => {
+    playDigitalSound('trash');
+    const updatedMessages = tickerSettings.messages.filter((m) => m.id !== msgId);
+    const updated: MarqueeTickerSettings = {
+      ...tickerSettings,
+      messages: updatedMessages,
+      updatedAt: new Date().toISOString(),
+    };
+    await handleSaveTickerSettings(updated);
+  };
+
+  const handleMoveTickerMessage = async (index: number, direction: 'up' | 'down') => {
+    playDigitalSound('blip');
+    const targetIdx = direction === 'up' ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= tickerSettings.messages.length) return;
+    const items = [...tickerSettings.messages];
+    const [moved] = items.splice(index, 1);
+    items.splice(targetIdx, 0, moved);
+    const updated: MarqueeTickerSettings = {
+      ...tickerSettings,
+      messages: items,
+      updatedAt: new Date().toISOString(),
+    };
+    await handleSaveTickerSettings(updated);
+  };
+
+  const handleSaveTickerMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTickerMsg || !editingTickerMsg.text?.trim()) return;
+    playDigitalSound('select');
+
+    let updatedList = [...tickerSettings.messages];
+    if (editingTickerMsg.id) {
+      updatedList = updatedList.map((m) =>
+        m.id === editingTickerMsg.id
+          ? {
+              ...m,
+              text: editingTickerMsg.text!.trim(),
+              textColor: editingTickerMsg.textColor || '#f59e0b',
+              dotColor: editingTickerMsg.dotColor || editingTickerMsg.textColor || '#f59e0b',
+              linkUrl: editingTickerMsg.linkUrl || '',
+              active: editingTickerMsg.active !== false,
+            }
+          : m
+      );
+    } else {
+      const newMsg: MarqueeMessageItem = {
+        id: `msg-${Date.now()}`,
+        text: editingTickerMsg.text.trim(),
+        textColor: editingTickerMsg.textColor || '#f59e0b',
+        dotColor: editingTickerMsg.dotColor || editingTickerMsg.textColor || '#f59e0b',
+        linkUrl: editingTickerMsg.linkUrl || '',
+        active: editingTickerMsg.active !== false,
+      };
+      updatedList.push(newMsg);
+    }
+
+    const updated: MarqueeTickerSettings = {
+      ...tickerSettings,
+      messages: updatedList,
+      updatedAt: new Date().toISOString(),
+    };
+    await handleSaveTickerSettings(updated);
+    setEditingTickerMsg(null);
+    setIsAddTickerOpen(false);
+  };
+
 
   // Summaries Handlers
   const handleRefreshAnalytics = () => {
@@ -333,7 +472,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       ['คลังสื่อดิจิทัล Published Works', `${data.publishedWorks.length} ชิ้นงาน`],
       ['คลิปและข่าวไวรัล Viral Clips', `${data.viralClips.length} คลิป`],
       ['จุดไทม์ไลน์อาคาร สตง.', `${data.incidentTimeline.length} บันทึก`],
-      ['สถานะเพลง Background Music', musicSettings.enabled ? 'เปิดใช้งาน' : 'ปิดใช้งาน'],
+      ['สถานะระบบ AI Chatbot', chatbotSettings.enabled ? 'เปิดใช้งาน' : 'ปิดใช้งาน'],
     ];
 
     const csvContent = '\uFEFF' + rows.map((e) => e.join(',')).join('\n');
@@ -347,27 +486,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     document.body.removeChild(link);
     setExportNotice('ดาวน์โหลดรายงานสรุป CSV เรียบร้อยแล้ว');
     setTimeout(() => setExportNotice(null), 3500);
-  };
-
-  const handleToggleAdminAudio = () => {
-    playDigitalSound('blip');
-    if (!adminAudioRef.current) {
-      const stream = parseGoogleDriveAudioUrl(musicSettings.driveUrl || musicSettings.streamUrl || '');
-      const audio = new Audio(stream);
-      audio.volume = Math.max(0.05, musicSettings.defaultVolume);
-      adminAudioRef.current = audio;
-    }
-
-    if (isAdminAudioPlaying) {
-      adminAudioRef.current?.pause();
-      setIsAdminAudioPlaying(false);
-    } else {
-      adminAudioRef.current?.play().then(() => {
-        setIsAdminAudioPlaying(true);
-      }).catch((e) => {
-        console.warn('Audio play notice:', e);
-      });
-    }
   };
 
   const storiesList = data.heroStories || [];
@@ -872,6 +990,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <button
             onClick={() => {
               playDigitalSound('select');
+              setActiveTab('ticker');
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
+              activeTab === 'ticker'
+                ? 'bg-gradient-to-r from-amber-500/30 via-yellow-600/30 to-amber-500/30 text-amber-200 border border-amber-400 font-bold shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            }`}
+          >
+            <div className="shrink-0">
+              <BeaconRippleDot color="#f59e0b" size="sm" />
+            </div>
+            <span>แถบประกาศวิ่ง Ticker</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                tickerSettings.enabled
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+              }`}
+            >
+              {tickerSettings.enabled ? `${tickerSettings.messages.filter((m) => m.active).length} ข้อความ` : 'ปิด'}
+            </span>
+          </button>
+          <button
+            onClick={() => {
+              playDigitalSound('select');
               setActiveTab('stories');
             }}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
@@ -940,17 +1083,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           >
             <Clock className="w-3.5 h-3.5" />
             <span>ไทม์ไลน์อาคาร สตง. ({data.incidentTimeline.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('music')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
-              activeTab === 'music'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-            }`}
-          >
-            <Music className="w-3.5 h-3.5 text-cyan-400" />
-            <span>เพลง</span>
           </button>
         </div>
 
@@ -1147,14 +1279,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 </div>
 
-                {/* 4. Audio Control & Cloud Status */}
+                {/* 4. Cloud & AI System Status */}
                 <div className="p-4 rounded-2xl bg-gradient-to-b from-[#091b48]/90 to-[#040e28]/95 border border-indigo-400/40 shadow-lg space-y-2 relative overflow-hidden group">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-300">
-                      เพลง & คลาวด์ สตง. 24 ชม.
+                      Cloud Firestore & AI สตง.
                     </span>
                     <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center">
-                      <Music className="w-4 h-4" />
+                      <Database className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
@@ -1162,44 +1294,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                         <span className="text-xs font-bold text-white">
-                          {musicSettings.enabled ? 'เปิดสตรีมสด 24 ชม.' : 'ปิดเพลงชั่วคราว'}
+                          คลาวด์ออนไลน์ 24 ชม.
                         </span>
                       </div>
                       <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
-                        เสียงเริ่มต้น {Math.round(musicSettings.defaultVolume * 100)}%
+                        AI Grounding: {data.knowledgeBase.length} หมวดความรู้
                       </span>
                     </div>
-
-                    {/* Admin Audio Preview Button */}
-                    <button
-                      type="button"
-                      onClick={handleToggleAdminAudio}
-                      className="px-2.5 py-1 rounded-lg bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-200 border border-indigo-400/50 text-xs font-semibold flex items-center gap-1 transition-all"
-                      title="ทดสอบฟังเสียงเพลงในแดชบอร์ด"
-                    >
-                      {isAdminAudioPlaying ? (
-                        <>
-                          <Pause className="w-3 h-3" />
-                          <span>หยุดฟัง</span>
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3 h-3 fill-current" />
-                          <span>ฟังทดสอบ</span>
-                        </>
-                      )}
-                    </button>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono border border-emerald-500/40">
+                      ONLINE
+                    </span>
                   </div>
                   <div className="pt-2 border-t border-indigo-500/20 flex items-center justify-between text-[11px] text-slate-400">
                     <span className="text-emerald-400 flex items-center gap-1">
-                      <Database className="w-3 h-3" />
-                      Firestore เชื่อมต่อแล้ว
+                      <CheckCircle2 className="w-3 h-3" />
+                      ความปลอดภัย 24/7
                     </span>
                     <button
-                      onClick={() => setActiveTab('music')}
+                      onClick={() => setActiveTab('chatbot')}
                       className="text-cyan-400 hover:underline text-[11px]"
                     >
-                      ตั้งค่าเพลง →
+                      ตั้งค่า AI →
                     </button>
                   </div>
                 </div>
@@ -1627,14 +1742,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <button
                     onClick={() => {
                       playDigitalSound('select');
-                      setActiveTab('music');
+                      setActiveTab('subscribers');
                     }}
-                    className="p-3 rounded-xl bg-[#030c26] hover:bg-cyan-500/20 border border-cyan-500/30 text-left transition-all hover:scale-[1.02]"
+                    className="p-3 rounded-xl bg-[#030c26] hover:bg-amber-500/20 border border-amber-500/30 text-left transition-all hover:scale-[1.02]"
                   >
-                    <Music className="w-4 h-4 text-emerald-400 mb-1" />
-                    <span className="text-xs font-bold text-white block">เพลง</span>
-                    <span className="text-[10px] text-emerald-400 font-mono">
-                      {musicSettings.enabled ? 'เปิดใช้งาน' : 'ปิด'}
+                    <Bell className="w-4 h-4 text-amber-400 mb-1" />
+                    <span className="text-xs font-bold text-white block">ผู้ติดตามข่าว</span>
+                    <span className="text-[10px] text-amber-300 font-mono">
+                      {subscribersList.length} อีเมล
                     </span>
                   </button>
                 </div>
@@ -1667,7 +1782,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </span>
                     </div>
                     <p className="text-xs text-slate-300 mt-1">
-                      ตั้งค่าการเปิด/ปิด AI Chatbot บนหน้าเว็บ: หากปิด ผู้ใช้งานทั่วไปจะไม่เห็น Chatbot เลย หากเปิด หน้าต่างจะขึ้นมาทันทีแม้อยู่หน้าแรกของทุกมุมมอง
+                      ตั้งค่าการเปิด/ปิด AI Chatbot บนหน้าเว็บ: เมื่อเปิดใช้งาน จะแสดงผลเป็นไอคอนปุ่มลอยมุมขวาล่าง ผู้ใช้สามารถคลิกเปิดหน้าต่างแชทได้ตามต้องการ
                     </p>
                   </div>
                 </div>
@@ -1716,11 +1831,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
                       {chatbotSettings.enabled ? (
                         <span className="text-emerald-300/90">
-                          ✓ <strong>เปิดใช้งานอยู่:</strong> ผู้ใช้งานทุกคนจะเห็น AI Chatbot และหน้าต่างสนทนาจะ{' '}
-                          <span className="underline decoration-cyan-400 underline-offset-2 font-bold text-white">
-                            เปิดขึ้นมาทันทีต้อนรับผู้ใช้งานตั้งแต่หน้าแรกในทุกมุมมอง
-                          </span>{' '}
-                          (Desktop, Tablet, Smartphone) ช่วยตอบคำถามเรื่องภารกิจ สตง. และสถานการณ์อาคาร สตง. ทรุดตัว ได้ 24 ชม.
+                          ✓ <strong>เปิดใช้งานอยู่:</strong> แสดงผลเป็นไอคอนปุ่มแชท AI ลอยอยู่มุมขวาล่างพร้อมให้บริการ (ยังไม่ต้องเปิดหน้าต่างแชทค้างไว้จนกว่าผู้ใช้จะกดเปิด)
                         </span>
                       ) : (
                         <span className="text-rose-300/90">
@@ -2839,256 +2950,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
-          {/* TAB 5: BACKGROUND MUSIC & FIREBASE ONLINE SETTINGS */}
-          {activeTab === 'music' && (
-            <div className="space-y-6 text-left">
-              {/* Firebase Online 24/7 Status Header */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#071946] to-[#041233] border border-cyan-500/40 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 shrink-0">
-                    <Database className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-white">Firebase Firestore Database (ออนไลน์ 24 ชม.)</h3>
-                      <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono border border-emerald-500/40">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                        ONLINE 24/7
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-300 mt-0.5">
-                      ฐานข้อมูลคลาวด์เชื่อมต่อสมบูรณ์: ข้อมูลสถิติผู้เข้าใช้, คลังความรู้ AI Grounding ตอบคำถาม 24 ชม., ภาพข่าว Hero ม้าหมุน, คลิป, และการตั้งค่าเพลง
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Music Configuration Card */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-[#061539] border border-cyan-500/30 space-y-5">
-                <div className="flex items-center justify-between border-b border-cyan-500/20 pb-3">
-                  <div className="flex items-center gap-2">
-                    <Music className="w-4 h-4 text-cyan-400" />
-                    <h4 className="text-sm font-bold text-white">ตั้งค่าเพลงประกอบเว็บไซต์ (Background Music)</h4>
-                  </div>
-                  <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-                    <span>เปิดใช้งานเพลงคลอ:</span>
-                    <input
-                      type="checkbox"
-                      checked={musicSettings.enabled}
-                      onChange={(e) => setMusicSettings({ ...musicSettings, enabled: e.target.checked })}
-                      className="w-4 h-4 accent-cyan-400 rounded cursor-pointer"
-                    />
-                  </label>
-                </div>
-
-                {/* Google Drive Link Input */}
-                {/* Google Drive Link Input & Presets */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-semibold text-slate-200">
-                      ลิงก์เพลงจาก Google Drive หรือ ลิงก์ไฟล์เสียง (Direct Audio Link):
-                    </label>
-                    <span className="text-[10px] text-cyan-400 font-mono">
-                      ระบบแปลงสตรีมผ่าน Audio Proxy อัตโนมัติ
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <input
-                      type="text"
-                      value={musicSettings.driveUrl}
-                      onChange={(e) => {
-                        const newUrl = e.target.value;
-                        const stream = parseGoogleDriveAudioUrl(newUrl);
-                        setMusicSettings({
-                          ...musicSettings,
-                          driveUrl: newUrl,
-                          streamUrl: stream,
-                        });
-                      }}
-                      placeholder="วางลิงก์ เช่น https://drive.google.com/file/d/1.../view หรือ ลิงก์ mp3"
-                      className="flex-1 px-3 py-2.5 bg-[#030d26] border border-cyan-500/40 focus:border-cyan-300 rounded-xl text-xs text-white placeholder-slate-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const stream = parseGoogleDriveAudioUrl(musicSettings.driveUrl);
-                        const testAudio = new Audio(stream);
-                        testAudio.volume = Math.max(0.05, musicSettings.defaultVolume);
-                        testAudio
-                          .play()
-                          .then(() => {
-                            setTimeout(() => {
-                              testAudio.pause();
-                            }, 6000);
-                          })
-                          .catch((err) => {
-                            console.warn('Test playback notice:', err);
-                            // Fallback direct preview
-                            const fallback = new Audio('https://cdn.freesound.org/previews/612/612095_5674468-lq.mp3');
-                            fallback.volume = musicSettings.defaultVolume;
-                            fallback.play().then(() => setTimeout(() => fallback.pause(), 5000)).catch(() => {});
-                          });
-                      }}
-                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/30 to-blue-500/30 hover:from-cyan-500/40 hover:to-blue-500/40 text-cyan-300 border border-cyan-400/50 text-xs font-semibold whitespace-nowrap active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                    >
-                      <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>ทดลองฟัง 6 วินาที</span>
-                    </button>
-                  </div>
-
-                  {/* Quick Preset Selector Buttons */}
-                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                    <span className="text-[10px] text-slate-400">เลือกทำนองแนะนำ:</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const link = 'https://drive.google.com/drive/u/0/home';
-                        setMusicSettings({
-                          ...musicSettings,
-                          driveUrl: link,
-                          streamUrl: parseGoogleDriveAudioUrl(link),
-                          title: 'PR - SAI Thailand Ambient Melody (เพลงบรรเลงประชาสัมพันธ์)',
-                        });
-                      }}
-                      className="text-[10px] px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-colors"
-                    >
-                      🎵 เพลงบรรเลงประชาสัมพันธ์ สตง.
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const link = 'https://cdn.freesound.org/previews/612/612095_5674468-lq.mp3';
-                        setMusicSettings({
-                          ...musicSettings,
-                          driveUrl: link,
-                          streamUrl: link,
-                          title: 'Digital Tech & Data Ambient (ทำนองดิจิทัลตรวจเงินแผ่นดิน)',
-                        });
-                      }}
-                      className="text-[10px] px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 transition-colors"
-                    >
-                      🌐 ดิจิทัลโมเดิร์น สตง.
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const link = 'https://cdn.freesound.org/previews/415/415804_5121236-lq.mp3';
-                        setMusicSettings({
-                          ...musicSettings,
-                          driveUrl: link,
-                          streamUrl: link,
-                          title: 'Peaceful Piano Harmony (เปียโนซอฟต์แอมเบียนต์)',
-                        });
-                      }}
-                      className="text-[10px] px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-colors"
-                    >
-                      🎹 เปียโนแอมเบียนต์ผ่อนคลาย
-                    </button>
-                  </div>
-
-                  {/* Google Drive Guide Box */}
-                  <div className="p-3.5 rounded-xl bg-[#030b20] border border-cyan-500/20 text-[11px] text-slate-300 space-y-1.5">
-                    <p className="font-semibold text-cyan-300 flex items-center gap-1">
-                      <span>💡 คำแนะนำการใส่ลิงก์เพลงจาก Google Drive:</span>
-                    </p>
-                    <ol className="list-decimal list-inside space-y-1 text-slate-400 text-[11px]">
-                      <li>อัปโหลดไฟล์เพลง (.mp3 / .wav / .m4a) ขึ้น Google Drive ของท่าน</li>
-                      <li>คลิกขวาที่ไฟล์ &gt; เลือก <strong>แชร์ (Share)</strong> &gt; ปรับสิทธิ์เป็น <strong>ทุกคนที่มีลิงก์ (Anyone with the link)</strong> เป็นผู้มีสิทธิ์ดู</li>
-                      <li>กด <strong>คัดลอกลิงก์ (Copy link)</strong> แล้วนำมาวางในช่องด้านบนนี้</li>
-                      <li>ระบบมีเซิร์ฟเวอร์ Audio Proxy จัดการดาวน์โหลดและสตรีมเสียงความคมชัดสูงให้โดยตรง ไม่ติดปัญหา CORS หรือการบล็อกของเบราว์เซอร์</li>
-                    </ol>
-                  </div>
-                </div>
-
-                {/* Track Title */}
-                <div className="space-y-1">
-                  <label className="block text-xs font-medium text-slate-200">ชื่อเพลงที่แสดงบนเครื่องเล่น:</label>
-                  <input
-                    type="text"
-                    value={musicSettings.title || ''}
-                    onChange={(e) => setMusicSettings({ ...musicSettings, title: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-lg text-xs text-white"
-                  />
-                </div>
-
-                {/* Sliders: Default Volume & Audio Ducking */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  {/* Default Volume (เปิด default เบาๆ) */}
-                  <div className="p-4 rounded-xl bg-[#040e28] border border-cyan-500/20 space-y-2.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-white flex items-center gap-1.5">
-                        <Volume2 className="w-4 h-4 text-cyan-400" />
-                        <span>ระดับเสียงปกติ (Default เบาๆ):</span>
-                      </span>
-                      <span className="font-mono text-cyan-300 font-bold text-sm">
-                        {Math.round(musicSettings.defaultVolume * 100)}%
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.02"
-                      max="0.40"
-                      step="0.01"
-                      value={musicSettings.defaultVolume}
-                      onChange={(e) => setMusicSettings({ ...musicSettings, defaultVolume: parseFloat(e.target.value) })}
-                      className="w-full accent-cyan-400 cursor-pointer h-2 bg-slate-800 rounded-lg"
-                    />
-                    <p className="text-[10px] text-slate-400">
-                      เสียงเพลงจะเปิดคลอเบาๆ ไม่ดังจนเกินไป สบายหูขณะเปิดอ่านข้อมูล (แนะนำ 15% - 20%)
-                    </p>
-                  </div>
-
-                  {/* Ducking Volume (เมื่อเปิดคลิป เสียงลดจนแทบไม่ได้ยิน) */}
-                  <div className="p-4 rounded-xl bg-[#040e28] border border-cyan-500/20 space-y-2.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-white flex items-center gap-1.5">
-                        <Film className="w-4 h-4 text-amber-400" />
-                        <span>ระดับเสียงเมื่อเปิดคลิป (Audio Ducking):</span>
-                      </span>
-                      <span className="font-mono text-amber-300 font-bold text-sm">
-                        {Math.round(musicSettings.duckingVolume * 100)}%
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.00"
-                      max="0.08"
-                      step="0.005"
-                      value={musicSettings.duckingVolume}
-                      onChange={(e) => setMusicSettings({ ...musicSettings, duckingVolume: parseFloat(e.target.value) })}
-                      className="w-full accent-amber-400 cursor-pointer h-2 bg-slate-800 rounded-lg"
-                    />
-                    <p className="text-[10px] text-slate-400">
-                      หากผู้ใช้เปิดคลิปวิดีโอหรือคลิปไวรัล เพลงจะลดเสียงลงแทบจะไม่ได้ยินทันที เพื่อไม่ให้รบกวนเสียงคลิป (แนะนำ 2% - 3%)
-                    </p>
-                  </div>
-                </div>
-
-                {/* Save to Firebase Button */}
-                <div className="flex justify-end pt-4 border-t border-cyan-500/20">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const stream = parseGoogleDriveAudioUrl(musicSettings.driveUrl);
-                      const finalSettings = {
-                        ...musicSettings,
-                        streamUrl: stream,
-                        updatedAt: new Date().toISOString(),
-                      };
-                      setMusicSettings(finalSettings);
-                      triggerSave({ ...data, musicSettings: finalSettings });
-                    }}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/25 active:scale-95 disabled:opacity-50 transition-all"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>{isSaving ? 'กำลังบันทึกลง Firebase Firestore...' : 'บันทึกการตั้งค่าเพลงลง Firebase 24 ชม.'}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Modal: Edit Hero Story - Scrollable & Sticky Action Buttons */}

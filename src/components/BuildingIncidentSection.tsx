@@ -259,7 +259,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
   return (
     <section
       id="incident-timeline"
-      className="relative pt-8 sm:pt-12 pb-2 sm:pb-3 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20 select-none"
+      className="relative pt-8 sm:pt-12 pb-8 sm:pb-14 mb-6 sm:mb-10 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto scroll-mt-20 select-none"
     >
       {/* =========================================================================
           THEME: TACTICAL EMERGENCY COMMAND & CRISIS INTELLIGENCE CENTER (EOC)

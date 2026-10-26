@@ -83,7 +83,7 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
             <div
               key={clip.id}
               onClick={() => handleOpenClip(clip)}
-              className="group cursor-pointer rounded-2xl bg-[#081a44]/90 border border-amber-400/30 hover:border-amber-400/70 transition-all duration-300 shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.25)] backdrop-blur-xl ring-1 ring-white/5 flex flex-col shrink-0 w-[260px] sm:w-[290px] md:w-[320px] snap-start overflow-hidden hover:scale-[1.01] active:scale-[0.99]"
+              className="group cursor-pointer rounded-2xl bg-[#081a44]/90 border border-amber-400/30 hover:border-amber-400/70 transition-all duration-300 shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.25)] backdrop-blur-xl ring-1 ring-white/5 flex flex-col shrink-0 w-[260px] sm:w-[290px] md:w-[320px] xl:w-[350px] 2xl:w-[380px] snap-start overflow-hidden hover:scale-[1.01] active:scale-[0.99]"
               title={`กดที่ภาพเพื่อชมคลิป: ${clip.title}`}
             >
               {/* ภาพเต็มของคลิป (Full Edge-to-Edge Image with Centered Play Button) */}

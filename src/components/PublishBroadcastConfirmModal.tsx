@@ -126,9 +126,12 @@ export const PublishBroadcastConfirmModal: React.FC<PublishBroadcastConfirmModal
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        const isJakwil = targetEmail.toLowerCase().endsWith('@jakwil.page');
         setInstantTestResult({
-          type: 'success',
-          message: `ส่งอีเมลจริงไปยัง ${targetEmail} สำเร็จแล้ว! (Message ID: ${data.messageId || 'OK'})`,
+          type: isJakwil ? 'warning' : 'success',
+          message: isJakwil
+            ? `เซิร์ฟเวอร์ส่งคำขอแล้ว แต่เนื่องจากโดเมน @jakwil.page ไม่มีระบบเซิร์ฟเวอร์รับอีเมล (ไม่มี DNS MX Records) ข้อความจึงไม่สามารถเข้ากล่องจดหมายได้ กรุณาระบุเป็นอีเมลจริง เช่น Gmail (@gmail.com) หรือ Hotmail ด้านล่างนี้เพื่อทดสอบรับข้อความจริง`
+            : `ส่งอีเมลจริงไปยัง ${targetEmail} สำเร็จแล้ว! (Message ID: ${data.messageId || 'OK'})`,
           recipient: targetEmail,
         });
         playDigitalSound('confirm');
@@ -481,15 +484,28 @@ export const PublishBroadcastConfirmModal: React.FC<PublishBroadcastConfirmModal
                   ทดสอบส่งอีเมลจริงด่วน (Instant Test Delivery)
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={() => handleInstantTestSend('jakwil@jakwil.page')}
-                disabled={isInstantTesting}
-                className="w-full sm:w-auto px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm disabled:opacity-50"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                <span>{isInstantTesting ? 'กำลังส่งทดสอบ...' : '⚡ ส่งทดสอบเข้า jakwil@jakwil.page ทันที'}</span>
-              </button>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handleInstantTestSend('rebellion.vip@gmail.com')}
+                  disabled={isInstantTesting}
+                  className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                  title="ทดสอบส่งเข้ากล่องจดหมาย rebellion.vip@gmail.com"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>⚡ ทดสอบส่ง rebellion.vip@gmail.com</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInstantTestSend(newRecipientInput.trim() || 'auditpicture.webapp@gmail.com')}
+                  disabled={isInstantTesting}
+                  className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-slate-950 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                  title="ทดสอบส่งเข้าอีเมลที่กรอกในช่องด้านล่าง"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>{newRecipientInput.trim() ? `⚡ ส่งทดสอบเข้า ${newRecipientInput.trim()}` : '⚡ ส่งทดสอบอีเมลที่ระบุ'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Manual Add Extra Recipient */}

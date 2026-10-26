@@ -137,6 +137,25 @@ export interface NewsBroadcastLog {
   smtpUser?: string;
 }
 
+export interface MarqueeMessageItem {
+  id: string;
+  text: string;
+  textColor?: string;
+  dotColor?: string;
+  linkUrl?: string;
+  active: boolean;
+}
+
+export interface MarqueeTickerSettings {
+  enabled: boolean;
+  direction: 'left-to-right' | 'right-to-left';
+  speedSeconds: number;
+  pauseOnHover: boolean;
+  prefixLabel?: string;
+  messages: MarqueeMessageItem[];
+  updatedAt?: string;
+}
+
 export interface AppData {
   heroStories: HeroStory[];
   knowledgeBase: KnowledgeItem[];
@@ -148,6 +167,7 @@ export interface AppData {
   newsSubscribers?: NewsSubscriber[];
   newsBroadcasts?: NewsBroadcastLog[];
   smtpSettings?: EmailSmtpSettings;
+  marqueeTicker?: MarqueeTickerSettings;
 }
 
 export interface ChatMessage {

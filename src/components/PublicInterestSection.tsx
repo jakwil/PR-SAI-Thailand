@@ -49,7 +49,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ on
   ];
 
   return (
-    <section id="public-interest" className="relative py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
+    <section id="public-interest" className="relative py-16 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto scroll-mt-20">
       {/* Dedicated Blurred Ambient Glow Behind e-Audit Section */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl" aria-hidden="true">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[750px] h-[450px] bg-gradient-to-r from-teal-600/18 via-cyan-600/15 to-blue-600/15 rounded-full blur-[130px]" />
@@ -70,7 +70,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ on
       </div>
 
       {/* Accordion List with Frosted Glass Blur & Elevated Contrast */}
-      <div className="grid grid-cols-1 gap-3.5 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 gap-3.5 max-w-4xl 2xl:max-w-5xl mx-auto">
         {faqItems.map((item, idx) => {
           const isOpen = openIndex === idx;
           const Icon = item.icon;

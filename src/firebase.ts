@@ -21,7 +21,8 @@ import {
   MusicSettings,
   ChatbotSettings,
   NewsSubscriber,
-  NewsBroadcastLog
+  NewsBroadcastLog,
+  MarqueeTickerSettings
 } from './types';
 
 // Initialize Firebase
@@ -136,21 +137,64 @@ export function parseGoogleDriveAudioUrl(url: string): string {
 
 // Default Music Settings
 export const defaultMusicSettings: MusicSettings = {
-  driveUrl: 'https://drive.google.com/drive/u/0/home',
-  streamUrl: '/api/audio-proxy?url=https%3A%2F%2Fdrive.google.com%2Fdrive%2Fu%2F0%2Fhome',
-  title: 'PR - SAI Thailand Ambient Melody (เพลงบรรเลงประชาสัมพันธ์)',
-  defaultVolume: 0.18, // 18% gentle volume by default as requested
-  duckingVolume: 0.03, // 3% almost inaudible during video playback
-  enabled: true,
+  driveUrl: '',
+  streamUrl: '',
+  title: 'PR - SAI Thailand Ambient Melody',
+  defaultVolume: 0,
+  duckingVolume: 0,
+  enabled: false,
   updatedAt: new Date().toISOString(),
 };
 
-// Default Chatbot Settings (เปิดใช้งานและขึ้นมาทันทีแม้อยู่หน้าแรกของทุกมุมมอง)
+// Default Chatbot Settings (เปิดใช้งานเป็นไอคอนเริ่มต้น ไม่เปิดหน้าต่างอ้าอัตโนมัติ)
 export const defaultChatbotSettings: ChatbotSettings = {
   enabled: true,
-  autoOpen: true,
+  autoOpen: false,
   welcomeMessage:
     'สวัสดีครับ/ค่ะ ยินดีต้อนรับสู่ PR - SAI Thailand! ผม/ดิฉันคือผู้ช่วย AI ประชาสัมพันธ์องค์กร พร้อมให้ข้อมูลภารกิจการตรวจเงินแผ่นดิน สื่อประชาสัมพันธ์ และรายงานข้อเท็จจริงสถานการณ์อาคาร สตง. ทรุดตัว สอบถามเรื่องใดได้เลยครับ/ค่ะ',
+  updatedAt: new Date().toISOString(),
+};
+
+// Default Marquee Ticker Settings (แถบข้อความประกาศวิ่งใต้บาร์บน)
+export const defaultMarqueeTicker: MarqueeTickerSettings = {
+  enabled: true,
+  direction: 'left-to-right', // Default direction requested by user: left to right
+  speedSeconds: 32,
+  pauseOnHover: true,
+  prefixLabel: '',
+  messages: [
+    {
+      id: 'msg-1',
+      text: 'ศูนย์กลางประชาสัมพันธ์และสื่อสารองค์กร สตง. · SAI THAILAND',
+      textColor: '#f59e0b',
+      dotColor: '#f59e0b',
+      active: true,
+    },
+    {
+      id: 'msg-2',
+      text: 'ร่วมสร้างความโปร่งใส แจ้งเบาะแสการใช้เงินแผ่นดิน โทรสายด่วน สตง. 1730 ตลอด 24 ชั่วโมง',
+      textColor: '#38bdf8',
+      dotColor: '#38bdf8',
+      linkUrl: 'tel:1730',
+      active: true,
+    },
+    {
+      id: 'msg-3',
+      text: 'ติดตามความคืบหน้าสถานการณ์อาคาร สตง. และมาตรการความปลอดภัยวิศวกรรมโครงสร้าง',
+      textColor: '#f43f5e',
+      dotColor: '#f43f5e',
+      linkUrl: '#incident-timeline',
+      active: true,
+    },
+    {
+      id: 'msg-4',
+      text: 'ขอรับการสนับสนุนสื่อประชาสัมพันธ์และวิทยากรได้ที่ระบบออนไลน์ pr-request-system',
+      textColor: '#34d399',
+      dotColor: '#34d399',
+      linkUrl: 'https://pr-request-system.vercel.app',
+      active: true,
+    },
+  ],
   updatedAt: new Date().toISOString(),
 };
 
@@ -432,11 +476,21 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
         onUpdate({ newsBroadcasts: defaultNewsBroadcasts });
       }
     },
+  // 10. Marquee Ticker Settings (แถบประกาศวิ่งใต้บาร์บน)
+  const unsubTicker = onSnapshot(
+    doc(db, 'settings', 'marqueeTicker'),
+    (docSnap) => {
+      if (docSnap.exists()) {
+        onUpdate({ marqueeTicker: docSnap.data() as MarqueeTickerSettings });
+      } else {
+        onUpdate({ marqueeTicker: defaultMarqueeTicker });
+      }
+    },
     (err) => {
-      handleFirestoreError(err, OperationType.LIST, 'newsBroadcasts');
+      handleFirestoreError(err, OperationType.GET, 'settings/marqueeTicker');
     }
   );
-  unsubscribers.push(unsubBroadcasts);
+  unsubscribers.push(unsubTicker);
 
   return () => {
     unsubscribers.forEach((unsub) => unsub());
@@ -540,6 +594,21 @@ export async function saveChatbotSettings(settings: ChatbotSettings) {
   }
 }
 
+// Save Marquee Ticker Settings to Firestore
+export async function saveMarqueeTickerSettings(settings: MarqueeTickerSettings) {
+  try {
+    const dataToSave: MarqueeTickerSettings = {
+      ...settings,
+      updatedAt: new Date().toISOString(),
+    };
+    await setDoc(doc(db, 'settings', 'marqueeTicker'), dataToSave);
+    return dataToSave;
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, 'settings/marqueeTicker');
+    throw err;
+  }
+}
+
 // Save Full App Data to Firestore
 export async function syncAllDataToFirestore(data: AppData) {
   try {
@@ -573,6 +642,9 @@ export async function syncAllDataToFirestore(data: AppData) {
     }
     if (data.chatbotSettings) {
       await saveChatbotSettings(data.chatbotSettings);
+    }
+    if (data.marqueeTicker) {
+      await saveMarqueeTickerSettings(data.marqueeTicker);
     }
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, 'bulkSync');

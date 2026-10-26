@@ -7,8 +7,8 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="border-t border-cyan-500/20 bg-[#020718] text-slate-400 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-8 border-b border-cyan-500/15">
+    <footer className="border-t border-cyan-500/20 bg-[#020718] text-slate-400 py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+      <div className="w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-8 border-b border-cyan-500/15">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <img
@@ -59,7 +59,7 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
+      <div className="w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
         <span>
           © 2026 PR - SAI Thailand (สำนักงานการตรวจเงินแผ่นดิน). All Rights Reserved.
         </span>
