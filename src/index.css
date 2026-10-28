@@ -304,29 +304,21 @@
 /* 10-Second Auto-Moving Clip Preview Keyframe */
 @keyframes clipPreviewMotion10s {
   0% {
-    transform: scale(1.0) translate(0%, 0%);
-    filter: brightness(1);
-  }
-  25% {
-    transform: scale(1.08) translate(-1.5%, -1%);
-    filter: brightness(1.04);
+    transform: scale(1.0);
   }
   50% {
-    transform: scale(1.14) translate(-3%, -2%);
-    filter: brightness(1.08);
-  }
-  75% {
-    transform: scale(1.08) translate(-1.5%, -1%);
-    filter: brightness(1.04);
+    transform: scale(1.04);
   }
   100% {
-    transform: scale(1.0) translate(0%, 0%);
-    filter: brightness(1);
+    transform: scale(1.0);
   }
 }
 
 .animate-clip-10s {
   animation: clipPreviewMotion10s 10s ease-in-out infinite;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
   will-change: transform;
 }
 
@@ -375,13 +367,13 @@
 .animate-marquee-track-left {
   display: flex;
   width: max-content;
-  animation: marqueeScrollLeft 50s linear infinite;
+  animation: marqueeScrollLeft 85s linear infinite;
 }
 
 .animate-marquee-track-right {
   display: flex;
   width: max-content;
-  animation: marqueeScrollRight 50s linear infinite;
+  animation: marqueeScrollRight 85s linear infinite;
 }
 
 .pause-animation {

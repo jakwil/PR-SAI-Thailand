@@ -49,11 +49,11 @@ const COLOR_PRESETS = [
 ];
 
 const SPEED_PRESETS = [
-  { label: 'ช้ามาก', seconds: 50 },
-  { label: 'ช้า', seconds: 38 },
-  { label: 'ปกติ', seconds: 28 },
+  { label: 'ช้ามากๆ', seconds: 85 },
+  { label: 'ช้ามาก', seconds: 65 },
+  { label: 'ช้า', seconds: 50 },
+  { label: 'ปกติ', seconds: 35 },
   { label: 'เร็ว', seconds: 20 },
-  { label: 'เร็วมาก', seconds: 14 },
 ];
 
 export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
@@ -194,19 +194,6 @@ export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => onChangeDirection('left-to-right')}
-                className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  settings.direction === 'left-to-right'
-                    ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
-                    : 'bg-[#040e28] border-slate-700 text-slate-400 hover:text-white'
-                }`}
-              >
-                <span>⬅️ ซ้ายไปขวา (แนะนำ)</span>
-                {settings.direction === 'left-to-right' && <Check className="w-3.5 h-3.5 text-amber-400" />}
-              </button>
-
-              <button
-                type="button"
                 onClick={() => onChangeDirection('right-to-left')}
                 className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   settings.direction === 'right-to-left'
@@ -214,8 +201,21 @@ export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
                     : 'bg-[#040e28] border-slate-700 text-slate-400 hover:text-white'
                 }`}
               >
-                <span>ขวาไปซ้าย ➡️</span>
+                <span>ขวาไปซ้าย (แนะนำ) ⬅️</span>
                 {settings.direction === 'right-to-left' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onChangeDirection('left-to-right')}
+                className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  settings.direction === 'left-to-right'
+                    ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                    : 'bg-[#040e28] border-slate-700 text-slate-400 hover:text-white'
+                }`}
+              >
+                <span>➡️ ซ้ายไปขวา</span>
+                {settings.direction === 'left-to-right' && <Check className="w-3.5 h-3.5 text-amber-400" />}
               </button>
             </div>
           </div>
@@ -257,16 +257,16 @@ export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
           {/* Range Slider */}
           <div>
             <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-              <span>เร็วมาก (12s)</span>
-              <span>ปกติ (28-35s)</span>
-              <span>ช้ามาก (60s)</span>
+              <span>เร็ว (15s)</span>
+              <span>ปกติ (35-50s)</span>
+              <span>ช้ามากๆ (85-120s)</span>
             </div>
             <input
               type="range"
-              min={12}
-              max={60}
-              step={2}
-              value={settings.speedSeconds || 32}
+              min={15}
+              max={120}
+              step={5}
+              value={settings.speedSeconds || 85}
               onChange={(e) => onChangeSpeed(Number(e.target.value))}
               className="w-full accent-amber-400 cursor-pointer"
             />

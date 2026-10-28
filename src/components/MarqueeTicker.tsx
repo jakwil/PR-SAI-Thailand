@@ -30,8 +30,8 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
     },
   ];
 
-  const direction = settings?.direction || 'left-to-right'; // User specified default: left to right
-  const speedSeconds = settings?.speedSeconds || 32;
+  const direction = settings?.direction || 'right-to-left'; // เลื่อนจากขวาไปซ้าย
+  const speedSeconds = settings?.speedSeconds || 85; // เคลื่อนไหวช้ามากๆ (85 วินาทีต่อรอบ)
   const pauseOnHover = settings?.pauseOnHover !== false;
 
   // Duplicate items 4 times to ensure seamless infinite looping track

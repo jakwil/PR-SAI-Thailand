@@ -437,7 +437,48 @@ const defaultData = {
       notifyCount: 0,
       updatedAt: new Date().toISOString()
     }
-  ]
+  ],
+  marqueeTicker: {
+    enabled: true,
+    direction: 'right-to-left',
+    speedSeconds: 85,
+    pauseOnHover: true,
+    prefixLabel: '',
+    messages: [
+      {
+        id: 'msg-1',
+        text: 'ศูนย์กลางประชาสัมพันธ์และสื่อสารองค์กร สตง. · SAI THAILAND',
+        textColor: '#f59e0b',
+        dotColor: '#f59e0b',
+        active: true,
+      },
+      {
+        id: 'msg-2',
+        text: 'ร่วมสร้างความโปร่งใส แจ้งเบาะแสการใช้เงินแผ่นดิน โทรสายด่วน สตง. 1730 ตลอด 24 ชั่วโมง',
+        textColor: '#38bdf8',
+        dotColor: '#38bdf8',
+        linkUrl: 'tel:1730',
+        active: true,
+      },
+      {
+        id: 'msg-3',
+        text: 'ติดตามความคืบหน้าสถานการณ์อาคาร สตง. และมาตรการความปลอดภัยวิศวกรรมโครงสร้าง',
+        textColor: '#f43f5e',
+        dotColor: '#f43f5e',
+        linkUrl: '#incident-timeline',
+        active: true,
+      },
+      {
+        id: 'msg-4',
+        text: 'ขอรับการสนับสนุนสื่อประชาสัมพันธ์และวิทยากรได้ที่ระบบออนไลน์ pr-request-system',
+        textColor: '#34d399',
+        dotColor: '#34d399',
+        linkUrl: 'https://pr-request-system.vercel.app',
+        active: true,
+      },
+    ],
+    updatedAt: new Date().toISOString(),
+  }
 };
 
 // Load or initialize data

@@ -355,7 +355,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const handleDeleteTickerMessage = async (msgId: string) => {
-    playDigitalSound('trash');
+    playDigitalSound('blip');
     const updatedMessages = tickerSettings.messages.filter((m) => m.id !== msgId);
     const updated: MarqueeTickerSettings = {
       ...tickerSettings,
@@ -1757,6 +1757,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
+          {/* TAB: MARQUEE TICKER MANAGEMENT (จัดการแถบประกาศวิ่งใต้บาร์บน) */}
+          {activeTab === 'ticker' && (
+            <AdminTickerTab
+              settings={tickerSettings}
+              onToggleEnabled={handleToggleTicker}
+              onChangeDirection={handleChangeTickerDirection}
+              onChangeSpeed={handleChangeTickerSpeed}
+              onTogglePauseOnHover={handleToggleTickerPauseOnHover}
+              onUpdatePrefix={async (prefix) => {
+                const updated: MarqueeTickerSettings = {
+                  ...tickerSettings,
+                  prefixLabel: prefix,
+                  updatedAt: new Date().toISOString(),
+                };
+                await handleSaveTickerSettings(updated);
+              }}
+              onToggleMessageActive={handleToggleTickerMessageActive}
+              onDeleteMessage={handleDeleteTickerMessage}
+              onMoveMessage={handleMoveTickerMessage}
+              onSaveMessage={handleSaveTickerMessage}
+              editingMsg={editingTickerMsg}
+              setEditingMsg={setEditingTickerMsg}
+              isAddOpen={isAddTickerOpen}
+              setIsAddOpen={setIsAddTickerOpen}
+              saveNotice={tickerSaveNotice}
+            />
+          )}
+
           {/* TAB: AI CHATBOT MANAGEMENT (เปิด/ปิด และควบคุมการแสดงผล) */}
           {activeTab === 'chatbot' && (
             <div className="space-y-6 text-left animate-fadeIn">
@@ -2071,8 +2099,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         alt={story.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            '/src/assets/images/sai_digital_network_1791693065277.jpg';
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = '/assets/images/sai_digital_network_1791693065277.jpg';
                         }}
                       />
                       <span className="absolute bottom-1 right-1 px-1 rounded bg-black/80 text-[9px] text-cyan-300 font-mono">
@@ -2684,7 +2713,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       alt={work.title}
                       className="w-28 h-24 object-cover rounded-lg shrink-0 border border-cyan-500/30"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/src/assets/images/sai_audit_hero_1791689796943.jpg';
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
                       }}
                     />
                     <div className="flex-1 flex flex-col justify-between">
@@ -3133,7 +3164,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           alt="Story Cover Preview"
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/src/assets/images/sai_digital_network_1791693065277.jpg';
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = '/assets/images/sai_digital_network_1791693065277.jpg';
                           }}
                         />
                         <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold bg-black/75 backdrop-blur-sm text-cyan-300 border border-cyan-400/40 font-mono">

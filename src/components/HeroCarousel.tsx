@@ -134,8 +134,9 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
                         animationPlayState: isPaused ? 'paused' : 'running',
                       }}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          '/src/assets/images/sai_digital_network_1791693065277.jpg';
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = '/assets/images/sai_digital_network_1791693065277.jpg';
                       }}
                     />
 

@@ -29,7 +29,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
       {/* 2. วิดีโอ คลิปไวรัล ต่อจาก Highlight เลย */}
       {clips && clips.length > 0 && (
-        <div className="w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto">
+        <div className="w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-2.5 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto">
           <ViralClipsSection clips={clips} onPlayingChange={onPlayingChange} />
         </div>
       )}

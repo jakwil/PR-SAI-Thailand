@@ -1008,8 +1008,9 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                       alt={currentItem.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          '/src/assets/images/sai_building_inspection_1791689807795.jpg';
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = '/assets/images/sai_building_inspection_1791689807795.jpg';
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />

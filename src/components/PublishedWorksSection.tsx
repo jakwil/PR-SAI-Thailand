@@ -320,26 +320,27 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                     className={`group relative shrink-0 snap-start rounded-lg sm:rounded-xl overflow-hidden cursor-pointer bg-slate-950 border border-slate-800 shadow-sm hover:shadow-xl hover:border-blue-500 hover:ring-2 hover:ring-blue-400/80 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:z-10 ${resConfig.containerClass}`}
                     title={`คลิกเปิดวิดีโอทันที: ${work.title}`}
                   >
-                    {/* Clip Image / Video Preview with 10s auto-movement */}
-                    <div className="relative w-full h-full overflow-hidden bg-slate-950">
+                    {/* Clip Image / Video Preview */}
+                    <div className="relative w-full h-full overflow-hidden bg-slate-950 transform-gpu">
                       <img
                         src={work.imageUrl}
                         alt={work.title}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover animate-clip-10s"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 transform-gpu"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            '/src/assets/images/sai_audit_hero_1791689796943.jpg';
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
                         }}
                       />
 
                       {/* Subtle Resolution Tag at top right */}
-                      <span className={`absolute top-1 sm:top-2 right-1 sm:right-2 z-10 px-1 sm:px-1.5 py-0.5 rounded text-[7.5px] sm:text-[9px] font-bold shadow-sm ${resConfig.badgeColor}`}>
+                      <span className={`absolute top-1 sm:top-2 right-1 sm:right-2 z-20 px-1 sm:px-1.5 py-0.5 rounded text-[7.5px] sm:text-[9px] font-bold shadow-sm ${resConfig.badgeColor}`}>
                         {resConfig.badge}
                       </span>
 
                       {/* Card Text: ONLY Clip Title at the bottom */}
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/95 via-slate-950/75 to-transparent pt-4 sm:pt-8 pb-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 pointer-events-none">
+                      <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-transparent pt-4 sm:pt-8 pb-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 pointer-events-none transform-gpu">
                         <h3 className="text-[10px] sm:text-[13px] font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-amber-300 transition-colors">
                           {work.title}
                         </h3>
@@ -395,25 +396,26 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                     className="group relative shrink-0 snap-start rounded-md sm:rounded-xl overflow-hidden cursor-pointer bg-slate-950 border border-slate-800 shadow-sm hover:shadow-xl hover:border-rose-500 hover:ring-2 hover:ring-rose-400/80 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:z-10 w-[88px] sm:w-[170px] h-[153px] sm:h-[300px]"
                     title={`คลิกเปิดวิดีโอทันที: ${work.title}`}
                   >
-                    <div className="relative w-full h-full overflow-hidden bg-slate-950">
+                    <div className="relative w-full h-full overflow-hidden bg-slate-950 transform-gpu">
                       <img
                         src={work.imageUrl}
                         alt={work.title}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover animate-clip-10s"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 transform-gpu"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            '/src/assets/images/sai_video_broadcast_1791791820641.jpg';
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = '/assets/images/sai_video_broadcast_1791791820641.jpg';
                         }}
                       />
 
                       {/* Resolution Tag at top right */}
-                      <span className="absolute top-1 sm:top-2 right-1 sm:right-2 z-10 px-1 sm:px-1.5 py-0.5 rounded text-[7.5px] sm:text-[9px] font-bold shadow-sm bg-rose-500/95 text-white">
+                      <span className="absolute top-1 sm:top-2 right-1 sm:right-2 z-20 px-1 sm:px-1.5 py-0.5 rounded text-[7.5px] sm:text-[9px] font-bold shadow-sm bg-rose-500/95 text-white">
                         {work.badge || '📱 9:16 Reel'}
                       </span>
 
                       {/* Card Text: ONLY Clip Title at the bottom */}
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/95 via-slate-950/75 to-transparent pt-4 sm:pt-8 pb-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 pointer-events-none">
+                      <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-transparent pt-4 sm:pt-8 pb-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 pointer-events-none transform-gpu">
                         <h3 className="text-[10px] sm:text-[13px] font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-rose-300 transition-colors">
                           {work.title}
                         </h3>

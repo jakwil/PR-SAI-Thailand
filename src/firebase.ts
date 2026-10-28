@@ -158,8 +158,8 @@ export const defaultChatbotSettings: ChatbotSettings = {
 // Default Marquee Ticker Settings (แถบข้อความประกาศวิ่งใต้บาร์บน)
 export const defaultMarqueeTicker: MarqueeTickerSettings = {
   enabled: true,
-  direction: 'left-to-right', // Default direction requested by user: left to right
-  speedSeconds: 32,
+  direction: 'right-to-left', // เปลี่ยนเป็นขวาไปซ้ายตามคำสั่งผู้ใช้
+  speedSeconds: 85, // เคลื่อนไหวช้ามากๆ (85 วินาทีต่อรอบ อ่านง่ายนุ่มนวล)
   pauseOnHover: true,
   prefixLabel: '',
   messages: [
@@ -476,6 +476,12 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
         onUpdate({ newsBroadcasts: defaultNewsBroadcasts });
       }
     },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'newsBroadcasts');
+    }
+  );
+  unsubscribers.push(unsubBroadcasts);
+
   // 10. Marquee Ticker Settings (แถบประกาศวิ่งใต้บาร์บน)
   const unsubTicker = onSnapshot(
     doc(db, 'settings', 'marqueeTicker'),

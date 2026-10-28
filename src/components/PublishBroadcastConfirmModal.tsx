@@ -355,7 +355,9 @@ export const PublishBroadcastConfirmModal: React.FC<PublishBroadcastConfirmModal
               referrerPolicy="no-referrer"
               className="w-full sm:w-28 h-20 object-cover rounded-lg border border-amber-400/40 shrink-0"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = '/src/assets/images/sai_digital_network_1791693065277.jpg';
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = '/assets/images/sai_digital_network_1791693065277.jpg';
               }}
             />
             <div className="flex-1 min-w-0 space-y-1">

@@ -167,7 +167,9 @@ export const SubscribeNewsModal: React.FC<SubscribeNewsModalProps> = ({
                 referrerPolicy="no-referrer"
                 className="w-20 h-16 sm:w-24 sm:h-18 object-cover rounded-lg shrink-0 border border-amber-400/30"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/src/assets/images/sai_digital_network_1791693065277.jpg';
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = '/assets/images/sai_digital_network_1791693065277.jpg';
                 }}
               />
               <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 text-left">
