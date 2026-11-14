@@ -68,7 +68,8 @@ import {
   defaultMarqueeTicker,
   saveNewsSubscriber,
   deleteNewsSubscriber,
-  saveNewsBroadcast
+  saveNewsBroadcast,
+  deleteItemFromFirestore
 } from '../firebase';
 import { getAnalyticsSummary, AnalyticsSummary } from '../utils/analytics';
 import { ShareModal } from './ShareModal';
@@ -160,6 +161,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Chatbot Settings state (ควบคุมการเปิด/ปิด AI Chatbot)
   const [chatbotSettings, setChatbotSettings] = useState<ChatbotSettings>(
@@ -185,6 +187,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showAiCoverModal, setShowAiCoverModal] = useState(false);
   const [uploadCoverSuccess, setUploadCoverSuccess] = useState<string | null>(null);
 
+  // Compress local uploaded image via Canvas so it fits cleanly inside Firestore (< 350KB) on any host
+  const compressImageToDataUrl = (file: File, maxWidth = 1280, quality = 0.82): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const src = ev.target?.result as string;
+        if (!src) return reject(new Error('ไม่สามารถอ่านไฟล์ภาพได้'));
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxWidth) {
+            h = Math.round((h * maxWidth) / w);
+            w = maxWidth;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve(src);
+          ctx.drawImage(img, 0, 0, w, h);
+          const compressed = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressed.length < src.length ? compressed : src);
+        };
+        img.onerror = () => resolve(src);
+        img.src = src;
+      };
+      reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleCoverFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -193,50 +227,41 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       setIsUploadingCover(true);
       playDigitalSound('select');
 
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const base64Data = event.target?.result as string;
-        if (!base64Data) return;
+      const compressedDataUrl = await compressImageToDataUrl(file);
+      let finalUrl = compressedDataUrl;
 
+      // Try local backend upload if not on static Cloudflare Pages; otherwise store compressed data URL directly in Firestore
+      const isPagesDev = typeof window !== 'undefined' && window.location.hostname.endsWith('.pages.dev');
+      if (!isPagesDev) {
         try {
           const res = await fetch('/api/upload-cover', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              imageBase64: base64Data,
+              imageBase64: compressedDataUrl,
               filename: file.name,
             }),
           });
-
           if (res.ok) {
             const resData = await res.json();
-            if (resData.imageUrl) {
-              setEditingStory((prev) => (prev ? { ...prev, imageUrl: resData.imageUrl } : prev));
-              setUploadCoverSuccess(`อัปโหลด "${file.name}" จากเครื่องสำเร็จ!`);
-              playDigitalSound('confirm');
-              setTimeout(() => setUploadCoverSuccess(null), 4000);
+            if (resData.imageUrl && !resData.inlineOnly) {
+              finalUrl = resData.imageUrl;
             }
-          } else {
-            // Fallback directly to base64 data URL
-            setEditingStory((prev) => (prev ? { ...prev, imageUrl: base64Data } : prev));
-            setUploadCoverSuccess(`โหลดภาพ "${file.name}" เข้าสู่ระบบเรียบร้อย!`);
-            playDigitalSound('confirm');
-            setTimeout(() => setUploadCoverSuccess(null), 4000);
           }
-        } catch (uploadErr) {
-          setEditingStory((prev) => (prev ? { ...prev, imageUrl: base64Data } : prev));
-          setUploadCoverSuccess(`โหลดภาพเข้าสู่ระบบเรียบร้อย!`);
-          playDigitalSound('confirm');
-          setTimeout(() => setUploadCoverSuccess(null), 4000);
-        } finally {
-          setIsUploadingCover(false);
-          if (coverFileInputRef.current) coverFileInputRef.current.value = '';
+        } catch {
+          // Use compressedDataUrl fallback seamlessly
         }
-      };
-      reader.readAsDataURL(file);
+      }
+
+      setEditingStory((prev) => (prev ? { ...prev, imageUrl: finalUrl } : prev));
+      setUploadCoverSuccess(`โหลดภาพ "${file.name}" เข้าสู่ระบบเรียบร้อย!`);
+      playDigitalSound('confirm');
+      setTimeout(() => setUploadCoverSuccess(null), 4000);
     } catch (err) {
       console.error('File reading error:', err);
+    } finally {
       setIsUploadingCover(false);
+      if (coverFileInputRef.current) coverFileInputRef.current.value = '';
     }
   };
 
@@ -247,12 +272,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const triggerSave = async (updatedData: AppData) => {
     setIsSaving(true);
+    setSaveError(null);
     try {
       await onUpdateData(updatedData);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2500);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save error', err);
+      setSaveError(err?.message || 'ไม่สามารถบันทึกข้อมูลลงฐานข้อมูลได้ กรุณาตรวจสอบสิทธิ์การเข้าสู่ระบบ');
+      setTimeout(() => setSaveError(null), 6000);
     } finally {
       setIsSaving(false);
     }
@@ -650,8 +678,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setPendingPublishStory(null);
   };
 
-  const handleDeleteStory = (id: string) => {
+  const handleDeleteStory = async (id: string) => {
     const updated = storiesList.filter((s) => s.id !== id);
+    await deleteItemFromFirestore('heroStories', id).catch(() => null);
     triggerSave({ ...data, heroStories: updated });
   };
 
@@ -767,8 +796,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setEditingKb(null);
   };
 
-  const handleDeleteKb = (id: string) => {
+  const handleDeleteKb = async (id: string) => {
     const updated = data.knowledgeBase.filter((k) => k.id !== id);
+    await deleteItemFromFirestore('knowledgeBase', id).catch(() => null);
     triggerSave({ ...data, knowledgeBase: updated });
   };
 
@@ -780,7 +810,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     let updatedList = [...data.publishedWorks];
     if (editingWork.id) {
       updatedList = updatedList.map((w) =>
-        w.id === editingWork.id ? ({ ...w, ...editingWork } as PublishedWork) : w
+        w.id === editingWork.id ? ({ ...w, ...editingWork, updatedAt: new Date().toISOString() } as PublishedWork) : w
       );
     } else {
       const newWork: PublishedWork = {
@@ -793,6 +823,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         publishDate: new Date().toISOString().split('T')[0],
         views: editingWork.views || '1,200',
         badge: editingWork.badge || 'ผลงานใหม่',
+        mediaType: editingWork.mediaType || 'photo',
+        resolution: editingWork.resolution || (editingWork.mediaType === 'video' ? '16:9' : '4:3'),
+        duration: editingWork.duration,
+        creator: editingWork.creator,
+        videoUrl: editingWork.videoUrl,
+        updatedAt: new Date().toISOString(),
       };
       updatedList.push(newWork);
     }
@@ -801,8 +837,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setEditingWork(null);
   };
 
-  const handleDeleteWork = (id: string) => {
+  const handleDeleteWork = async (id: string) => {
     const updated = data.publishedWorks.filter((w) => w.id !== id);
+    await deleteItemFromFirestore('publishedWorks', id).catch(() => null);
     triggerSave({ ...data, publishedWorks: updated });
   };
 
@@ -814,7 +851,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     let updatedList = [...data.viralClips];
     if (editingClip.id) {
       updatedList = updatedList.map((c) =>
-        c.id === editingClip.id ? ({ ...c, ...editingClip } as ViralClip) : c
+        c.id === editingClip.id ? ({ ...c, ...editingClip, updatedAt: new Date().toISOString() } as ViralClip) : c
       );
     } else {
       const newClip: ViralClip = {
@@ -826,6 +863,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         thumbnail: editingClip.thumbnail || '/src/assets/images/sai_public_campaign_1791689820118.jpg',
         linkUrl: editingClip.linkUrl || 'https://youtube.com',
         highlight: editingClip.highlight || 'คลิปประชาสัมพันธ์น่าสนใจ',
+        mediaType: editingClip.mediaType || 'video',
+        updatedAt: new Date().toISOString(),
       };
       updatedList.push(newClip);
     }
@@ -834,8 +873,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setEditingClip(null);
   };
 
-  const handleDeleteClip = (id: string) => {
+  const handleDeleteClip = async (id: string) => {
     const updated = data.viralClips.filter((c) => c.id !== id);
+    await deleteItemFromFirestore('viralClips', id).catch(() => null);
     triggerSave({ ...data, viralClips: updated });
   };
 
@@ -856,7 +896,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     let updatedList = [...data.incidentTimeline];
     if (editingMilestone.id) {
       updatedList = updatedList.map((m) =>
-        m.id === editingMilestone.id ? ({ ...m, ...editingMilestone } as IncidentMilestone) : m
+        m.id === editingMilestone.id ? ({ ...m, ...editingMilestone, updatedAt: new Date().toISOString() } as IncidentMilestone) : m
       );
     } else {
       const newMilestone: IncidentMilestone = {
@@ -877,6 +917,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         referenceUrl: editingMilestone.referenceUrl || '',
         colorAccent: editingMilestone.colorAccent || 'orange',
         icon: editingMilestone.icon || 'lightbulb',
+        updatedAt: new Date().toISOString(),
       };
       updatedList.push(newMilestone);
     }
@@ -885,8 +926,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setEditingMilestone(null);
   };
 
-  const handleDeleteMilestone = (id: string) => {
+  const handleDeleteMilestone = async (id: string) => {
     const updated = data.incidentTimeline.filter((m) => m.id !== id);
+    await deleteItemFromFirestore('incidentTimeline', id).catch(() => null);
     triggerSave({ ...data, incidentTimeline: updated });
   };
 
@@ -927,6 +969,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
 
           <div className="flex items-center gap-2.5">
+            {saveError && (
+              <span className="flex items-center gap-1.5 text-xs text-rose-300 bg-rose-500/15 border border-rose-500/40 px-2.5 py-1 rounded-lg font-medium animate-fadeIn">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                <span className="max-w-[240px] truncate" title={saveError}>{saveError}</span>
+              </span>
+            )}
             {saveSuccess && (
               <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium animate-fadeIn">
                 <CheckCircle className="w-3.5 h-3.5" />
@@ -2987,9 +3035,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         {editingStory && (
           <div
             className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-[70] overflow-y-auto animate-fadeIn"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setEditingStory(null);
-            }}
           >
             <div className="w-full max-w-2xl max-h-[92vh] bg-gradient-to-b from-[#091b48] via-[#07153b] to-[#040e28] border border-cyan-400/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto ring-1 ring-cyan-500/20">
               {/* Pinned Sticky Header */}
@@ -3302,9 +3347,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         {editingKb && (
           <div
             className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-[70] overflow-y-auto animate-fadeIn"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setEditingKb(null);
-            }}
           >
             <div className="w-full max-w-lg max-h-[92vh] bg-gradient-to-b from-[#091b48] via-[#07153b] to-[#040e28] border border-cyan-400/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto ring-1 ring-cyan-500/20">
               <div className="px-5 py-3.5 border-b border-cyan-500/25 bg-[#05112f] flex items-center justify-between shrink-0">
@@ -3409,9 +3451,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         {editingWork && (
           <div
             className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-[70] overflow-y-auto animate-fadeIn"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setEditingWork(null);
-            }}
           >
             <div className="w-full max-w-lg max-h-[92vh] bg-gradient-to-b from-[#091b48] via-[#07153b] to-[#040e28] border border-cyan-400/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto ring-1 ring-cyan-500/20">
               <div className="px-5 py-3.5 border-b border-cyan-500/25 bg-[#05112f] flex items-center justify-between shrink-0">
@@ -3576,9 +3615,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         {editingClip && (
           <div
             className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-[70] overflow-y-auto animate-fadeIn"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setEditingClip(null);
-            }}
           >
             <div className="w-full max-w-lg max-h-[92vh] bg-gradient-to-b from-[#091b48] via-[#07153b] to-[#040e28] border border-cyan-400/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto ring-1 ring-cyan-500/20">
               <div className="px-5 py-3.5 border-b border-cyan-500/25 bg-[#05112f] flex items-center justify-between shrink-0">
@@ -3697,9 +3733,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         {editingMilestone && (
           <div
             className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-[70] overflow-y-auto animate-fadeIn"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setEditingMilestone(null);
-            }}
           >
             <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-[#0f172a] via-[#0b1020] to-[#070b16] border-2 border-rose-500/50 rounded-3xl p-5 sm:p-7 shadow-2xl text-left ring-1 ring-white/10">
               <div className="flex items-center justify-between pb-3 mb-4 border-b border-rose-500/30">

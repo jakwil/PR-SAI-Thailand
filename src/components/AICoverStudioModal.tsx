@@ -124,9 +124,38 @@ export const AICoverStudioModal: React.FC<AICoverStudioModalProps> = ({
     }
   };
 
-  const handleApplyImage = (url: string) => {
+  const compressDataUrlIfNeeded = (url: string, maxChars = 450000): Promise<string> => {
+    if (!url.startsWith('data:image/') || url.length <= maxChars) {
+      return Promise.resolve(url);
+    }
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        const maxWidth = 1280;
+        if (w > maxWidth) {
+          h = Math.round((h * maxWidth) / w);
+          w = maxWidth;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve(url);
+        ctx.drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.82);
+        resolve(compressed.length < url.length ? compressed : url);
+      };
+      img.onerror = () => resolve(url);
+      img.src = url;
+    });
+  };
+
+  const handleApplyImage = async (url: string) => {
     playDigitalSound('confirm');
-    onSelectImage(url);
+    const safeUrl = await compressDataUrlIfNeeded(url);
+    onSelectImage(safeUrl);
     onClose();
   };
 

@@ -1,11 +1,17 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  User
+} from 'firebase/auth';
 import {
   getFirestore,
   doc,
   getDocFromServer,
   collection,
-  getDocs,
   setDoc,
   deleteDoc,
   onSnapshot
@@ -29,6 +35,50 @@ import {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
+
+export const ADMIN_EMAILS = [
+  'jakwil@jakwil.page',
+  'auditpicture.webapp@gmail.com',
+] as const;
+
+export function isAuthorizedAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  const normalized = email.trim().toLowerCase();
+  return (ADMIN_EMAILS as readonly string[]).includes(normalized);
+}
+
+export async function signInAdminWithGoogle(hintEmail?: string): Promise<User> {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({
+    prompt: 'select_account',
+    ...(hintEmail ? { login_hint: hintEmail } : {}),
+  });
+  const result = await signInWithPopup(auth, provider);
+  const email = result.user?.email?.trim().toLowerCase();
+  if (!isAuthorizedAdminEmail(email)) {
+    await signOut(auth);
+    throw new Error(
+      `บัญชี Google (${result.user?.email || 'ไม่ระบุอีเมล'}) ไม่มีสิทธิ์ผู้ดูแลระบบ (อนุญาตเฉพาะ jakwil@jakwil.page และ auditpicture.webapp@gmail.com)`
+    );
+  }
+  return result.user;
+}
+
+export async function signOutAdmin(): Promise<void> {
+  await signOut(auth);
+}
+
+export { onAuthStateChanged };
+
+function stripUndefined<T extends Record<string, any>>(obj: T): T {
+  const cleaned: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned as T;
+}
 
 // Test connection on boot as required by skill
 async function testConnection() {
@@ -440,48 +490,6 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
   );
   unsubscribers.push(unsubChatbot);
 
-  // 8. News Subscribers (ระบบผู้ติดตามข่าว Hero)
-  const unsubSubscribers = onSnapshot(
-    collection(db, 'newsSubscribers'),
-    (snapshot) => {
-      if (!snapshot.empty) {
-        const subs: NewsSubscriber[] = [];
-        snapshot.forEach((docSnap) => {
-          subs.push(docSnap.data() as NewsSubscriber);
-        });
-        subs.sort((a, b) => new Date(b.subscribedAt || 0).getTime() - new Date(a.subscribedAt || 0).getTime());
-        onUpdate({ newsSubscribers: subs });
-      } else {
-        onUpdate({ newsSubscribers: defaultNewsSubscribers });
-      }
-    },
-    (err) => {
-      handleFirestoreError(err, OperationType.LIST, 'newsSubscribers');
-    }
-  );
-  unsubscribers.push(unsubSubscribers);
-
-  // 9. News Broadcast Logs (ประวัติการส่งข่าวสารแจ้งเตือน)
-  const unsubBroadcasts = onSnapshot(
-    collection(db, 'newsBroadcasts'),
-    (snapshot) => {
-      if (!snapshot.empty) {
-        const logs: NewsBroadcastLog[] = [];
-        snapshot.forEach((docSnap) => {
-          logs.push(docSnap.data() as NewsBroadcastLog);
-        });
-        logs.sort((a, b) => new Date(b.sentAt || 0).getTime() - new Date(a.sentAt || 0).getTime());
-        onUpdate({ newsBroadcasts: logs });
-      } else {
-        onUpdate({ newsBroadcasts: defaultNewsBroadcasts });
-      }
-    },
-    (err) => {
-      handleFirestoreError(err, OperationType.LIST, 'newsBroadcasts');
-    }
-  );
-  unsubscribers.push(unsubBroadcasts);
-
   // 10. Marquee Ticker Settings (แถบประกาศวิ่งใต้บาร์บน)
   const unsubTicker = onSnapshot(
     doc(db, 'settings', 'marqueeTicker'),
@@ -503,37 +511,85 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
   };
 }
 
-// Seed initial data or update mock data into Firestore
+// Subscribe to Admin-only PII collections (News Subscribers & Broadcast History)
+export function subscribeToAdminData(onUpdate: (data: Partial<AppData>) => void) {
+  const unsubscribers: (() => void)[] = [];
+
+  // News Subscribers (ระบบผู้ติดตามข่าว Hero)
+  const unsubSubscribers = onSnapshot(
+    collection(db, 'newsSubscribers'),
+    (snapshot) => {
+      if (!snapshot.empty) {
+        const subs: NewsSubscriber[] = [];
+        snapshot.forEach((docSnap) => {
+          subs.push(docSnap.data() as NewsSubscriber);
+        });
+        subs.sort((a, b) => new Date(b.subscribedAt || 0).getTime() - new Date(a.subscribedAt || 0).getTime());
+        onUpdate({ newsSubscribers: subs });
+      } else {
+        onUpdate({ newsSubscribers: defaultNewsSubscribers });
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'newsSubscribers');
+    }
+  );
+  unsubscribers.push(unsubSubscribers);
+
+  // News Broadcast Logs (ประวัติการส่งข่าวสารแจ้งเตือน)
+  const unsubBroadcasts = onSnapshot(
+    collection(db, 'newsBroadcasts'),
+    (snapshot) => {
+      if (!snapshot.empty) {
+        const logs: NewsBroadcastLog[] = [];
+        snapshot.forEach((docSnap) => {
+          logs.push(docSnap.data() as NewsBroadcastLog);
+        });
+        logs.sort((a, b) => new Date(b.sentAt || 0).getTime() - new Date(a.sentAt || 0).getTime());
+        onUpdate({ newsBroadcasts: logs });
+      } else {
+        onUpdate({ newsBroadcasts: defaultNewsBroadcasts });
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'newsBroadcasts');
+    }
+  );
+  unsubscribers.push(unsubBroadcasts);
+
+  return () => {
+    unsubscribers.forEach((unsub) => unsub());
+  };
+}
+
+// Seed initial data or update mock data into Firestore (runs when authorized admin is signed in)
 export async function seedFirestoreIfEmpty(initialData: AppData) {
   try {
+    if (!isAuthorizedAdminEmail(auth.currentUser?.email)) {
+      return;
+    }
     const versionDoc = await getDocFromServer(doc(db, 'settings', 'mockup_version')).catch(() => null);
     const hasV2 = versionDoc && versionDoc.exists() && versionDoc.data()?.version === 'v2_multimodal_news';
 
     if (!hasV2) {
       console.log('Syncing multimodal mock news (photos, infographics, videos) to Firestore...');
-      // 1. Stories
       for (const story of initialData.heroStories) {
-        await setDoc(doc(db, 'heroStories', story.id), story, { merge: true });
+        await setDoc(doc(db, 'heroStories', story.id), stripUndefined(story), { merge: true });
       }
-      // 2. Knowledge
       for (const item of initialData.knowledgeBase) {
-        await setDoc(doc(db, 'knowledgeBase', item.id), item, { merge: true });
+        await setDoc(doc(db, 'knowledgeBase', item.id), stripUndefined(item), { merge: true });
       }
-      // 3. Published Works
       for (const work of initialData.publishedWorks) {
-        await setDoc(doc(db, 'publishedWorks', work.id), work, { merge: true });
+        await setDoc(doc(db, 'publishedWorks', work.id), stripUndefined(work), { merge: true });
       }
-      // 4. Viral Clips
       for (const clip of initialData.viralClips) {
-        await setDoc(doc(db, 'viralClips', clip.id), clip, { merge: true });
+        await setDoc(doc(db, 'viralClips', clip.id), stripUndefined(clip), { merge: true });
       }
-      // 5. Incident Timeline
       for (const item of initialData.incidentTimeline) {
-        await setDoc(doc(db, 'incidentTimeline', item.id), item, { merge: true });
+        await setDoc(doc(db, 'incidentTimeline', item.id), stripUndefined(item), { merge: true });
       }
-      // 6. Music Settings & Chatbot Settings & Version Tag
-      await setDoc(doc(db, 'settings', 'music'), defaultMusicSettings, { merge: true });
-      await setDoc(doc(db, 'settings', 'chatbot'), defaultChatbotSettings, { merge: true });
+      await setDoc(doc(db, 'settings', 'music'), stripUndefined(defaultMusicSettings), { merge: true });
+      await setDoc(doc(db, 'settings', 'chatbot'), stripUndefined(defaultChatbotSettings), { merge: true });
       await setDoc(doc(db, 'settings', 'mockup_version'), {
         version: 'v2_multimodal_news',
         updatedAt: new Date().toISOString(),
@@ -546,17 +602,31 @@ export async function seedFirestoreIfEmpty(initialData: AppData) {
   }
 }
 
+// Delete single item from Firestore collection
+export async function deleteItemFromFirestore(
+  collectionName: 'heroStories' | 'knowledgeBase' | 'publishedWorks' | 'viralClips' | 'incidentTimeline',
+  id: string
+): Promise<void> {
+  if (!id) return;
+  try {
+    await deleteDoc(doc(db, collectionName, id));
+  } catch (err) {
+    handleFirestoreError(err, OperationType.DELETE, `${collectionName}/${id}`);
+    throw err;
+  }
+}
+
 // Force reload mockup data into Firestore
 export async function reloadMockupDataToFirestore(mockData: AppData) {
   try {
     for (const story of mockData.heroStories) {
-      await setDoc(doc(db, 'heroStories', story.id), story, { merge: true });
+      await setDoc(doc(db, 'heroStories', story.id), stripUndefined(story), { merge: true });
     }
     for (const work of mockData.publishedWorks) {
-      await setDoc(doc(db, 'publishedWorks', work.id), work, { merge: true });
+      await setDoc(doc(db, 'publishedWorks', work.id), stripUndefined(work), { merge: true });
     }
     for (const clip of mockData.viralClips) {
-      await setDoc(doc(db, 'viralClips', clip.id), clip, { merge: true });
+      await setDoc(doc(db, 'viralClips', clip.id), stripUndefined(clip), { merge: true });
     }
     await setDoc(doc(db, 'settings', 'mockup_version'), {
       version: 'v2_multimodal_news',
@@ -572,11 +642,11 @@ export async function reloadMockupDataToFirestore(mockData: AppData) {
 export async function saveMusicSettings(settings: MusicSettings) {
   try {
     const streamUrl = parseGoogleDriveAudioUrl(settings.driveUrl);
-    const dataToSave: MusicSettings = {
+    const dataToSave: MusicSettings = stripUndefined({
       ...settings,
       streamUrl,
       updatedAt: new Date().toISOString(),
-    };
+    });
     await setDoc(doc(db, 'settings', 'music'), dataToSave);
     return dataToSave;
   } catch (err) {
@@ -588,10 +658,10 @@ export async function saveMusicSettings(settings: MusicSettings) {
 // Save Chatbot Settings to Firestore
 export async function saveChatbotSettings(settings: ChatbotSettings) {
   try {
-    const dataToSave: ChatbotSettings = {
+    const dataToSave: ChatbotSettings = stripUndefined({
       ...settings,
       updatedAt: new Date().toISOString(),
-    };
+    });
     await setDoc(doc(db, 'settings', 'chatbot'), dataToSave);
     return dataToSave;
   } catch (err) {
@@ -603,10 +673,10 @@ export async function saveChatbotSettings(settings: ChatbotSettings) {
 // Save Marquee Ticker Settings to Firestore
 export async function saveMarqueeTickerSettings(settings: MarqueeTickerSettings) {
   try {
-    const dataToSave: MarqueeTickerSettings = {
+    const dataToSave: MarqueeTickerSettings = stripUndefined({
       ...settings,
       updatedAt: new Date().toISOString(),
-    };
+    });
     await setDoc(doc(db, 'settings', 'marqueeTicker'), dataToSave);
     return dataToSave;
   } catch (err) {
@@ -617,43 +687,70 @@ export async function saveMarqueeTickerSettings(settings: MarqueeTickerSettings)
 
 // Save Full App Data to Firestore
 export async function syncAllDataToFirestore(data: AppData) {
-  try {
-    if (data.heroStories) {
-      for (const story of data.heroStories) {
-        await setDoc(doc(db, 'heroStories', story.id), story);
-      }
+  if (!isAuthorizedAdminEmail(auth.currentUser?.email)) {
+    throw new Error('กรุณาเข้าสู่ระบบด้วยบัญชี Google Admin ก่อนบันทึกข้อมูล');
+  }
+
+  let firstError: unknown = null;
+
+  const safeSet = async (col: string, id: string, payload: Record<string, any>) => {
+    try {
+      await setDoc(doc(db, col, id), stripUndefined(payload));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `${col}/${id}`);
+      if (!firstError) firstError = err;
     }
-    if (data.knowledgeBase) {
-      for (const kb of data.knowledgeBase) {
-        await setDoc(doc(db, 'knowledgeBase', kb.id), kb);
-      }
+  };
+
+  if (data.heroStories) {
+    for (const story of data.heroStories) {
+      await safeSet('heroStories', story.id, story);
     }
-    if (data.publishedWorks) {
-      for (const work of data.publishedWorks) {
-        await setDoc(doc(db, 'publishedWorks', work.id), work);
-      }
+  }
+  if (data.knowledgeBase) {
+    for (const kb of data.knowledgeBase) {
+      await safeSet('knowledgeBase', kb.id, kb);
     }
-    if (data.viralClips) {
-      for (const clip of data.viralClips) {
-        await setDoc(doc(db, 'viralClips', clip.id), clip);
-      }
+  }
+  if (data.publishedWorks) {
+    for (const work of data.publishedWorks) {
+      await safeSet('publishedWorks', work.id, work);
     }
-    if (data.incidentTimeline) {
-      for (const tl of data.incidentTimeline) {
-        await setDoc(doc(db, 'incidentTimeline', tl.id), tl);
-      }
+  }
+  if (data.viralClips) {
+    for (const clip of data.viralClips) {
+      await safeSet('viralClips', clip.id, clip);
     }
-    if (data.musicSettings) {
+  }
+  if (data.incidentTimeline) {
+    for (const tl of data.incidentTimeline) {
+      await safeSet('incidentTimeline', tl.id, tl);
+    }
+  }
+  if (data.musicSettings) {
+    try {
       await saveMusicSettings(data.musicSettings);
+    } catch (err) {
+      if (!firstError) firstError = err;
     }
-    if (data.chatbotSettings) {
+  }
+  if (data.chatbotSettings) {
+    try {
       await saveChatbotSettings(data.chatbotSettings);
+    } catch (err) {
+      if (!firstError) firstError = err;
     }
-    if (data.marqueeTicker) {
+  }
+  if (data.marqueeTicker) {
+    try {
       await saveMarqueeTickerSettings(data.marqueeTicker);
+    } catch (err) {
+      if (!firstError) firstError = err;
     }
-  } catch (err) {
-    handleFirestoreError(err, OperationType.WRITE, 'bulkSync');
+  }
+
+  if (firstError) {
+    throw firstError;
   }
 }
 

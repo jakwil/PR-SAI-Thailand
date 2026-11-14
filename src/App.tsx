@@ -9,8 +9,14 @@ import { AIChatbotWidget } from './components/AIChatbotWidget';
 import { AdminPanel } from './components/AdminPanel';
 import { Footer } from './components/Footer';
 import { ExecutiveDashboardModal } from './components/ExecutiveDashboardModal';
+import { AdminAuthModal } from './components/AdminAuthModal';
 import {
+  auth,
+  onAuthStateChanged,
+  isAuthorizedAdminEmail,
+  signOutAdmin,
   subscribeToAppData,
+  subscribeToAdminData,
   seedFirestoreIfEmpty,
   syncAllDataToFirestore,
   logVisitorAction,
@@ -23,6 +29,8 @@ import {
 import { AppData } from './types';
 import { ShieldCheck } from 'lucide-react';
 import { recordVisitorVisit } from './utils/analytics';
+
+const ADMIN_VERIFIED_SESSION_KEY = 'sai_admin_verified_email';
 
 // Default initial state
 const initialData: AppData = {
@@ -662,7 +670,9 @@ const initialData: AppData = {
 export default function App() {
   const [data, setData] = useState<AppData>(initialData);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const isChatbotEnabled = data.chatbotSettings?.enabled ?? true;
   // Default: icon button only (closed window) - user requested "เมื่อเปิดเวบขึ้นมาให้ส่วนของ AI Chatbot เป็น Icon ยังไม่ต้องเปิดหน้าต่างchat"
@@ -718,21 +728,18 @@ export default function App() {
     }
   };
 
-  // Initialize and synchronize with Firebase Firestore (24/7 online persistence)
+  // Initialize and synchronize public collections with Firebase Firestore (24/7 online persistence)
   useEffect(() => {
-    // 1. Seed initial data if Firestore collections are empty
-    seedFirestoreIfEmpty(initialData);
-
-    // 2. Real-time Firestore subscription
+    // 1. Real-time Firestore subscription for public content
     const unsubscribe = subscribeToAppData((partial) => {
       setData((prev) => ({ ...prev, ...partial }));
     });
 
-    // 3. Fallback server sync
+    // 2. Local Express fallback sync (skipped on Cloudflare Pages Edge noop)
     fetch('/api/data')
       .then((res) => (res.ok ? res.json() : null))
       .then((serverData) => {
-        if (serverData && serverData.knowledgeBase) {
+        if (serverData && serverData.knowledgeBase && serverData.source !== 'cloudflare-edge-noop') {
           setData((prev) => ({ ...prev, ...serverData }));
         }
       })
@@ -740,7 +747,7 @@ export default function App() {
         console.log('Using local/firebase seed data:', err.message);
       });
 
-    // 4. Log anonymous visitor action to Firestore & local analytics
+    // 3. Log anonymous visitor action to Firestore & local analytics
     logVisitorAction('visit_site', 'home');
     recordVisitorVisit();
 
@@ -749,30 +756,90 @@ export default function App() {
     };
   }, []);
 
+  // Watch Firebase Google Authentication state & Admin session verification
+  useEffect(() => {
+    let unsubAdminData: (() => void) | null = null;
+
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      if (unsubAdminData) {
+        unsubAdminData();
+        unsubAdminData = null;
+      }
+
+      const email = user?.email?.trim().toLowerCase() || '';
+      if (user && isAuthorizedAdminEmail(email)) {
+        // Seed Firestore if still unseeded now that an authorized admin is signed in
+        seedFirestoreIfEmpty(initialData);
+
+        // Subscribe to restricted admin collections (newsSubscribers, newsBroadcasts)
+        unsubAdminData = subscribeToAdminData((partial) => {
+          setData((prev) => ({ ...prev, ...partial }));
+        });
+
+        const verifiedEmail =
+          typeof window !== 'undefined' ? window.sessionStorage.getItem(ADMIN_VERIFIED_SESSION_KEY) : null;
+        if (verifiedEmail === email) {
+          setIsAdminLoggedIn(true);
+          setAdminEmail(email);
+        } else {
+          setIsAdminLoggedIn(false);
+          setAdminEmail(null);
+        }
+      } else {
+        setIsAdminLoggedIn(false);
+        setAdminEmail(null);
+        setIsAdminPanelOpen(false);
+        setIsExecutiveDashboardOpen(false);
+      }
+    });
+
+    return () => {
+      unsubAuth();
+      if (unsubAdminData) unsubAdminData();
+    };
+  }, []);
+
   const handleUpdateData = async (newData: AppData) => {
     setData(newData);
 
-    // 1. Save directly to Firebase Firestore
-    try {
-      await syncAllDataToFirestore(newData);
-    } catch (err) {
-      console.warn('Firestore sync notice:', err);
-    }
+    // 1. Save directly to Firebase Firestore (propagate error to AdminPanel banner if it fails)
+    await syncAllDataToFirestore(newData);
 
-    // 2. Save to local Express backend API
-    try {
-      await fetch('/api/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newData),
-      });
-    } catch (err) {
-      console.error('Failed to sync data with server', err);
-    }
+    // 2. Best-effort sync to local Express backend API (ignored gracefully on Cloudflare Pages)
+    fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newData),
+    }).catch(() => null);
   };
 
+  // Triggered after holding biometric fingerprint button for 3 seconds
   const handleBiometricSuccess = () => {
+    const currentEmail = auth.currentUser?.email?.trim().toLowerCase() || '';
+    const verifiedEmail =
+      typeof window !== 'undefined' ? window.sessionStorage.getItem(ADMIN_VERIFIED_SESSION_KEY) : null;
+
+    if (currentEmail && isAuthorizedAdminEmail(currentEmail) && verifiedEmail === currentEmail) {
+      setIsAdminLoggedIn(true);
+      setAdminEmail(currentEmail);
+      setIsAdminPanelOpen(true);
+      setLoginToast(true);
+      setTimeout(() => setLoginToast(false), 4000);
+      return;
+    }
+
+    // Enter Google Account selection + passcode mode
+    setIsAuthModalOpen(true);
+  };
+
+  const handleAuthSuccess = (email: string) => {
+    const normalized = email.trim().toLowerCase();
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(ADMIN_VERIFIED_SESSION_KEY, normalized);
+    }
+    setAdminEmail(normalized);
     setIsAdminLoggedIn(true);
+    setIsAuthModalOpen(false);
     setIsAdminPanelOpen(true);
     setLoginToast(true);
     setTimeout(() => {
@@ -780,9 +847,15 @@ export default function App() {
     }, 4000);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(ADMIN_VERIFIED_SESSION_KEY);
+    }
     setIsAdminLoggedIn(false);
+    setAdminEmail(null);
     setIsAdminPanelOpen(false);
+    setIsExecutiveDashboardOpen(false);
+    await signOutAdmin().catch(() => null);
   };
 
   const handleScrollToTimeline = () => {
@@ -833,14 +906,14 @@ export default function App() {
           searchData={data}
         />
 
-        {/* Successful Biometric Admin Login Toast Notification */}
+        {/* Successful Biometric + Google Admin Login Toast Notification */}
         {loginToast && (
           <div className="fixed top-20 right-5 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#06153d] border border-cyan-500/50 text-cyan-300 text-xs shadow-2xl shadow-cyan-500/20 animate-fadeIn">
             <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
             <div>
-              <span className="font-semibold block text-white">ยืนยันตัวตน Biometric สำเร็จ</span>
+              <span className="font-semibold block text-white">ยืนยันตัวตนผู้ดูแลระบบสำเร็จ</span>
               <span className="text-[11px] text-cyan-400 font-mono">
-                เข้าสู่ระบบ: auditpicture.webapp@gmail.com
+                เข้าสู่ระบบ: {adminEmail || 'ผู้ดูแลระบบ สตง.'}
               </span>
             </div>
           </div>
@@ -872,9 +945,16 @@ export default function App() {
 
         <Footer />
 
-        {/* Admin Management Dashboard (Directly opened upon 3-second biometric hold) */}
+        {/* Google Account + Passcode Authentication Modal (Opened after 3s biometric hold) */}
+        <AdminAuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onAuthSuccess={handleAuthSuccess}
+        />
+
+        {/* Admin Management Dashboard (Strict access for authenticated admin only) */}
         <AdminPanel
-          isOpen={isAdminPanelOpen}
+          isOpen={isAdminLoggedIn && isAdminPanelOpen}
           onClose={() => setIsAdminPanelOpen(false)}
           data={data}
           onUpdateData={handleUpdateData}
@@ -889,6 +969,7 @@ export default function App() {
             externalPrompt={externalChatPrompt}
             onClearExternalPrompt={() => setExternalChatPrompt(null)}
             welcomeMessage={data.chatbotSettings?.welcomeMessage}
+            appData={data}
           />
         )}
 

@@ -5,16 +5,17 @@
       "description": "Featured news and cinematic showcase story displayed on the hero carousel",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "maxLength": 128 },
         "title": { "type": "string", "maxLength": 300 },
         "subtitle": { "type": "string", "maxLength": 1000 },
         "category": { "type": "string", "maxLength": 100 },
-        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "imageUrl": { "type": "string", "maxLength": 700000 },
         "linkUrl": { "type": "string", "maxLength": 1000 },
         "date": { "type": "string", "maxLength": 50 },
         "badge": { "type": "string", "maxLength": 50 },
+        "mediaType": { "type": "string", "enum": ["photo", "infographic", "video", "report"] },
         "order": { "type": "number" },
-        "updatedAt": { "type": "string" }
+        "updatedAt": { "type": "string", "maxLength": 100 }
       },
       "required": ["id", "title", "subtitle", "category", "imageUrl", "linkUrl", "date", "order"]
     },
@@ -23,14 +24,14 @@
       "description": "Organizational knowledge base item used for AI grounding and public retrieval",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "maxLength": 128 },
         "title": { "type": "string", "maxLength": 300 },
         "category": { "type": "string", "maxLength": 100 },
         "content": { "type": "string", "maxLength": 10000 },
         "sourceType": { "type": "string", "enum": ["url", "raw_text", "pdf_summary", "infographic"] },
         "sourceUrl": { "type": "string", "maxLength": 1000 },
         "dateAdded": { "type": "string", "maxLength": 50 },
-        "updatedAt": { "type": "string" }
+        "updatedAt": { "type": "string", "maxLength": 100 }
       },
       "required": ["id", "title", "category", "content", "sourceType", "dateAdded"]
     },
@@ -39,16 +40,21 @@
       "description": "Public relations published work, video, or document",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "maxLength": 128 },
         "title": { "type": "string", "maxLength": 300 },
         "category": { "type": "string", "maxLength": 100 },
         "description": { "type": "string", "maxLength": 2000 },
         "linkUrl": { "type": "string", "maxLength": 1000 },
-        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "imageUrl": { "type": "string", "maxLength": 700000 },
         "publishDate": { "type": "string", "maxLength": 50 },
         "views": { "type": "string", "maxLength": 50 },
         "badge": { "type": "string", "maxLength": 50 },
-        "updatedAt": { "type": "string" }
+        "mediaType": { "type": "string", "enum": ["photo", "infographic", "video", "report"] },
+        "videoUrl": { "type": "string", "maxLength": 1000 },
+        "resolution": { "type": "string", "enum": ["16:9", "9:16", "1:1", "4:3", "21:9"] },
+        "duration": { "type": "string", "maxLength": 50 },
+        "creator": { "type": "string", "maxLength": 150 },
+        "updatedAt": { "type": "string", "maxLength": 100 }
       },
       "required": ["id", "title", "category", "description", "linkUrl", "imageUrl", "publishDate", "views"]
     },
@@ -57,15 +63,16 @@
       "description": "Video clips and social highlights of PR - SAI Thailand",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "maxLength": 128 },
         "title": { "type": "string", "maxLength": 300 },
         "creator": { "type": "string", "maxLength": 150 },
         "views": { "type": "string", "maxLength": 50 },
         "duration": { "type": "string", "maxLength": 30 },
-        "thumbnail": { "type": "string", "maxLength": 1000 },
+        "thumbnail": { "type": "string", "maxLength": 700000 },
         "linkUrl": { "type": "string", "maxLength": 1000 },
         "highlight": { "type": "string", "maxLength": 500 },
-        "updatedAt": { "type": "string" }
+        "mediaType": { "type": "string", "enum": ["video", "motion_graphic", "short"] },
+        "updatedAt": { "type": "string", "maxLength": 100 }
       },
       "required": ["id", "title", "creator", "views", "duration", "thumbnail", "linkUrl", "highlight"]
     },
@@ -74,16 +81,24 @@
       "description": "Chronological milestone of the SAI building situation and engineering response",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "maxLength": 128 },
         "date": { "type": "string", "maxLength": 50 },
         "time": { "type": "string", "maxLength": 30 },
         "phase": { "type": "string", "maxLength": 100 },
         "title": { "type": "string", "maxLength": 300 },
         "description": { "type": "string", "maxLength": 2000 },
         "status": { "type": "string", "maxLength": 100 },
-        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "imageUrl": { "type": "string", "maxLength": 700000 },
         "technicalDetails": { "type": "string", "maxLength": 2000 },
-        "updatedAt": { "type": "string" }
+        "shortTitle": { "type": "string", "maxLength": 100 },
+        "fullStatement": { "type": "string", "maxLength": 10000 },
+        "mediaType": { "type": "string", "enum": ["photo", "video"] },
+        "videoUrl": { "type": "string", "maxLength": 1000 },
+        "referenceTitle": { "type": "string", "maxLength": 300 },
+        "referenceUrl": { "type": "string", "maxLength": 1000 },
+        "colorAccent": { "type": "string", "maxLength": 50 },
+        "icon": { "type": "string", "maxLength": 50 },
+        "updatedAt": { "type": "string", "maxLength": 100 }
       },
       "required": ["id", "date", "time", "phase", "title", "description", "status", "imageUrl", "technicalDetails"]
     },
@@ -98,9 +113,72 @@
         "defaultVolume": { "type": "number" },
         "duckingVolume": { "type": "number" },
         "enabled": { "type": "boolean" },
-        "updatedAt": { "type": "string" }
+        "updatedAt": { "type": "string", "maxLength": 100 }
       },
       "required": ["driveUrl", "defaultVolume", "duckingVolume", "enabled"]
+    },
+    "ChatbotSettings": {
+      "title": "ChatbotSettings",
+      "description": "AI Chatbot visibility and welcome message configuration",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "autoOpen": { "type": "boolean" },
+        "welcomeMessage": { "type": "string", "maxLength": 2000 },
+        "updatedAt": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["enabled"]
+    },
+    "MarqueeTickerSettings": {
+      "title": "MarqueeTickerSettings",
+      "description": "Top marquee ticker announcement configuration",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "direction": { "type": "string", "enum": ["left-to-right", "right-to-left"] },
+        "speedSeconds": { "type": "number" },
+        "pauseOnHover": { "type": "boolean" },
+        "prefixLabel": { "type": "string", "maxLength": 100 },
+        "messages": { "type": "array" },
+        "updatedAt": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["enabled", "direction", "speedSeconds", "pauseOnHover"]
+    },
+    "NewsSubscriber": {
+      "title": "NewsSubscriber",
+      "description": "Public news alert subscriber entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 200 },
+        "storyId": { "type": "string", "maxLength": 128 },
+        "storyTitle": { "type": "string", "maxLength": 300 },
+        "category": { "type": "string", "maxLength": 100 },
+        "subscribedAt": { "type": "string", "maxLength": 60 },
+        "active": { "type": "boolean" },
+        "tags": { "type": "array" },
+        "lastNotifiedAt": { "type": "string", "maxLength": 60 },
+        "notifyCount": { "type": "number" },
+        "updatedAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["id", "email", "storyId", "storyTitle", "subscribedAt"]
+    },
+    "NewsBroadcast": {
+      "title": "NewsBroadcast",
+      "description": "Broadcast email dispatch history log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "storyId": { "type": "string", "maxLength": 128 },
+        "storyTitle": { "type": "string", "maxLength": 300 },
+        "subject": { "type": "string", "maxLength": 300 },
+        "summary": { "type": "string", "maxLength": 1000 },
+        "recipientCount": { "type": "number" },
+        "recipients": { "type": "array" },
+        "aiGenerated": { "type": "boolean" },
+        "sentAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["id", "storyId", "storyTitle", "subject", "sentAt", "recipientCount"]
     },
     "VisitorLog": {
       "title": "VisitorLog",
@@ -136,9 +214,25 @@
       "schema": { "$ref": "#/entities/IncidentMilestone" },
       "description": "SAI Building incident timeline milestones"
     },
+    "/newsSubscribers/{subscriberId}": {
+      "schema": { "$ref": "#/entities/NewsSubscriber" },
+      "description": "Email subscribers for news updates"
+    },
+    "/newsBroadcasts/{broadcastId}": {
+      "schema": { "$ref": "#/entities/NewsBroadcast" },
+      "description": "News broadcast history logs"
+    },
     "/settings/music": {
       "schema": { "$ref": "#/entities/MusicSettings" },
       "description": "Global background music and Google Drive stream settings"
+    },
+    "/settings/chatbot": {
+      "schema": { "$ref": "#/entities/ChatbotSettings" },
+      "description": "AI Chatbot toggle and settings"
+    },
+    "/settings/marqueeTicker": {
+      "schema": { "$ref": "#/entities/MarqueeTickerSettings" },
+      "description": "Announcement ticker settings"
     },
     "/visitorLogs/{logId}": {
       "schema": { "$ref": "#/entities/VisitorLog" },

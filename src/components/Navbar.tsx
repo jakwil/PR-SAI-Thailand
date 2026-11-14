@@ -42,10 +42,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const animationRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
-  const HOLD_DURATION = 2500; // 2.5 seconds hold duration for snappy mobile UX
+  const HOLD_DURATION = 3000; // 3 seconds hold duration as requested
 
   const startHold = () => {
-    if (isAdminLoggedIn || scanSuccess) {
+    if (isAdminLoggedIn || scanSuccess || isHolding) {
       if (isAdminLoggedIn) onOpenAdminPanel();
       return;
     }
@@ -269,14 +269,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               ) : (
                 <div
-                  className="relative w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center select-none cursor-pointer"
+                  className="relative w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center select-none touch-none cursor-pointer"
                   onMouseDown={startHold}
                   onMouseUp={cancelHold}
                   onMouseLeave={cancelHold}
                   onTouchStart={startHold}
                   onTouchEnd={cancelHold}
                   onTouchCancel={cancelHold}
-                  title="แตะค้าง 2.5 วินาทีเพื่อเข้าสู่ระบบ Admin"
+                  onContextMenu={(e) => e.preventDefault()}
+                  title="แตะค้าง 3 วินาทีเพื่อเข้าสู่โหมดเลือก Google Account (Admin)"
                 >
                   {/* Circular Progress Ring */}
                   <svg viewBox="0 0 32 32" className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">

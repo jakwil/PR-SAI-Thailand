@@ -13,7 +13,7 @@ import {
   RotateCcw,
   ExternalLink
 } from 'lucide-react';
-import { ChatMessage } from '../types';
+import { ChatMessage, AppData } from '../types';
 
 interface AIChatbotWidgetProps {
   isOpen: boolean;
@@ -21,6 +21,7 @@ interface AIChatbotWidgetProps {
   externalPrompt?: string | null;
   onClearExternalPrompt?: () => void;
   welcomeMessage?: string;
+  appData?: AppData;
 }
 
 export const AIChatbotWidget: React.FC<AIChatbotWidgetProps> = ({
@@ -29,6 +30,7 @@ export const AIChatbotWidget: React.FC<AIChatbotWidgetProps> = ({
   externalPrompt,
   onClearExternalPrompt,
   welcomeMessage,
+  appData,
 }) => {
   const defaultGreeting =
     welcomeMessage ||
@@ -107,7 +109,16 @@ export const AIChatbotWidget: React.FC<AIChatbotWidgetProps> = ({
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({
+          message: text,
+          contextData: appData
+            ? {
+                knowledgeBase: (appData.knowledgeBase || []).slice(0, 30),
+                publishedWorks: (appData.publishedWorks || []).slice(0, 20),
+                incidentTimeline: (appData.incidentTimeline || []).slice(0, 20),
+              }
+            : undefined,
+        }),
       });
 
       const data = await res.json();

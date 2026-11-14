@@ -147,7 +147,22 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
   };
 
   const handleOpenCard = (work: PublishedWork) => {
-    playDigitalSound('select');
+    playDigitalSound('click');
+    let targetUrl = work.linkUrl?.trim() || '';
+    if (targetUrl && targetUrl !== '#' && !targetUrl.startsWith('#')) {
+      if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+        targetUrl = `https://${targetUrl}`;
+      }
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (targetUrl.startsWith('#')) {
+      const el = document.querySelector(targetUrl);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+    }
     setActiveModalWork(work);
     setModalVideoPlaying(true);
     setCopiedLink(false);
@@ -317,8 +332,8 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                   <div
                     key={`r1-${work.id}`}
                     onClick={() => handleOpenCard(work)}
-                    className={`group relative shrink-0 snap-start rounded-lg sm:rounded-xl overflow-hidden cursor-pointer bg-slate-950 border border-slate-800 shadow-sm hover:shadow-xl hover:border-blue-500 hover:ring-2 hover:ring-blue-400/80 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:z-10 ${resConfig.containerClass}`}
-                    title={`คลิกเปิดวิดีโอทันที: ${work.title}`}
+                    className={`group relative shrink-0 snap-start rounded-lg sm:rounded-xl overflow-hidden cursor-pointer bg-slate-950 border border-slate-800 shadow-sm hover:shadow-xl hover:border-cyan-400 hover:ring-2 hover:ring-cyan-400/80 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:z-10 ${resConfig.containerClass}`}
+                    title={`คลิกเปิดลิงก์ดาวน์โหลด: ${work.title}`}
                   >
                     {/* Clip Image / Video Preview */}
                     <div className="relative w-full h-full overflow-hidden bg-slate-950 transform-gpu">
@@ -339,11 +354,16 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                         {resConfig.badge}
                       </span>
 
-                      {/* Card Text: ONLY Clip Title at the bottom */}
+                      {/* Card Text: Clip Title + Direct External Link indicator */}
                       <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-transparent pt-4 sm:pt-8 pb-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 pointer-events-none transform-gpu">
-                        <h3 className="text-[10px] sm:text-[13px] font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-amber-300 transition-colors">
-                          {work.title}
-                        </h3>
+                        <div className="flex items-end justify-between gap-1">
+                          <h3 className="text-[10px] sm:text-[13px] font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-amber-300 transition-colors flex-1">
+                            {work.title}
+                          </h3>
+                          <div className="shrink-0 p-1 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ExternalLink className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -394,7 +414,7 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                     key={`r2-${work.id}`}
                     onClick={() => handleOpenCard(work)}
                     className="group relative shrink-0 snap-start rounded-md sm:rounded-xl overflow-hidden cursor-pointer bg-slate-950 border border-slate-800 shadow-sm hover:shadow-xl hover:border-rose-500 hover:ring-2 hover:ring-rose-400/80 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:z-10 w-[88px] sm:w-[170px] h-[153px] sm:h-[300px]"
-                    title={`คลิกเปิดวิดีโอทันที: ${work.title}`}
+                    title={`คลิกเปิดลิงก์ดาวน์โหลด: ${work.title}`}
                   >
                     <div className="relative w-full h-full overflow-hidden bg-slate-950 transform-gpu">
                       <img
@@ -414,11 +434,16 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                         {work.badge || '📱 9:16 Reel'}
                       </span>
 
-                      {/* Card Text: ONLY Clip Title at the bottom */}
+                      {/* Card Text: Clip Title + Direct External Link indicator */}
                       <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-transparent pt-4 sm:pt-8 pb-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 pointer-events-none transform-gpu">
-                        <h3 className="text-[10px] sm:text-[13px] font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-rose-300 transition-colors">
-                          {work.title}
-                        </h3>
+                        <div className="flex items-end justify-between gap-1">
+                          <h3 className="text-[10px] sm:text-[13px] font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-rose-300 transition-colors flex-1">
+                            {work.title}
+                          </h3>
+                          <div className="shrink-0 p-0.5 sm:p-1 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ExternalLink className="w-2 sm:w-2.5 h-2 sm:h-2.5" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
