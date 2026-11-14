@@ -809,11 +809,16 @@ export default function App() {
     };
   }, []);
 
-  const handleUpdateData = async (newData: AppData) => {
+  const handleUpdateData = async (
+    newData: AppData,
+    options?: { skipFirestoreSync?: boolean }
+  ) => {
     setData(newData);
 
-    // 1. Save directly to Firebase Firestore (propagate error to AdminPanel banner if it fails)
-    await syncAllDataToFirestore(newData);
+    // 1. Save directly to Firebase Firestore unless caller already performed atomic doc write/delete
+    if (!options?.skipFirestoreSync) {
+      await syncAllDataToFirestore(newData);
+    }
 
     // 2. Best-effort sync to local Express backend API (ignored gracefully on Cloudflare Pages)
     fetch('/api/data', {
@@ -882,7 +887,7 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#020717] text-slate-100 selection:bg-amber-500/30 selection:text-amber-200 overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#020717] text-slate-100 selection:bg-amber-500/30 selection:text-amber-200 overflow-x-clip">
       {/* Royal Luxury Ambient Light Orbs (Royal Gold & Imperial Sapphire) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
         {/* Top Hero Ambient Glow: Radiant Royal Gold & Deep Sapphire */}

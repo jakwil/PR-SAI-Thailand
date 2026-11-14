@@ -10,11 +10,14 @@ import {
 import {
   getFirestore,
   doc,
+  getDoc,
   getDocFromServer,
+  getDocs,
   collection,
   setDoc,
   deleteDoc,
-  onSnapshot
+  onSnapshot,
+  arrayUnion
 } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 import {
@@ -367,21 +370,88 @@ export const defaultNewsBroadcasts: NewsBroadcastLog[] = [
   }
 ];
 
+export type AppCollectionName =
+  | 'heroStories'
+  | 'knowledgeBase'
+  | 'publishedWorks'
+  | 'viralClips'
+  | 'incidentTimeline';
+
+let seedingInFlight: Promise<void> | null = null;
+const LOCAL_DELETED_KEY = 'sai_deleted_mockup_keys_v1';
+
+function getLocalDeletedSet(): Set<string> {
+  if (typeof window === 'undefined') return new Set();
+  try {
+    const raw = window.localStorage.getItem(LOCAL_DELETED_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? new Set(parsed.map(String)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function addLocalDeletedKey(key: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const set = getLocalDeletedSet();
+    set.add(key);
+    window.localStorage.setItem(LOCAL_DELETED_KEY, JSON.stringify(Array.from(set)));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+function clearLocalDeletedKeys() {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(LOCAL_DELETED_KEY);
+  } catch {
+    // Ignore
+  }
+}
+
 // Sync and Subscribe to Entire App State in Firestore
 export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
   const unsubscribers: (() => void)[] = [];
+  let hasSeededInFirestore = false;
+  const emptyCollectionsSeen = new Set<AppCollectionName>();
+
+  // Watch mockup_version so we know whether Firestore owns empty collections
+  const unsubVersion = onSnapshot(
+    doc(db, 'settings', 'mockup_version'),
+    (docSnap) => {
+      if (docSnap.exists()) {
+        hasSeededInFirestore = true;
+        emptyCollectionsSeen.forEach((col) => {
+          onUpdate({ [col]: [] } as Partial<AppData>);
+        });
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.GET, 'settings/mockup_version');
+    }
+  );
+  unsubscribers.push(unsubVersion);
 
   // 1. Hero Stories
   const unsubStories = onSnapshot(
     collection(db, 'heroStories'),
     (snapshot) => {
       if (!snapshot.empty) {
+        emptyCollectionsSeen.delete('heroStories');
         const stories: HeroStory[] = [];
         snapshot.forEach((docSnap) => {
-          stories.push(docSnap.data() as HeroStory);
+          stories.push({ ...(docSnap.data() as HeroStory), id: docSnap.id });
         });
         stories.sort((a, b) => (a.order || 0) - (b.order || 0));
         onUpdate({ heroStories: stories.slice(0, 10) });
+      } else {
+        emptyCollectionsSeen.add('heroStories');
+        if (hasSeededInFirestore) {
+          onUpdate({ heroStories: [] });
+        }
       }
     },
     (err) => {
@@ -395,11 +465,17 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
     collection(db, 'knowledgeBase'),
     (snapshot) => {
       if (!snapshot.empty) {
+        emptyCollectionsSeen.delete('knowledgeBase');
         const kb: KnowledgeItem[] = [];
         snapshot.forEach((docSnap) => {
-          kb.push(docSnap.data() as KnowledgeItem);
+          kb.push({ ...(docSnap.data() as KnowledgeItem), id: docSnap.id });
         });
         onUpdate({ knowledgeBase: kb });
+      } else {
+        emptyCollectionsSeen.add('knowledgeBase');
+        if (hasSeededInFirestore) {
+          onUpdate({ knowledgeBase: [] });
+        }
       }
     },
     (err) => {
@@ -408,16 +484,22 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
   );
   unsubscribers.push(unsubKb);
 
-  // 3. Published Works
+  // 3. Published Works (Media Library)
   const unsubWorks = onSnapshot(
     collection(db, 'publishedWorks'),
     (snapshot) => {
       if (!snapshot.empty) {
+        emptyCollectionsSeen.delete('publishedWorks');
         const works: PublishedWork[] = [];
         snapshot.forEach((docSnap) => {
-          works.push(docSnap.data() as PublishedWork);
+          works.push({ ...(docSnap.data() as PublishedWork), id: docSnap.id });
         });
         onUpdate({ publishedWorks: works });
+      } else {
+        emptyCollectionsSeen.add('publishedWorks');
+        if (hasSeededInFirestore) {
+          onUpdate({ publishedWorks: [] });
+        }
       }
     },
     (err) => {
@@ -431,11 +513,17 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
     collection(db, 'viralClips'),
     (snapshot) => {
       if (!snapshot.empty) {
+        emptyCollectionsSeen.delete('viralClips');
         const clips: ViralClip[] = [];
         snapshot.forEach((docSnap) => {
-          clips.push(docSnap.data() as ViralClip);
+          clips.push({ ...(docSnap.data() as ViralClip), id: docSnap.id });
         });
         onUpdate({ viralClips: clips });
+      } else {
+        emptyCollectionsSeen.add('viralClips');
+        if (hasSeededInFirestore) {
+          onUpdate({ viralClips: [] });
+        }
       }
     },
     (err) => {
@@ -449,11 +537,17 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
     collection(db, 'incidentTimeline'),
     (snapshot) => {
       if (!snapshot.empty) {
+        emptyCollectionsSeen.delete('incidentTimeline');
         const timeline: IncidentMilestone[] = [];
         snapshot.forEach((docSnap) => {
-          timeline.push(docSnap.data() as IncidentMilestone);
+          timeline.push({ ...(docSnap.data() as IncidentMilestone), id: docSnap.id });
         });
         onUpdate({ incidentTimeline: timeline });
+      } else {
+        emptyCollectionsSeen.add('incidentTimeline');
+        if (hasSeededInFirestore) {
+          onUpdate({ incidentTimeline: [] });
+        }
       }
     },
     (err) => {
@@ -522,7 +616,7 @@ export function subscribeToAdminData(onUpdate: (data: Partial<AppData>) => void)
       if (!snapshot.empty) {
         const subs: NewsSubscriber[] = [];
         snapshot.forEach((docSnap) => {
-          subs.push(docSnap.data() as NewsSubscriber);
+          subs.push({ ...(docSnap.data() as NewsSubscriber), id: docSnap.id });
         });
         subs.sort((a, b) => new Date(b.subscribedAt || 0).getTime() - new Date(a.subscribedAt || 0).getTime());
         onUpdate({ newsSubscribers: subs });
@@ -543,7 +637,7 @@ export function subscribeToAdminData(onUpdate: (data: Partial<AppData>) => void)
       if (!snapshot.empty) {
         const logs: NewsBroadcastLog[] = [];
         snapshot.forEach((docSnap) => {
-          logs.push(docSnap.data() as NewsBroadcastLog);
+          logs.push({ ...(docSnap.data() as NewsBroadcastLog), id: docSnap.id });
         });
         logs.sort((a, b) => new Date(b.sentAt || 0).getTime() - new Date(a.sentAt || 0).getTime());
         onUpdate({ newsBroadcasts: logs });
@@ -562,63 +656,134 @@ export function subscribeToAdminData(onUpdate: (data: Partial<AppData>) => void)
   };
 }
 
-// Seed initial data or update mock data into Firestore (runs when authorized admin is signed in)
+// Seed initial data into Firestore ONCE ONLY (never re-adds deleted items)
 export async function seedFirestoreIfEmpty(initialData: AppData) {
-  try {
-    if (!isAuthorizedAdminEmail(auth.currentUser?.email)) {
-      return;
-    }
-    const versionDoc = await getDocFromServer(doc(db, 'settings', 'mockup_version')).catch(() => null);
-    const hasV2 = versionDoc && versionDoc.exists() && versionDoc.data()?.version === 'v2_multimodal_news';
+  if (seedingInFlight) return seedingInFlight;
 
-    if (!hasV2) {
-      console.log('Syncing multimodal mock news (photos, infographics, videos) to Firestore...');
-      for (const story of initialData.heroStories) {
-        await setDoc(doc(db, 'heroStories', story.id), stripUndefined(story), { merge: true });
+  seedingInFlight = (async () => {
+    try {
+      if (!isAuthorizedAdminEmail(auth.currentUser?.email)) {
+        return;
       }
-      for (const item of initialData.knowledgeBase) {
-        await setDoc(doc(db, 'knowledgeBase', item.id), stripUndefined(item), { merge: true });
+
+      const versionRef = doc(db, 'settings', 'mockup_version');
+      let versionDoc;
+      try {
+        versionDoc = await getDocFromServer(versionRef);
+      } catch {
+        try {
+          versionDoc = await getDoc(versionRef);
+        } catch (innerErr) {
+          // Do NOT assume unseeded when offline/network fails — abort safely!
+          console.warn('Skipping Firestore seed check due to network error:', innerErr);
+          return;
+        }
       }
-      for (const work of initialData.publishedWorks) {
-        await setDoc(doc(db, 'publishedWorks', work.id), stripUndefined(work), { merge: true });
+
+      // If mockup_version already exists, database was already initialized — NEVER re-seed!
+      if (versionDoc && versionDoc.exists()) {
+        return;
       }
-      for (const clip of initialData.viralClips) {
-        await setDoc(doc(db, 'viralClips', clip.id), stripUndefined(clip), { merge: true });
-      }
-      for (const item of initialData.incidentTimeline) {
-        await setDoc(doc(db, 'incidentTimeline', item.id), stripUndefined(item), { merge: true });
-      }
-      await setDoc(doc(db, 'settings', 'music'), stripUndefined(defaultMusicSettings), { merge: true });
-      await setDoc(doc(db, 'settings', 'chatbot'), stripUndefined(defaultChatbotSettings), { merge: true });
-      await setDoc(doc(db, 'settings', 'mockup_version'), {
-        version: 'v2_multimodal_news',
-        updatedAt: new Date().toISOString(),
-        categories: ['photo', 'infographic', 'video'],
-      });
-      console.log('Multimodal mock news seeded to Firestore successfully.');
+
+      const localDeleted = getLocalDeletedSet();
+      const seedCollectionIfEmpty = async <T extends { id: string }>(
+        colName: AppCollectionName,
+        items: T[]
+      ) => {
+        const existingSnap = await getDocs(collection(db, colName));
+        if (!existingSnap.empty) {
+          // Collection already has user/admin data; do not re-create deleted mockups
+          return;
+        }
+        const toWrite = items.filter((item) => !localDeleted.has(`${colName}:${item.id}`));
+        await Promise.all(
+          toWrite.map((item) => setDoc(doc(db, colName, item.id), stripUndefined(item)))
+        );
+      };
+
+      console.log('Initializing Firestore mockup baseline once...');
+      await Promise.all([
+        seedCollectionIfEmpty('heroStories', initialData.heroStories),
+        seedCollectionIfEmpty('knowledgeBase', initialData.knowledgeBase),
+        seedCollectionIfEmpty('publishedWorks', initialData.publishedWorks),
+        seedCollectionIfEmpty('viralClips', initialData.viralClips),
+        seedCollectionIfEmpty('incidentTimeline', initialData.incidentTimeline),
+        setDoc(doc(db, 'settings', 'music'), stripUndefined(defaultMusicSettings), { merge: true }),
+        setDoc(doc(db, 'settings', 'chatbot'), stripUndefined(defaultChatbotSettings), { merge: true }),
+      ]);
+
+      await setDoc(
+        versionRef,
+        {
+          version: 'v2_multimodal_news',
+          seededAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          categories: ['photo', 'infographic', 'video'],
+        },
+        { merge: true }
+      );
+      console.log('Initial Firestore baseline created.');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'seed');
     }
+  })().finally(() => {
+    seedingInFlight = null;
+  });
+
+  return seedingInFlight;
+}
+
+// Save single item directly to Firestore collection (fast & atomic)
+export async function saveSingleItemToFirestore<T extends { id: string }>(
+  collectionName: AppCollectionName,
+  item: T
+): Promise<void> {
+  if (!isAuthorizedAdminEmail(auth.currentUser?.email)) {
+    throw new Error('กรุณาเข้าสู่ระบบด้วยบัญชี Google Admin ก่อนบันทึกข้อมูล');
+  }
+  if (!item.id) {
+    throw new Error('ไม่พบรหัสเอกสารสำหรับบันทึก');
+  }
+  try {
+    await setDoc(doc(db, collectionName, item.id), stripUndefined(item));
   } catch (err) {
-    handleFirestoreError(err, OperationType.WRITE, 'seed');
+    handleFirestoreError(err, OperationType.WRITE, `${collectionName}/${item.id}`);
+    throw err;
   }
 }
 
-// Delete single item from Firestore collection
+// Delete single item from Firestore collection & record deletion marker
 export async function deleteItemFromFirestore(
-  collectionName: 'heroStories' | 'knowledgeBase' | 'publishedWorks' | 'viralClips' | 'incidentTimeline',
+  collectionName: AppCollectionName,
   id: string
 ): Promise<void> {
   if (!id) return;
+  if (!isAuthorizedAdminEmail(auth.currentUser?.email)) {
+    throw new Error('กรุณาเข้าสู่ระบบด้วยบัญชี Google Admin ก่อนลบข้อมูล');
+  }
   try {
     await deleteDoc(doc(db, collectionName, id));
+    const key = `${collectionName}:${id}`;
+    addLocalDeletedKey(key);
+    await setDoc(
+      doc(db, 'settings', 'mockup_version'),
+      {
+        version: 'v2_multimodal_news',
+        updatedAt: new Date().toISOString(),
+        deletedIds: arrayUnion(key),
+      },
+      { merge: true }
+    ).catch(() => null);
   } catch (err) {
     handleFirestoreError(err, OperationType.DELETE, `${collectionName}/${id}`);
     throw err;
   }
 }
 
-// Force reload mockup data into Firestore
+// Force reload mockup data into Firestore (explicit admin action only)
 export async function reloadMockupDataToFirestore(mockData: AppData) {
   try {
+    clearLocalDeletedKeys();
     for (const story of mockData.heroStories) {
       await setDoc(doc(db, 'heroStories', story.id), stripUndefined(story), { merge: true });
     }
@@ -630,6 +795,7 @@ export async function reloadMockupDataToFirestore(mockData: AppData) {
     }
     await setDoc(doc(db, 'settings', 'mockup_version'), {
       version: 'v2_multimodal_news',
+      deletedIds: [],
       updatedAt: new Date().toISOString(),
     });
   } catch (err) {

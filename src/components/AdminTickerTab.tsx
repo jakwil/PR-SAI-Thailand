@@ -74,6 +74,11 @@ export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
   saveNotice,
 }) => {
   const currentMsg = editingMsg || {};
+  const [draftSpeed, setDraftSpeed] = React.useState<number>(settings.speedSeconds || 85);
+
+  React.useEffect(() => {
+    setDraftSpeed(settings.speedSeconds || 85);
+  }, [settings.speedSeconds]);
 
   const handleOpenAdd = () => {
     playDigitalSound('select');
@@ -167,13 +172,13 @@ export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
             <span className="text-xs font-bold text-amber-300">ตัวอย่างการแสดงผลจริงบนหน้าเว็บ (Live Preview)</span>
           </div>
           <span className="text-[11px] text-slate-400 font-mono">
-            {settings.direction === 'left-to-right' ? '⬅️ ซ้ายไปขวา' : '➡️ ขวาไปซ้าย'} · {settings.speedSeconds}s · ชี้เมาส์หยุด
+            {settings.direction === 'left-to-right' ? '⬅️ ซ้ายไปขวา' : '➡️ ขวาไปซ้าย'} · {draftSpeed}s · ชี้เมาส์หยุด
           </span>
         </div>
 
         {/* Live Ticker Component */}
         <div className="py-2">
-          <MarqueeTicker settings={settings} />
+          <MarqueeTicker settings={{ ...settings, speedSeconds: draftSpeed }} />
         </div>
       </div>
 
@@ -249,9 +254,20 @@ export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
               <Sliders className="w-4 h-4 text-amber-400" />
               <span>ระดับความเร็วในการเลื่อน (Scroll Speed)</span>
             </h4>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">
-              {settings.speedSeconds} วินาที / รอบ
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                {draftSpeed} วินาที / รอบ
+              </span>
+              {draftSpeed !== settings.speedSeconds && (
+                <button
+                  type="button"
+                  onClick={() => onChangeSpeed(draftSpeed)}
+                  className="px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold shadow-sm transition-all cursor-pointer"
+                >
+                  ยืนยันความเร็วใหม่
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Range Slider */}
@@ -266,8 +282,8 @@ export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
               min={15}
               max={120}
               step={5}
-              value={settings.speedSeconds || 85}
-              onChange={(e) => onChangeSpeed(Number(e.target.value))}
+              value={draftSpeed}
+              onChange={(e) => setDraftSpeed(Number(e.target.value))}
               className="w-full accent-amber-400 cursor-pointer"
             />
           </div>
@@ -282,7 +298,10 @@ export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
                 <button
                   key={p.seconds}
                   type="button"
-                  onClick={() => onChangeSpeed(p.seconds)}
+                  onClick={() => {
+                    setDraftSpeed(p.seconds);
+                    onChangeSpeed(p.seconds);
+                  }}
                   className={`py-1 px-1.5 rounded-lg text-[10px] sm:text-xs font-semibold border transition-all text-center cursor-pointer ${
                     settings.speedSeconds === p.seconds
                       ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold'
@@ -424,11 +443,7 @@ export const AdminTickerTab: React.FC<AdminTickerTabProps> = ({
                     {/* Delete Button */}
                     <button
                       type="button"
-                      onClick={() => {
-                        if (confirm(`คุณต้องการลบข้อความ "${item.text}" หรือไม่?`)) {
-                          onDeleteMessage(item.id);
-                        }
-                      }}
+                      onClick={() => onDeleteMessage(item.id)}
                       className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 transition-colors cursor-pointer"
                       title="ลบข้อความ"
                     >

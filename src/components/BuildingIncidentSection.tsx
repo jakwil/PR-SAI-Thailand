@@ -386,7 +386,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           ฉากหลัง: เมือง เงาตึก (City Skyline & Building Silhouettes) โทนสว่างกว่าเดิม 30%
           Horizontal Ribbon of Connected Chevron Milestone Blocks + Alternating Branches
           ========================================================================= */}
-      <div className="relative mb-0 rounded-3xl bg-gradient-to-b from-[#1b253c]/95 via-[#233352]/95 to-[#162238]/98 border-2 border-rose-500/45 shadow-[0_20px_70px_rgba(15,23,42,0.65),0_0_45px_rgba(244,63,94,0.22)] p-4 sm:p-6 lg:p-7 backdrop-blur-2xl ring-1 ring-white/10 overflow-hidden">
+      <div className="relative mb-0 rounded-3xl bg-gradient-to-b from-[#1b253c]/95 via-[#233352]/95 to-[#162238]/98 border-2 border-rose-500/45 shadow-[0_20px_70px_rgba(15,23,42,0.65),0_0_45px_rgba(244,63,94,0.22)] p-4 sm:p-6 lg:p-7 backdrop-blur-2xl ring-1 ring-white/10 overflow-clip">
         {/* Holographic Top Laser Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 z-10" />
 
@@ -608,14 +608,14 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
             HORIZONTAL 3D INTERACTIVE TIMELINE RIBBON (Desktop & Tablet View)
             ----------------------------------------------------------------------- */}
         <div className="hidden sm:block relative pb-2 pt-2">
-          {/* Scrollable Track Container */}
+          {/* Scrollable Track Container (Horizontal-only scroll; vertical wheel/trackpad scrolls page smoothly) */}
           <div
             ref={scrollContainerRef}
-            className="overflow-x-auto pb-4 pt-4 scrollbar-thin scrollbar-thumb-rose-500/30 scrollbar-track-slate-950/50"
+            className="overflow-x-auto overflow-y-hidden overscroll-y-auto touch-pan-x touch-pan-y pb-4 pt-4 scrollbar-thin scrollbar-thumb-rose-500/30 scrollbar-track-slate-950/50"
           >
             <div
-              className="relative flex items-center justify-start min-w-max px-8 py-10 perspective-1200 preserve-3d"
-              style={{ minHeight: '390px' }}
+              className="relative flex items-center justify-start min-w-max px-8 py-12"
+              style={{ minHeight: '460px' }}
             >
               {/* START TAG at the far left */}
               <div className="flex items-center shrink-0 mr-2 z-10">
@@ -724,7 +724,6 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                             : 'opacity-95 hover:opacity-100 z-10'
                         }`}
                         style={{
-                          transform: isActive ? 'translateZ(25px) scale(1.05)' : 'translateZ(0px)',
                           boxShadow: isActive
                             ? `0 12px 25px -4px ${theme.lineColor}88, inset 0 2px 0 rgba(255,255,255,0.6)`
                             : '0 6px 15px -3px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.4)',

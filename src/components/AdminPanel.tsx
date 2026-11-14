@@ -69,11 +69,15 @@ import {
   saveNewsSubscriber,
   deleteNewsSubscriber,
   saveNewsBroadcast,
-  deleteItemFromFirestore
+  deleteItemFromFirestore,
+  saveSingleItemToFirestore,
+  saveChatbotSettings,
+  saveMarqueeTickerSettings
 } from '../firebase';
 import { getAnalyticsSummary, AnalyticsSummary } from '../utils/analytics';
 import { ShareModal } from './ShareModal';
 import { PublishBroadcastConfirmModal } from './PublishBroadcastConfirmModal';
+import { AdminChangeConfirmModal, PendingAdminAction } from './AdminChangeConfirmModal';
 import { SmtpConfigModal } from './SmtpConfigModal';
 import { AICoverStudioModal } from './AICoverStudioModal';
 import { BeaconRippleDot } from './BeaconRippleDot';
@@ -85,7 +89,7 @@ interface AdminPanelProps {
   isOpen: boolean;
   onClose: () => void;
   data: AppData;
-  onUpdateData: (newData: AppData) => Promise<void>;
+  onUpdateData: (newData: AppData, options?: { skipFirestoreSync?: boolean }) => Promise<void>;
   onLogout: () => void;
 }
 
@@ -119,6 +123,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // News Subscribers Management & Pre-Publish Broadcast Confirmation
   const [pendingPublishStory, setPendingPublishStory] = useState<HeroStory | null>(null);
+  const [pendingAdminAction, setPendingAdminAction] = useState<PendingAdminAction | null>(null);
   const [subscriberSearch, setSubscriberSearch] = useState('');
   const [subscriberCategoryFilter, setSubscriberCategoryFilter] = useState('all');
   const [newSubscriberEmail, setNewSubscriberEmail] = useState('');
@@ -270,64 +275,110 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   if (!isOpen) return null;
 
-  const triggerSave = async (updatedData: AppData) => {
+  const triggerSave = async (
+    updatedData: AppData,
+    options?: { skipFirestoreSync?: boolean; rethrow?: boolean }
+  ) => {
     setIsSaving(true);
     setSaveError(null);
     try {
-      await onUpdateData(updatedData);
+      await onUpdateData(updatedData, { skipFirestoreSync: options?.skipFirestoreSync });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2500);
     } catch (err: any) {
       console.error('Save error', err);
       setSaveError(err?.message || 'ไม่สามารถบันทึกข้อมูลลงฐานข้อมูลได้ กรุณาตรวจสอบสิทธิ์การเข้าสู่ระบบ');
       setTimeout(() => setSaveError(null), 6000);
+      if (options?.rethrow) {
+        throw err;
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Toggle AI Chatbot On/Off
+  // Toggle AI Chatbot On/Off (with Confirmation Modal)
   const handleToggleChatbot = async (enabledState: boolean) => {
     playDigitalSound(enabledState ? 'select' : 'blip');
     const updated: ChatbotSettings = {
       ...chatbotSettings,
       enabled: enabledState,
-      autoOpen: false, // Default is icon only - do not auto-open window
+      autoOpen: false,
       updatedAt: new Date().toISOString(),
     };
-    setChatbotSettings(updated);
-    const updatedData: AppData = {
-      ...data,
-      chatbotSettings: updated,
-    };
-    await triggerSave(updatedData);
+    setPendingAdminAction({
+      mode: 'settings',
+      sectionName: 'ระบบ AI Chatbot',
+      actionTitle: enabledState
+        ? 'ยืนยันเปิดใช้งาน AI Chatbot บนหน้าเว็บไซต์'
+        : 'ยืนยันปิดการใช้งาน AI Chatbot บนหน้าเว็บไซต์',
+      itemTitle: enabledState ? 'สถานะใหม่: เปิดใช้งาน (Online)' : 'สถานะใหม่: ปิดการใช้งาน (Disabled)',
+      summaryFields: [
+        { label: 'การแสดงผล', value: enabledState ? 'แสดงไอคอนมุมขวาล่างทุกหน้า' : 'ซ่อน AI Chatbot ทั้งหมด' },
+      ],
+      confirmLabel: enabledState ? 'ยืนยันเปิดใช้งาน' : 'ยืนยันปิดใช้งาน',
+      onConfirm: async () => {
+        await saveChatbotSettings(updated);
+        setChatbotSettings(updated);
+        await triggerSave({ ...data, chatbotSettings: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
   };
 
-  // Save detailed Chatbot Settings
+  // Save detailed Chatbot Settings (with Confirmation Modal)
   const handleSaveChatbotSettings = async () => {
     playDigitalSound('select');
     const updated: ChatbotSettings = {
       ...chatbotSettings,
       updatedAt: new Date().toISOString(),
     };
-    setChatbotSettings(updated);
-    const updatedData: AppData = {
-      ...data,
-      chatbotSettings: updated,
-    };
-    await triggerSave(updatedData);
+    setPendingAdminAction({
+      mode: 'settings',
+      sectionName: 'ระบบ AI Chatbot',
+      actionTitle: 'ยืนยันบันทึกการตั้งค่า AI Chatbot',
+      itemTitle: chatbotSettings.enabled ? 'AI Chatbot (เปิดใช้งาน)' : 'AI Chatbot (ปิดใช้งาน)',
+      summaryFields: [
+        { label: 'สถานะ', value: updated.enabled ? 'Online (แสดงไอคอน)' : 'Disabled (ซ่อน)' },
+        { label: 'เปิดแชทอัตโนมัติ', value: updated.autoOpen ? 'เปิดอัตโนมัติเมื่อเข้าเว็บ' : 'แสดงเป็นปุ่มไอคอน' },
+        { label: 'ข้อความต้อนรับ', value: (updated.welcomeMessage || '').slice(0, 120) },
+      ],
+      onConfirm: async () => {
+        await saveChatbotSettings(updated);
+        setChatbotSettings(updated);
+        await triggerSave({ ...data, chatbotSettings: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
   };
 
-  // Marquee Ticker Handlers (จัดการแถบประกาศวิ่งใต้บาร์บน)
-  const handleSaveTickerSettings = async (newSettings: MarqueeTickerSettings) => {
-    setTickerSettings(newSettings);
-    const updatedData: AppData = {
-      ...data,
-      marqueeTicker: newSettings,
-    };
-    await triggerSave(updatedData);
-    setTickerSaveNotice('บันทึกการตั้งค่าแถบประกาศวิ่งเรียบร้อยแล้ว');
-    setTimeout(() => setTickerSaveNotice(null), 3000);
+  // Marquee Ticker Handlers (with Confirmation Modal)
+  const requestTickerSaveConfirmation = (
+    newSettings: MarqueeTickerSettings,
+    meta: {
+      mode: PendingAdminAction['mode'];
+      actionTitle: string;
+      itemTitle: string;
+      summaryFields?: PendingAdminAction['summaryFields'];
+      onAfterSuccess?: () => void;
+    }
+  ) => {
+    setPendingAdminAction({
+      mode: meta.mode,
+      sectionName: 'แถบประกาศวิ่ง (Marquee Ticker)',
+      actionTitle: meta.actionTitle,
+      itemTitle: meta.itemTitle,
+      summaryFields: meta.summaryFields,
+      onConfirm: async () => {
+        await saveMarqueeTickerSettings(newSettings);
+        setTickerSettings(newSettings);
+        await triggerSave(
+          { ...data, marqueeTicker: newSettings },
+          { skipFirestoreSync: true, rethrow: true }
+        );
+        setTickerSaveNotice('บันทึกการตั้งค่าแถบประกาศวิ่งเรียบร้อยแล้ว');
+        setTimeout(() => setTickerSaveNotice(null), 3000);
+        meta.onAfterSuccess?.();
+      },
+    });
   };
 
   const handleToggleTicker = async (enabledState: boolean) => {
@@ -337,7 +388,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       enabled: enabledState,
       updatedAt: new Date().toISOString(),
     };
-    await handleSaveTickerSettings(updated);
+    requestTickerSaveConfirmation(updated, {
+      mode: 'settings',
+      actionTitle: enabledState ? 'ยืนยันเปิดแสดงแถบประกาศวิ่ง' : 'ยืนยันปิดแสดงแถบประกาศวิ่ง',
+      itemTitle: enabledState ? 'เปิดแถบประกาศวิ่ง (Active)' : 'ปิดแถบประกาศวิ่ง (Disabled)',
+    });
   };
 
   const handleChangeTickerDirection = async (direction: 'left-to-right' | 'right-to-left') => {
@@ -347,16 +402,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       direction,
       updatedAt: new Date().toISOString(),
     };
-    await handleSaveTickerSettings(updated);
+    requestTickerSaveConfirmation(updated, {
+      mode: 'settings',
+      actionTitle: 'ยืนยันเปลี่ยนทิศทางแถบประกาศวิ่ง',
+      itemTitle: direction === 'right-to-left' ? 'วิ่งจากขวาไปซ้าย ⬅️' : 'วิ่งจากซ้ายไปขวา ➡️',
+    });
   };
 
   const handleChangeTickerSpeed = async (seconds: number) => {
+    playDigitalSound('select');
     const updated: MarqueeTickerSettings = {
       ...tickerSettings,
       speedSeconds: seconds,
       updatedAt: new Date().toISOString(),
     };
-    await handleSaveTickerSettings(updated);
+    requestTickerSaveConfirmation(updated, {
+      mode: 'settings',
+      actionTitle: 'ยืนยันปรับความเร็วแถบประกาศวิ่ง',
+      itemTitle: `ความเร็วใหม่: ${seconds} วินาที / รอบ`,
+    });
   };
 
   const handleToggleTickerPauseOnHover = async (pause: boolean) => {
@@ -366,11 +430,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       pauseOnHover: pause,
       updatedAt: new Date().toISOString(),
     };
-    await handleSaveTickerSettings(updated);
+    requestTickerSaveConfirmation(updated, {
+      mode: 'settings',
+      actionTitle: 'ยืนยันปรับการหยุดเมื่อชี้เมาส์',
+      itemTitle: pause ? 'เปิดหยุดอัตโนมัติเมื่อชี้เมาส์' : 'วิ่งต่อเนื่องไม่หยุดเมื่อชี้เมาส์',
+    });
   };
 
   const handleToggleTickerMessageActive = async (msgId: string) => {
     playDigitalSound('blip');
+    const target = tickerSettings.messages.find((m) => m.id === msgId);
+    const nextActive = target ? target.active === false : true;
     const updatedMessages = tickerSettings.messages.map((m) =>
       m.id === msgId ? { ...m, active: !m.active } : m
     );
@@ -379,18 +449,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       messages: updatedMessages,
       updatedAt: new Date().toISOString(),
     };
-    await handleSaveTickerSettings(updated);
+    requestTickerSaveConfirmation(updated, {
+      mode: 'settings',
+      actionTitle: nextActive ? 'ยืนยันเปิดแสดงข้อความประกาศ' : 'ยืนยันปิดซ่อนข้อความประกาศ',
+      itemTitle: target?.text || msgId,
+    });
   };
 
   const handleDeleteTickerMessage = async (msgId: string) => {
     playDigitalSound('blip');
+    const target = tickerSettings.messages.find((m) => m.id === msgId);
     const updatedMessages = tickerSettings.messages.filter((m) => m.id !== msgId);
     const updated: MarqueeTickerSettings = {
       ...tickerSettings,
       messages: updatedMessages,
       updatedAt: new Date().toISOString(),
     };
-    await handleSaveTickerSettings(updated);
+    requestTickerSaveConfirmation(updated, {
+      mode: 'delete',
+      actionTitle: 'ยืนยันลบข้อความประกาศวิ่ง',
+      itemTitle: target?.text || msgId,
+      summaryFields: target?.linkUrl
+        ? [{ label: 'ลิงก์ปลายทาง', value: target.linkUrl, mono: true }]
+        : undefined,
+    });
   };
 
   const handleMoveTickerMessage = async (index: number, direction: 'up' | 'down') => {
@@ -405,7 +487,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       messages: items,
       updatedAt: new Date().toISOString(),
     };
-    await handleSaveTickerSettings(updated);
+    requestTickerSaveConfirmation(updated, {
+      mode: 'update',
+      actionTitle: 'ยืนยันเปลี่ยนลำดับข้อความประกาศ',
+      itemTitle: moved.text,
+      summaryFields: [
+        { label: 'ลำดับใหม่', value: `เลื่อนจากตำแหน่ง #${index + 1} เป็น #${targetIdx + 1}` },
+      ],
+    });
   };
 
   const handleSaveTickerMessage = async (e: React.FormEvent) => {
@@ -413,13 +502,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (!editingTickerMsg || !editingTickerMsg.text?.trim()) return;
     playDigitalSound('select');
 
+    const isEdit = Boolean(editingTickerMsg.id);
+    const trimmedText = editingTickerMsg.text.trim();
     let updatedList = [...tickerSettings.messages];
     if (editingTickerMsg.id) {
       updatedList = updatedList.map((m) =>
         m.id === editingTickerMsg.id
           ? {
               ...m,
-              text: editingTickerMsg.text!.trim(),
+              text: trimmedText,
               textColor: editingTickerMsg.textColor || '#f59e0b',
               dotColor: editingTickerMsg.dotColor || editingTickerMsg.textColor || '#f59e0b',
               linkUrl: editingTickerMsg.linkUrl || '',
@@ -430,7 +521,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     } else {
       const newMsg: MarqueeMessageItem = {
         id: `msg-${Date.now()}`,
-        text: editingTickerMsg.text.trim(),
+        text: trimmedText,
         textColor: editingTickerMsg.textColor || '#f59e0b',
         dotColor: editingTickerMsg.dotColor || editingTickerMsg.textColor || '#f59e0b',
         linkUrl: editingTickerMsg.linkUrl || '',
@@ -444,9 +535,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       messages: updatedList,
       updatedAt: new Date().toISOString(),
     };
-    await handleSaveTickerSettings(updated);
-    setEditingTickerMsg(null);
-    setIsAddTickerOpen(false);
+    requestTickerSaveConfirmation(updated, {
+      mode: isEdit ? 'update' : 'publish',
+      actionTitle: isEdit ? 'ยืนยันแก้ไขข้อความประกาศวิ่ง' : 'ยืนยันเผยแพร่ข้อความประกาศวิ่งใหม่',
+      itemTitle: trimmedText,
+      summaryFields: [
+        { label: 'สีตัวอักษร', value: editingTickerMsg.textColor || '#f59e0b', mono: true },
+        { label: 'ลิงก์ปลายทาง', value: editingTickerMsg.linkUrl || 'ไม่มีลิงก์', mono: true },
+      ],
+      onAfterSuccess: () => {
+        setEditingTickerMsg(null);
+        setIsAddTickerOpen(false);
+      },
+    });
   };
 
 
@@ -531,7 +632,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       storyObj = { ...existing, ...editingStory } as HeroStory;
     } else {
       if (storiesList.length >= 10) {
-        alert('ภาพข่าวม้าหมุน Hero รองรับได้สูงสุด 10 เรื่อง กรุณาลบเรื่องเดิมออกก่อนเพิ่มใหม่');
+        setSaveError('ภาพข่าวม้าหมุน Hero รองรับได้สูงสุด 10 เรื่อง กรุณาลบเรื่องเดิมออกก่อนเพิ่มใหม่');
+        setTimeout(() => setSaveError(null), 5000);
         return;
       }
       storyObj = {
@@ -678,37 +780,77 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setPendingPublishStory(null);
   };
 
-  const handleDeleteStory = async (id: string) => {
+  const handleDeleteStory = (id: string) => {
+    const target = storiesList.find((s) => s.id === id);
     const updated = storiesList.filter((s) => s.id !== id);
-    await deleteItemFromFirestore('heroStories', id).catch(() => null);
-    triggerSave({ ...data, heroStories: updated });
+    playDigitalSound('blip');
+    setPendingAdminAction({
+      mode: 'delete',
+      sectionName: 'ภาพข่าว Hero Carousel',
+      actionTitle: 'ยืนยันลบภาพข่าวออกจาก Hero Carousel',
+      itemTitle: target?.title || id,
+      imageUrl: target?.imageUrl,
+      summaryFields: [
+        { label: 'หมวดหมู่', value: target?.category || '-' },
+        { label: 'วันที่', value: target?.date || '-' },
+      ],
+      onConfirm: async () => {
+        await deleteItemFromFirestore('heroStories', id);
+        await triggerSave({ ...data, heroStories: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
   };
 
   const handleMoveStory = (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= storiesList.length) return;
+    const movedStory = storiesList[index];
     const updated = [...storiesList];
-    const temp = updated[index];
     updated[index] = updated[targetIndex];
-    updated[targetIndex] = temp;
-    triggerSave({ ...data, heroStories: updated });
+    updated[targetIndex] = movedStory;
+    const reordered = updated.map((s, idx) => ({ ...s, order: idx + 1 }));
+    playDigitalSound('select');
+    setPendingAdminAction({
+      mode: 'update',
+      sectionName: 'ภาพข่าว Hero Carousel',
+      actionTitle: 'ยืนยันเปลี่ยนลำดับภาพข่าว Hero',
+      itemTitle: movedStory.title,
+      imageUrl: movedStory.imageUrl,
+      summaryFields: [
+        { label: 'ตำแหน่งใหม่', value: `ลำดับ #${index + 1} → #${targetIndex + 1}` },
+      ],
+      onConfirm: async () => {
+        await Promise.all(
+          reordered.map((story) => saveSingleItemToFirestore('heroStories', story))
+        );
+        await triggerSave({ ...data, heroStories: reordered }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
   };
 
-  // Subscriber Management Handlers
-  const handleDeleteSubscriber = async (id: string) => {
+  // Subscriber Management Handlers (with Confirmation Modal)
+  const handleDeleteSubscriber = (id: string) => {
+    const target = subscribersList.find((s) => s.id === id);
     playDigitalSound('blip');
-    if (!window.confirm('คุณต้องการลบอีเมลผู้ติดตามนี้หรือไม่?')) return;
-    try {
-      await deleteNewsSubscriber(id).catch(() => null);
-      fetch(`/api/subscribers/${id}`, { method: 'DELETE' }).catch(() => null);
-      const updated = subscribersList.filter((s) => s.id !== id);
-      await triggerSave({ ...data, newsSubscribers: updated });
-    } catch (err) {
-      console.error('Delete subscriber error:', err);
-    }
+    setPendingAdminAction({
+      mode: 'delete',
+      sectionName: 'รายชื่อผู้ติดตามข่าว',
+      actionTitle: 'ยืนยันลบอีเมลผู้ติดตามข่าว',
+      itemTitle: target?.email || id,
+      summaryFields: [
+        { label: 'ติดตามจากข่าว', value: target?.storyTitle || '-' },
+        { label: 'หมวดหมู่', value: target?.category || '-' },
+      ],
+      onConfirm: async () => {
+        await deleteNewsSubscriber(id);
+        fetch(`/api/subscribers/${id}`, { method: 'DELETE' }).catch(() => null);
+        const updated = subscribersList.filter((s) => s.id !== id);
+        await triggerSave({ ...data, newsSubscribers: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
   };
 
-  const handleAddSubscriberManual = async (e: React.FormEvent) => {
+  const handleAddSubscriberManual = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSubscriberEmail.trim()) return;
 
@@ -726,24 +868,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       updatedAt: new Date().toISOString(),
     };
 
-    try {
-      await saveNewsSubscriber(newSub).catch(() => null);
-      fetch('/api/subscribers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSub),
-      }).catch(() => null);
+    playDigitalSound('select');
+    setPendingAdminAction({
+      mode: 'publish',
+      sectionName: 'รายชื่อผู้ติดตามข่าว',
+      actionTitle: 'ยืนยันเพิ่มอีเมลผู้ติดตามข่าวเข้าสู่ระบบ',
+      itemTitle: newSub.email,
+      summaryFields: [
+        { label: 'เชื่อมโยงข่าว', value: newSub.storyTitle },
+        { label: 'หมวดหมู่', value: newSub.category || '-' },
+      ],
+      confirmLabel: 'ยืนยันเพิ่มผู้ติดตาม',
+      onConfirm: async () => {
+        await saveNewsSubscriber(newSub);
+        fetch('/api/subscribers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newSub),
+        }).catch(() => null);
 
-      const updated = [newSub, ...subscribersList.filter((s) => s.email !== newSub.email || s.storyId !== newSub.storyId)];
-      await triggerSave({ ...data, newsSubscribers: updated });
+        const updated = [newSub, ...subscribersList.filter((s) => s.email !== newSub.email || s.storyId !== newSub.storyId)];
+        await triggerSave({ ...data, newsSubscribers: updated }, { skipFirestoreSync: true, rethrow: true });
 
-      setNewSubscriberEmail('');
-      setManualAddSuccess(`เพิ่มอีเมล ${newSub.email} เรียบร้อยแล้ว`);
-      setTimeout(() => setManualAddSuccess(null), 3500);
-      playDigitalSound('confirm');
-    } catch (err) {
-      console.error('Add subscriber error:', err);
-    }
+        setNewSubscriberEmail('');
+        setManualAddSuccess(`เพิ่มอีเมล ${newSub.email} เรียบร้อยแล้ว`);
+        setTimeout(() => setManualAddSuccess(null), 3500);
+      },
+    });
   };
 
   const handleExportSubscribersCSV = () => {
@@ -769,167 +920,308 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     document.body.removeChild(link);
   };
 
-  // KB Handlers
+  // KB Handlers (with Confirmation Modal + Atomic Firestore Operations)
   const handleSaveKb = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingKb || !editingKb.title || !editingKb.content) return;
 
-    let updatedList = [...data.knowledgeBase];
-    if (editingKb.id) {
-      updatedList = updatedList.map((item) =>
-        item.id === editingKb.id ? ({ ...item, ...editingKb } as KnowledgeItem) : item
-      );
-    } else {
-      const newItem: KnowledgeItem = {
-        id: `kb-${Date.now()}`,
-        title: editingKb.title || '',
-        category: editingKb.category || 'ทั่วไป',
-        content: editingKb.content || '',
-        sourceType: editingKb.sourceType || 'raw_text',
-        sourceUrl: editingKb.sourceUrl || '',
-        dateAdded: new Date().toISOString().split('T')[0],
-      };
-      updatedList.push(newItem);
-    }
+    const isEdit = Boolean(editingKb.id);
+    const existing = editingKb.id ? data.knowledgeBase.find((item) => item.id === editingKb.id) : undefined;
+    const kbToSave: KnowledgeItem = existing
+      ? ({ ...existing, ...editingKb, updatedAt: new Date().toISOString() } as KnowledgeItem)
+      : {
+          id: `kb-${Date.now()}`,
+          title: editingKb.title || '',
+          category: editingKb.category || 'ทั่วไป',
+          content: editingKb.content || '',
+          sourceType: editingKb.sourceType || 'raw_text',
+          sourceUrl: editingKb.sourceUrl || '',
+          dateAdded: new Date().toISOString().split('T')[0],
+          updatedAt: new Date().toISOString(),
+        };
 
-    triggerSave({ ...data, knowledgeBase: updatedList });
-    setEditingKb(null);
+    const updatedList = isEdit
+      ? data.knowledgeBase.map((item) => (item.id === kbToSave.id ? kbToSave : item))
+      : [...data.knowledgeBase, kbToSave];
+
+    playDigitalSound('select');
+    setPendingAdminAction({
+      mode: isEdit ? 'update' : 'publish',
+      sectionName: 'คลังความรู้ AI (Knowledge Base)',
+      actionTitle: isEdit ? 'ยืนยันแก้ไขข้อมูลคลังความรู้ AI' : 'ยืนยันเผยแพร่ข้อมูลใหม่เข้าคลังความรู้ AI',
+      itemTitle: kbToSave.title,
+      summaryFields: [
+        { label: 'หมวดหมู่', value: kbToSave.category },
+        { label: 'ประเภทที่มา', value: kbToSave.sourceType, mono: true },
+        { label: 'เนื้อหาโดยย่อ', value: kbToSave.content.slice(0, 140) },
+      ],
+      onConfirm: async () => {
+        await saveSingleItemToFirestore('knowledgeBase', kbToSave);
+        await triggerSave({ ...data, knowledgeBase: updatedList }, { skipFirestoreSync: true, rethrow: true });
+        setEditingKb(null);
+      },
+    });
   };
 
-  const handleDeleteKb = async (id: string) => {
+  const handleDeleteKb = (id: string) => {
+    const target = data.knowledgeBase.find((k) => k.id === id);
     const updated = data.knowledgeBase.filter((k) => k.id !== id);
-    await deleteItemFromFirestore('knowledgeBase', id).catch(() => null);
-    triggerSave({ ...data, knowledgeBase: updated });
+    playDigitalSound('blip');
+    setPendingAdminAction({
+      mode: 'delete',
+      sectionName: 'คลังความรู้ AI (Knowledge Base)',
+      actionTitle: 'ยืนยันลบหัวข้อความรู้ออกจากระบบ',
+      itemTitle: target?.title || id,
+      summaryFields: [
+        { label: 'หมวดหมู่', value: target?.category || '-' },
+        { label: 'รหัสเอกสาร', value: id, mono: true },
+      ],
+      onConfirm: async () => {
+        await deleteItemFromFirestore('knowledgeBase', id);
+        await triggerSave({ ...data, knowledgeBase: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
   };
 
-  // Published Works Handlers
+  // Published Works / Media Library Handlers (with Confirmation Modal + Atomic Firestore Operations)
   const handleSaveWork = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingWork || !editingWork.title) return;
 
-    let updatedList = [...data.publishedWorks];
-    if (editingWork.id) {
-      updatedList = updatedList.map((w) =>
-        w.id === editingWork.id ? ({ ...w, ...editingWork, updatedAt: new Date().toISOString() } as PublishedWork) : w
-      );
-    } else {
-      const newWork: PublishedWork = {
-        id: `work-${Date.now()}`,
-        title: editingWork.title || '',
-        category: editingWork.category || 'สื่อเผยแพร่',
-        description: editingWork.description || '',
-        linkUrl: editingWork.linkUrl || 'https://pr-request-system.vercel.app',
-        imageUrl: editingWork.imageUrl || '/src/assets/images/sai_audit_hero_1791689796943.jpg',
-        publishDate: new Date().toISOString().split('T')[0],
-        views: editingWork.views || '1,200',
-        badge: editingWork.badge || 'ผลงานใหม่',
-        mediaType: editingWork.mediaType || 'photo',
-        resolution: editingWork.resolution || (editingWork.mediaType === 'video' ? '16:9' : '4:3'),
-        duration: editingWork.duration,
-        creator: editingWork.creator,
-        videoUrl: editingWork.videoUrl,
-        updatedAt: new Date().toISOString(),
-      };
-      updatedList.push(newWork);
-    }
+    const isEdit = Boolean(editingWork.id);
+    const existing = editingWork.id ? data.publishedWorks.find((w) => w.id === editingWork.id) : undefined;
+    const workToSave: PublishedWork = existing
+      ? ({ ...existing, ...editingWork, updatedAt: new Date().toISOString() } as PublishedWork)
+      : {
+          id: `work-${Date.now()}`,
+          title: editingWork.title || '',
+          category: editingWork.category || 'สื่อประชาสัมพันธ์',
+          description: editingWork.description || '',
+          linkUrl: editingWork.linkUrl || 'https://pr-request-system.vercel.app',
+          imageUrl: editingWork.imageUrl || '/src/assets/images/sai_audit_hero_1791689796943.jpg',
+          publishDate: new Date().toISOString().split('T')[0],
+          views: editingWork.views || '1,500',
+          badge: editingWork.badge || 'ผลงานใหม่',
+          mediaType: editingWork.mediaType || 'photo',
+          resolution: editingWork.resolution || (editingWork.mediaType === 'video' ? '16:9' : '4:3'),
+          duration: editingWork.duration,
+          creator: editingWork.creator,
+          videoUrl: editingWork.videoUrl,
+          updatedAt: new Date().toISOString(),
+        };
 
-    triggerSave({ ...data, publishedWorks: updatedList });
-    setEditingWork(null);
+    const updatedList = isEdit
+      ? data.publishedWorks.map((w) => (w.id === workToSave.id ? workToSave : w))
+      : [...data.publishedWorks, workToSave];
+
+    playDigitalSound('select');
+    setPendingAdminAction({
+      mode: isEdit ? 'update' : 'publish',
+      sectionName: 'Media Library (คลังสื่อดิจิทัล)',
+      actionTitle: isEdit ? 'ยืนยันแก้ไขสื่อในคลังดิจิทัล' : 'ยืนยันเผยแพร่สื่อใหม่ขึ้นหน้าเว็บไซต์',
+      itemTitle: workToSave.title,
+      imageUrl: workToSave.imageUrl,
+      summaryFields: [
+        { label: 'หมวดหมู่', value: workToSave.category },
+        { label: 'รูปแบบสื่อ', value: workToSave.mediaType || 'photo', mono: true },
+        { label: 'ลิงก์ปลายทาง', value: workToSave.linkUrl, mono: true },
+        { label: 'รายละเอียด', value: workToSave.description.slice(0, 120) },
+      ],
+      onConfirm: async () => {
+        await saveSingleItemToFirestore('publishedWorks', workToSave);
+        await triggerSave({ ...data, publishedWorks: updatedList }, { skipFirestoreSync: true, rethrow: true });
+        setEditingWork(null);
+      },
+    });
   };
 
-  const handleDeleteWork = async (id: string) => {
+  const handleDeleteWork = (id: string) => {
+    const target = data.publishedWorks.find((w) => w.id === id);
     const updated = data.publishedWorks.filter((w) => w.id !== id);
-    await deleteItemFromFirestore('publishedWorks', id).catch(() => null);
-    triggerSave({ ...data, publishedWorks: updated });
+    playDigitalSound('blip');
+    setPendingAdminAction({
+      mode: 'delete',
+      sectionName: 'Media Library (คลังสื่อดิจิทัล)',
+      actionTitle: 'ยืนยันลบรายการสื่อออกจากคลังดิจิทัล',
+      itemTitle: target?.title || id,
+      imageUrl: target?.imageUrl,
+      summaryFields: [
+        { label: 'หมวดหมู่', value: target?.category || '-' },
+        { label: 'รหัสเอกสาร', value: id, mono: true },
+      ],
+      onConfirm: async () => {
+        await deleteItemFromFirestore('publishedWorks', id);
+        await triggerSave({ ...data, publishedWorks: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
   };
 
-  // Viral Clips Handlers
+  // Viral Clips Handlers (with Confirmation Modal + Atomic Firestore Operations)
   const handleSaveClip = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingClip || !editingClip.title) return;
 
-    let updatedList = [...data.viralClips];
-    if (editingClip.id) {
-      updatedList = updatedList.map((c) =>
-        c.id === editingClip.id ? ({ ...c, ...editingClip, updatedAt: new Date().toISOString() } as ViralClip) : c
-      );
-    } else {
-      const newClip: ViralClip = {
-        id: `clip-${Date.now()}`,
-        title: editingClip.title || '',
-        creator: editingClip.creator || 'PR - SAI Thailand',
-        views: editingClip.views || '10K',
-        duration: editingClip.duration || '01:00',
-        thumbnail: editingClip.thumbnail || '/src/assets/images/sai_public_campaign_1791689820118.jpg',
-        linkUrl: editingClip.linkUrl || 'https://youtube.com',
-        highlight: editingClip.highlight || 'คลิปประชาสัมพันธ์น่าสนใจ',
-        mediaType: editingClip.mediaType || 'video',
-        updatedAt: new Date().toISOString(),
-      };
-      updatedList.push(newClip);
-    }
+    const isEdit = Boolean(editingClip.id);
+    const existing = editingClip.id ? data.viralClips.find((c) => c.id === editingClip.id) : undefined;
+    const clipToSave: ViralClip = existing
+      ? ({ ...existing, ...editingClip, updatedAt: new Date().toISOString() } as ViralClip)
+      : {
+          id: `clip-${Date.now()}`,
+          title: editingClip.title || '',
+          creator: editingClip.creator || 'PR - SAI Thailand',
+          views: editingClip.views || '10K',
+          duration: editingClip.duration || '01:00',
+          thumbnail: editingClip.thumbnail || '/src/assets/images/sai_public_campaign_1791689820118.jpg',
+          linkUrl: editingClip.linkUrl || 'https://youtube.com',
+          highlight: editingClip.highlight || 'คลิปประชาสัมพันธ์น่าสนใจ',
+          mediaType: editingClip.mediaType || 'video',
+          updatedAt: new Date().toISOString(),
+        };
 
-    triggerSave({ ...data, viralClips: updatedList });
-    setEditingClip(null);
+    const updatedList = isEdit
+      ? data.viralClips.map((c) => (c.id === clipToSave.id ? clipToSave : c))
+      : [...data.viralClips, clipToSave];
+
+    playDigitalSound('select');
+    setPendingAdminAction({
+      mode: isEdit ? 'update' : 'publish',
+      sectionName: 'คลิปไวรัล (Viral Clips)',
+      actionTitle: isEdit ? 'ยืนยันแก้ไขคลิปไวรัล' : 'ยืนยันเผยแพร่คลิปไวรัลใหม่ขึ้นหน้าเว็บไซต์',
+      itemTitle: clipToSave.title,
+      imageUrl: clipToSave.thumbnail,
+      summaryFields: [
+        { label: 'ผู้จัดทำ', value: clipToSave.creator },
+        { label: 'ความยาว', value: clipToSave.duration, mono: true },
+        { label: 'ลิงก์วิดีโอ', value: clipToSave.linkUrl, mono: true },
+      ],
+      onConfirm: async () => {
+        await saveSingleItemToFirestore('viralClips', clipToSave);
+        await triggerSave({ ...data, viralClips: updatedList }, { skipFirestoreSync: true, rethrow: true });
+        setEditingClip(null);
+      },
+    });
   };
 
-  const handleDeleteClip = async (id: string) => {
+  const handleDeleteClip = (id: string) => {
+    const target = data.viralClips.find((c) => c.id === id);
     const updated = data.viralClips.filter((c) => c.id !== id);
-    await deleteItemFromFirestore('viralClips', id).catch(() => null);
-    triggerSave({ ...data, viralClips: updated });
+    playDigitalSound('blip');
+    setPendingAdminAction({
+      mode: 'delete',
+      sectionName: 'คลิปไวรัล (Viral Clips)',
+      actionTitle: 'ยืนยันลบคลิปไวรัลออกจากหน้าเว็บไซต์',
+      itemTitle: target?.title || id,
+      imageUrl: target?.thumbnail,
+      summaryFields: [
+        { label: 'ผู้จัดทำ', value: target?.creator || '-' },
+        { label: 'รหัสเอกสาร', value: id, mono: true },
+      ],
+      onConfirm: async () => {
+        await deleteItemFromFirestore('viralClips', id);
+        await triggerSave({ ...data, viralClips: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
   };
 
-  // Incident Timeline Handlers
+  // Incident Timeline Handlers (with Confirmation Modal + Atomic Firestore Operations)
   const handleMoveMilestone = (idx: number, direction: 'up' | 'down') => {
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (targetIdx < 0 || targetIdx >= data.incidentTimeline.length) return;
+    const moved = data.incidentTimeline[idx];
     const updated = [...data.incidentTimeline];
-    const [moved] = updated.splice(idx, 1);
+    updated.splice(idx, 1);
     updated.splice(targetIdx, 0, moved);
-    triggerSave({ ...data, incidentTimeline: updated });
+
+    playDigitalSound('select');
+    setPendingAdminAction({
+      mode: 'update',
+      sectionName: 'Timeline เหตุการณ์อาคาร สตง.',
+      actionTitle: 'ยืนยันเปลี่ยนลำดับโหนด Timeline',
+      itemTitle: moved.title,
+      summaryFields: [
+        { label: 'ช่วงเหตุการณ์', value: moved.date },
+        { label: 'ตำแหน่งใหม่', value: `ลำดับที่ ${idx + 1} → ลำดับที่ ${targetIdx + 1}` },
+      ],
+      onConfirm: async () => {
+        await triggerSave({ ...data, incidentTimeline: updated }, { rethrow: true });
+      },
+    });
   };
 
   const handleSaveMilestone = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMilestone || !editingMilestone.title) return;
 
-    let updatedList = [...data.incidentTimeline];
-    if (editingMilestone.id) {
-      updatedList = updatedList.map((m) =>
-        m.id === editingMilestone.id ? ({ ...m, ...editingMilestone, updatedAt: new Date().toISOString() } as IncidentMilestone) : m
-      );
-    } else {
-      const newMilestone: IncidentMilestone = {
-        id: `tl-${Date.now()}`,
-        date: editingMilestone.date || 'ปัจจุบัน',
-        time: editingMilestone.time || 'ล่าสุด',
-        phase: editingMilestone.phase || 'รายงานสถานการณ์',
-        title: editingMilestone.title || '',
-        description: editingMilestone.description || '',
-        status: editingMilestone.status || 'ดำเนินการ',
-        imageUrl: editingMilestone.imageUrl || '/src/assets/images/sai_building_inspection_1791689807795.jpg',
-        technicalDetails: editingMilestone.technicalDetails || 'ตรวจสอบมาตรฐานความปลอดภัย',
-        shortTitle: editingMilestone.shortTitle || '',
-        fullStatement: editingMilestone.fullStatement || '',
-        mediaType: editingMilestone.mediaType || 'photo',
-        videoUrl: editingMilestone.videoUrl || '',
-        referenceTitle: editingMilestone.referenceTitle || '',
-        referenceUrl: editingMilestone.referenceUrl || '',
-        colorAccent: editingMilestone.colorAccent || 'orange',
-        icon: editingMilestone.icon || 'lightbulb',
-        updatedAt: new Date().toISOString(),
-      };
-      updatedList.push(newMilestone);
-    }
+    const isEdit = Boolean(editingMilestone.id);
+    const existing = editingMilestone.id
+      ? data.incidentTimeline.find((m) => m.id === editingMilestone.id)
+      : undefined;
+    const milestoneToSave: IncidentMilestone = existing
+      ? ({ ...existing, ...editingMilestone, updatedAt: new Date().toISOString() } as IncidentMilestone)
+      : {
+          id: `tl-${Date.now()}`,
+          date: editingMilestone.date || 'ปัจจุบัน',
+          time: editingMilestone.time || 'ล่าสุด',
+          phase: editingMilestone.phase || 'รายงานสถานการณ์',
+          title: editingMilestone.title || '',
+          description: editingMilestone.description || '',
+          status: editingMilestone.status || 'ดำเนินการ',
+          imageUrl: editingMilestone.imageUrl || '/src/assets/images/sai_building_inspection_1791689807795.jpg',
+          technicalDetails: editingMilestone.technicalDetails || 'ตรวจสอบมาตรฐานความปลอดภัย',
+          shortTitle: editingMilestone.shortTitle || '',
+          fullStatement: editingMilestone.fullStatement || '',
+          mediaType: editingMilestone.mediaType || 'photo',
+          videoUrl: editingMilestone.videoUrl || '',
+          referenceTitle: editingMilestone.referenceTitle || '',
+          referenceUrl: editingMilestone.referenceUrl || '',
+          colorAccent: editingMilestone.colorAccent || 'orange',
+          icon: editingMilestone.icon || 'lightbulb',
+          updatedAt: new Date().toISOString(),
+        };
 
-    triggerSave({ ...data, incidentTimeline: updatedList });
-    setEditingMilestone(null);
+    const updatedList = isEdit
+      ? data.incidentTimeline.map((m) => (m.id === milestoneToSave.id ? milestoneToSave : m))
+      : [...data.incidentTimeline, milestoneToSave];
+
+    playDigitalSound('select');
+    setPendingAdminAction({
+      mode: isEdit ? 'update' : 'publish',
+      sectionName: 'Timeline เหตุการณ์อาคาร สตง.',
+      actionTitle: isEdit ? 'ยืนยันแก้ไขข้อมูลเหตุการณ์ Timeline' : 'ยืนยันเผยแพร่ช่วงเหตุการณ์ Timeline ใหม่',
+      itemTitle: milestoneToSave.title,
+      imageUrl: milestoneToSave.imageUrl,
+      summaryFields: [
+        { label: 'วันที่ / เวลา', value: `${milestoneToSave.date} ${milestoneToSave.time}` },
+        { label: 'ขั้นตอน / สถานะ', value: `${milestoneToSave.phase} · ${milestoneToSave.status}` },
+        { label: 'สรุปย่อ', value: milestoneToSave.description.slice(0, 120) },
+      ],
+      onConfirm: async () => {
+        await saveSingleItemToFirestore('incidentTimeline', milestoneToSave);
+        await triggerSave({ ...data, incidentTimeline: updatedList }, { skipFirestoreSync: true, rethrow: true });
+        setEditingMilestone(null);
+      },
+    });
   };
 
-  const handleDeleteMilestone = async (id: string) => {
+  const handleDeleteMilestone = (id: string) => {
+    const target = data.incidentTimeline.find((m) => m.id === id);
     const updated = data.incidentTimeline.filter((m) => m.id !== id);
-    await deleteItemFromFirestore('incidentTimeline', id).catch(() => null);
-    triggerSave({ ...data, incidentTimeline: updated });
+    playDigitalSound('blip');
+    setPendingAdminAction({
+      mode: 'delete',
+      sectionName: 'Timeline เหตุการณ์อาคาร สตง.',
+      actionTitle: 'ยืนยันลบโหนดเหตุการณ์ออกจาก Timeline',
+      itemTitle: target?.title || id,
+      imageUrl: target?.imageUrl,
+      summaryFields: [
+        { label: 'วันที่', value: target?.date || '-' },
+        { label: 'รหัสเอกสาร', value: id, mono: true },
+      ],
+      onConfirm: async () => {
+        await deleteItemFromFirestore('incidentTimeline', id);
+        await triggerSave({ ...data, incidentTimeline: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
   };
 
   // File Upload simulation for Multimodal Parsing
@@ -1819,7 +2111,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   prefixLabel: prefix,
                   updatedAt: new Date().toISOString(),
                 };
-                await handleSaveTickerSettings(updated);
+                requestTickerSaveConfirmation(updated, {
+                  mode: 'settings',
+                  actionTitle: 'ยืนยันเปลี่ยนคำนำหน้าแถบประกาศวิ่ง',
+                  itemTitle: prefix || '(ไม่มีคำนำหน้า)',
+                });
               }}
               onToggleMessageActive={handleToggleTickerMessageActive}
               onDeleteMessage={handleDeleteTickerMessage}
@@ -2112,7 +2408,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <button
                   onClick={() => {
                     if (storiesList.length >= 10) {
-                      alert('ภาพข่าวม้าหมุนครบจำนวนสูงสุด 10 เรื่องแล้ว');
+                      setSaveError('ภาพข่าวม้าหมุนครบจำนวนสูงสุด 10 เรื่องแล้ว กรุณาลบเรื่องเดิมก่อนเพิ่มใหม่');
+                      setTimeout(() => setSaveError(null), 5000);
                       return;
                     }
                     setEditingStory({
@@ -4205,6 +4502,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           onSelectImage={(newUrl) => {
             setEditingStory((prev) => (prev ? { ...prev, imageUrl: newUrl } : prev));
           }}
+        />
+
+        {/* Universal Pre-Publish / Edit / Settings / Delete Confirmation Modal */}
+        <AdminChangeConfirmModal
+          action={pendingAdminAction}
+          onCancel={() => setPendingAdminAction(null)}
         />
       </div>
     </div>
