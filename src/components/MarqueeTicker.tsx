@@ -46,12 +46,10 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
   const animationClass = isLeftToRight ? 'animate-marquee-track-right' : 'animate-marquee-track-left';
 
   return (
-    <div
-      className={`w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto ${className}`}
-    >
-      {/* Full-Width Outer Frame Container (ขยายเต็มกรอบ) */}
+    <div className={`w-full ${className}`}>
+      {/* Full-Bleed Edge-to-Edge Outer Frame Container (กรอบชิดซ้ายและขวาเต็มจอ) */}
       <div
-        className="relative w-full rounded-2xl bg-gradient-to-r from-[#061539]/95 via-[#081a44]/95 to-[#051130]/95 border border-amber-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.6),0_0_20px_rgba(245,158,11,0.22)] backdrop-blur-xl overflow-hidden py-1.5 sm:py-2 px-2 sm:px-3 flex items-center group/ticker"
+        className="relative w-full rounded-none bg-gradient-to-r from-[#061539]/95 via-[#081a44]/95 to-[#051130]/95 border-y border-x-0 border-amber-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.6),0_0_20px_rgba(245,158,11,0.22)] backdrop-blur-xl overflow-hidden py-1.5 sm:py-2 px-0 flex items-center group/ticker"
         onMouseEnter={() => pauseOnHover && setIsHovered(true)}
         onMouseLeave={() => pauseOnHover && setIsHovered(false)}
       >
@@ -61,7 +59,7 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
 
         {/* Optional Prefix Badge (if configured) */}
         {settings?.prefixLabel && (
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/60 text-amber-300 text-[11px] font-bold shrink-0 mr-3 z-20">
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 ml-3 sm:ml-4 rounded-full bg-amber-500/20 border border-amber-400/60 text-amber-300 text-[11px] font-bold shrink-0 mr-3 z-20">
             <span>{settings.prefixLabel}</span>
           </div>
         )}

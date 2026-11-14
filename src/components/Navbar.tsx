@@ -129,9 +129,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent pointer-events-none" />
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
 
-        {/* Header Content Container - Ultra-Slim & Compact (44px - 48px Apple Navbar Height) */}
-        <div className="relative w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto h-11 sm:h-12 flex items-center justify-between gap-2 sm:gap-4">
-          {/* Zone 1: Brand Logo & Title (Slim, Compact & Minimal) */}
+        {/* Header Content Container - Slightly Enlarged (+10%) Slim Navbar */}
+        <div className="relative w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto h-12 sm:h-[54px] flex items-center justify-between gap-2 sm:gap-4">
+          {/* Zone 1: Brand Logo & Title (+10% Enlarged) */}
           <a
             href="#home"
             onClick={(e) => {
@@ -145,39 +145,41 @@ export const Navbar: React.FC<NavbarProps> = ({
               window.history.pushState(null, '', '#home');
             }}
             title="กลับสู่หน้าแรก (Home)"
-            className="flex items-center gap-2 whitespace-nowrap shrink-0 group focus:outline-none rounded-lg p-0.5 cursor-pointer transition-opacity hover:opacity-90"
+            className="flex items-center gap-2.5 whitespace-nowrap shrink-0 group focus:outline-none rounded-lg p-0.5 cursor-pointer transition-opacity hover:opacity-90"
           >
-            {/* Small Compact Logo */}
+            {/* Compact Logo (+10%) */}
             <div className="relative shrink-0 flex items-center justify-center">
               <img
                 src="https://i.postimg.cc/90TgPftw/Untitled-design-2026-10-13T095211-499.png"
                 alt="โลโก้สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง."
                 referrerPolicy="no-referrer"
-                className="relative z-10 h-6 sm:h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-105 shrink-0 drop-shadow-[0_1px_6px_rgba(245,158,11,0.3)]"
+                className="relative z-10 h-[27px] sm:h-[31px] w-auto object-contain transition-transform duration-200 group-hover:scale-105 shrink-0 drop-shadow-[0_1px_6px_rgba(245,158,11,0.3)]"
                 onError={(e) => {
                   (e.target as HTMLElement).style.display = 'none';
                 }}
               />
             </div>
 
-            {/* Compact Brand Typography */}
+            {/* Brand Typography: PR - SAI Thailand + สำนักงานการตรวจเงินแผ่นดิน */}
             <div className="flex items-center">
-              <span className="text-xs sm:text-sm font-bold tracking-tight text-white group-hover:text-amber-300 transition-colors flex items-center gap-1.5">
-                <span className="bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
-                  PR - SAI Thailand
+              <div className="flex flex-col justify-center leading-none">
+                <span className="text-[13px] sm:text-[15px] font-bold tracking-tight leading-tight text-white group-hover:text-amber-300 transition-colors">
+                  <span className="bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
+                    PR - SAI Thailand
+                  </span>
                 </span>
-                <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 font-bold">
-                  สตง.
+                <span className="text-[9.5px] sm:text-[11px] font-medium tracking-wide text-amber-300/90 group-hover:text-amber-200 transition-colors leading-tight mt-[1px]">
+                  สำนักงานการตรวจเงินแผ่นดิน
                 </span>
-              </span>
-              <span className="hidden 2xl:inline text-[11px] text-amber-300/80 font-normal pl-2 ml-2 border-l border-amber-500/30 whitespace-nowrap">
+              </div>
+              <span className="hidden 2xl:inline text-[12px] text-amber-300/80 font-normal pl-2.5 ml-3 border-l border-amber-500/30 whitespace-nowrap">
                 สำนักประชาสัมพันธ์และสื่อสารองค์กร
               </span>
             </div>
           </a>
 
-          {/* Zone 2: Navigation Links (Desktop - Minimalist Horizontal Row in Apple Style) */}
-          <nav className="hidden lg:flex items-center gap-3.5 xl:gap-5 text-[11.5px] xl:text-[12.5px] font-medium text-slate-300">
+          {/* Zone 2: Navigation Links (Desktop +10%) */}
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-5 text-[13px] xl:text-[14px] font-medium text-slate-300">
             <a
               href="#home"
               className="hover:text-white transition-colors whitespace-nowrap shrink-0 py-1"
@@ -219,15 +221,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="hover:text-amber-300 transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1 text-amber-300/90 font-medium"
                 title="ดูศูนย์วิเคราะห์สถิติ Real-time (เฉพาะผู้ดูแลระบบ)"
               >
-                <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+                <BarChart3 className="w-4 h-4 text-amber-400" />
                 <span>แดชบอร์ดสถิติ</span>
               </button>
             )}
           </nav>
 
-          {/* Zone 3: Minimalist Actions (Apple Style) */}
+          {/* Zone 3: Minimalist Actions (+10%) */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 relative">
-            {/* Minimalist Search Icon Button (Apple Style) */}
+            {/* Minimalist Search Icon Button */}
             <button
               type="button"
               onClick={() => {
@@ -238,22 +240,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="ค้นหาข้อมูล (Ctrl + K)"
               aria-label="ค้นหาข้อมูล"
             >
-              <Search className="w-4 h-4 text-slate-300 group-hover:text-amber-300 transition-colors" />
+              <Search className="w-[18px] h-[18px] text-slate-300 group-hover:text-amber-300 transition-colors" />
             </button>
 
-            {/* PR Request Portal CTA - Slim Apple Pill Button */}
+            {/* PR Request Portal CTA - Slim Apple Pill Button (+10%) */}
             <a
               href="https://pr-request-system.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1 px-3 py-1 text-[11px] font-bold text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all whitespace-nowrap shrink-0"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-bold text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all whitespace-nowrap shrink-0"
               title="ระบบขอรับการสนับสนุนสื่อประชาสัมพันธ์และวิทยากร สตง."
             >
               <span>ขอสนับสนุนสื่อ</span>
-              <ExternalLink className="w-2.5 h-2.5" />
+              <ExternalLink className="w-3 h-3" />
             </a>
 
-            {/* Biometric Button / Admin Quick Trigger */}
+            {/* Biometric Button / Admin Quick Trigger (+10%) */}
             <div className="hidden sm:flex relative items-center">
               {isAdminLoggedIn ? (
                 <button
@@ -261,15 +263,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                     playDigitalSound('select');
                     onOpenAdminPanel();
                   }}
-                  className="px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 transition-all flex items-center gap-1 text-[11px] shadow-sm active:scale-95"
+                  className="px-2.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 transition-all flex items-center gap-1.5 text-[12px] shadow-sm active:scale-95"
                   title="เปิดหน้าต่าง Admin"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
                   <span className="hidden sm:inline font-mono font-medium">Admin</span>
                 </button>
               ) : (
                 <div
-                  className="relative w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center select-none touch-none cursor-pointer"
+                  className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center select-none touch-none cursor-pointer"
                   onMouseDown={startHold}
                   onMouseUp={cancelHold}
                   onMouseLeave={cancelHold}
@@ -310,7 +312,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                   {/* Fingerprint Button Interior */}
                   <div
-                    className={`w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-all duration-200 ${
+                    className={`w-6 h-6 sm:w-[27px] sm:h-[27px] rounded-full flex items-center justify-center transition-all duration-200 ${
                       scanSuccess
                         ? 'bg-emerald-500/30 text-emerald-300 scale-105 ring-2 ring-emerald-400'
                         : isHolding
@@ -319,10 +321,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     {scanSuccess ? (
-                      <Check className="w-3 h-3 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
                     ) : (
                       <Fingerprint
-                        className={`w-3 h-3 transition-transform ${
+                        className={`w-3.5 h-3.5 transition-transform ${
                           isHolding ? 'scale-110 text-yellow-300 animate-pulse' : ''
                         }`}
                       />
@@ -338,17 +340,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('switch');
                 setMobileMenuOpen(!mobileMenuOpen);
               }}
-              className="lg:hidden w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              className="lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
               aria-label="Toggle navigation"
               title={mobileMenuOpen ? 'ปิดเมนู' : 'เปิดเมนู'}
             >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {mobileMenuOpen ? <X className="w-[18px] h-[18px]" /> : <Menu className="w-[18px] h-[18px]" />}
             </button>
           </div>
         </div>
       </header>
       {/* Spacer to preserve document flow height for fixed navbar */}
-      <div className="h-11 sm:h-12 w-full shrink-0 pointer-events-none" aria-hidden="true" />
+      <div className="h-12 sm:h-[54px] w-full shrink-0 pointer-events-none" aria-hidden="true" />
 
       {/* Apple-style Minimalist Quick Search Dropdown / Overlay */}
       {searchModalOpen && (
@@ -390,7 +392,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Compact Right-Aligned Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed top-12 sm:top-13 right-2 sm:right-3 md:right-4 z-50 w-[225px] sm:w-[240px] md:w-[255px] bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26]/98 backdrop-blur-2xl border-2 border-amber-400/60 rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.3)] p-3 space-y-2 lg:hidden animate-slide-in-right overflow-hidden select-none">
+        <div className="fixed top-[50px] sm:top-[56px] right-2 sm:right-3 md:right-4 z-50 w-[225px] sm:w-[240px] md:w-[255px] bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26]/98 backdrop-blur-2xl border-2 border-amber-400/60 rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.3)] p-3 space-y-2 lg:hidden animate-slide-in-right overflow-hidden select-none">
           {/* Royal Gold Grid Texture */}
           <div className="absolute inset-0 bg-digital-grid opacity-20 pointer-events-none" />
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_8px_rgba(245,158,11,0.8)] pointer-events-none" />
