@@ -52,6 +52,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [shareMilestone, setShareMilestone] = useState<IncidentMilestone | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const hasUserInteractedRef = useRef(false);
 
   // Fallback safe item
   const currentItem: IncidentMilestone =
@@ -69,33 +70,43 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
       colorAccent: 'orange',
     };
 
-  // Scroll into view when activeIndex changes
+  // Horizontally center the active timeline node inside the track ONLY after user interaction (never scroll the page vertically on load)
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      const activeElement = scrollContainerRef.current.querySelector(
-        `[data-node-index="${activeIndex}"]`
-      ) as HTMLElement | null;
-      if (activeElement) {
-        activeElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center',
-        });
-      }
+    if (!hasUserInteractedRef.current) return;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const activeElement = container.querySelector(
+      `[data-node-index="${activeIndex}"]`
+    ) as HTMLElement | null;
+    if (activeElement) {
+      const containerRect = container.getBoundingClientRect();
+      const elemRect = activeElement.getBoundingClientRect();
+      const targetLeft =
+        container.scrollLeft +
+        (elemRect.left - containerRect.left) -
+        container.clientWidth / 2 +
+        elemRect.width / 2;
+      container.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: 'smooth',
+      });
     }
   }, [activeIndex]);
 
   const handlePrev = () => {
+    hasUserInteractedRef.current = true;
     playDigitalSound('click');
     setActiveIndex((prev) => (prev > 0 ? prev - 1 : timeline.length - 1));
   };
 
   const handleNext = () => {
+    hasUserInteractedRef.current = true;
     playDigitalSound('click');
     setActiveIndex((prev) => (prev < timeline.length - 1 ? prev + 1 : 0));
   };
 
   const handleSelectNode = (idx: number, openModal: boolean = true) => {
+    hasUserInteractedRef.current = true;
     playDigitalSound('radar');
     setActiveIndex(idx);
     if (openModal) {

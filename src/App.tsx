@@ -728,6 +728,16 @@ export default function App() {
     }
   };
 
+  // Ensure page always opens at the very top on initial visit unless a specific section hash is provided
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.location.hash) {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   // Initialize and synchronize public collections with Firebase Firestore (24/7 online persistence)
   useEffect(() => {
     // 1. Real-time Firestore subscription for public content
