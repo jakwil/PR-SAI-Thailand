@@ -780,6 +780,37 @@ export async function deleteItemFromFirestore(
   }
 }
 
+// Delete multiple items from Firestore collection & record deletion markers
+export async function deleteMultipleItemsFromFirestore(
+  collectionName: AppCollectionName,
+  ids: string[]
+): Promise<void> {
+  const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+  if (uniqueIds.length === 0) return;
+  if (!isAuthorizedAdminEmail(auth.currentUser?.email)) {
+    throw new Error('กรุณาเข้าสู่ระบบด้วยบัญชี Google Admin ก่อนลบข้อมูล');
+  }
+  try {
+    await Promise.all(
+      uniqueIds.map((id) => deleteDoc(doc(db, collectionName, id)))
+    );
+    const keys = uniqueIds.map((id) => `${collectionName}:${id}`);
+    keys.forEach((key) => addLocalDeletedKey(key));
+    await setDoc(
+      doc(db, 'settings', 'mockup_version'),
+      {
+        version: 'v2_multimodal_news',
+        updatedAt: new Date().toISOString(),
+        deletedIds: arrayUnion(...keys),
+      },
+      { merge: true }
+    ).catch(() => null);
+  } catch (err) {
+    handleFirestoreError(err, OperationType.DELETE, `${collectionName}/bulk(${uniqueIds.length})`);
+    throw err;
+  }
+}
+
 // Force reload mockup data into Firestore (explicit admin action only)
 export async function reloadMockupDataToFirestore(mockData: AppData) {
   try {

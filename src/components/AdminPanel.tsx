@@ -46,7 +46,9 @@ import {
   Mail,
   Filter,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import {
   AppData,
@@ -70,6 +72,7 @@ import {
   deleteNewsSubscriber,
   saveNewsBroadcast,
   deleteItemFromFirestore,
+  deleteMultipleItemsFromFirestore,
   saveSingleItemToFirestore,
   saveChatbotSettings,
   saveMarqueeTickerSettings
@@ -183,8 +186,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingStory, setEditingStory] = useState<Partial<HeroStory> | null>(null);
   const [editingKb, setEditingKb] = useState<Partial<KnowledgeItem> | null>(null);
   const [editingWork, setEditingWork] = useState<Partial<PublishedWork> | null>(null);
+  const [selectedWorkIds, setSelectedWorkIds] = useState<string[]>([]);
   const [editingClip, setEditingClip] = useState<Partial<ViralClip> | null>(null);
   const [editingMilestone, setEditingMilestone] = useState<Partial<IncidentMilestone> | null>(null);
+
+  useEffect(() => {
+    const validIds = new Set(data.publishedWorks.map((w) => w.id));
+    setSelectedWorkIds((prev) => prev.filter((id) => validIds.has(id)));
+  }, [data.publishedWorks]);
 
   // Hero Story Cover Image Upload & AI Generator State
   const coverFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -1051,6 +1060,56 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       ],
       onConfirm: async () => {
         await deleteItemFromFirestore('publishedWorks', id);
+        setSelectedWorkIds((prev) => prev.filter((selectedId) => selectedId !== id));
+        await triggerSave({ ...data, publishedWorks: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
+  };
+
+  const toggleWorkSelection = (id: string) => {
+    playDigitalSound('blip');
+    setSelectedWorkIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleToggleSelectAllWorks = () => {
+    playDigitalSound('select');
+    if (selectedWorkIds.length === data.publishedWorks.length && data.publishedWorks.length > 0) {
+      setSelectedWorkIds([]);
+    } else {
+      setSelectedWorkIds(data.publishedWorks.map((w) => w.id));
+    }
+  };
+
+  const handleBulkDeleteWorks = () => {
+    if (selectedWorkIds.length === 0) return;
+    const selectedSet = new Set(selectedWorkIds);
+    const targets = data.publishedWorks.filter((w) => selectedSet.has(w.id));
+    const updated = data.publishedWorks.filter((w) => !selectedSet.has(w.id));
+    const previewTitles = targets
+      .slice(0, 4)
+      .map((w, i) => `${i + 1}. ${w.title}`)
+      .join(' | ');
+    const extraCount = targets.length > 4 ? ` (+อีก ${targets.length - 4} รายการ)` : '';
+
+    playDigitalSound('blip');
+    setPendingAdminAction({
+      mode: 'delete',
+      sectionName: 'Media Library (คลังสื่อดิจิทัล)',
+      actionTitle: `ยืนยันลบรายการที่เลือกทั้งหมด ${targets.length} รายการ`,
+      itemTitle: `รายการ Media Library ที่เลือกไว้ ${targets.length} รายการ`,
+      imageUrl: targets[0]?.imageUrl,
+      description:
+        'เมื่อยืนยันแล้ว รายการทั้งหมดที่เลือกไว้จะถูกลบออกจากฐานข้อมูล Cloud Firestore และหน้าเว็บไซต์ทันทีโดยไม่กลับมาอีก',
+      summaryFields: [
+        { label: 'จำนวนที่จะลบ', value: `${targets.length} รายการ` },
+        { label: 'รายการตัวอย่าง', value: `${previewTitles}${extraCount}` },
+      ],
+      confirmLabel: `ยืนยันลบถาวร (${targets.length} รายการ)`,
+      onConfirm: async () => {
+        await deleteMultipleItemsFromFirestore('publishedWorks', selectedWorkIds);
+        setSelectedWorkIds([]);
         await triggerSave({ ...data, publishedWorks: updated }, { skipFirestoreSync: true, rethrow: true });
       },
     });
@@ -3025,80 +3084,192 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     Media Library (คลังสื่อดิจิทัล & ข่าวสาร)
                   </h3>
                   <p className="text-xs text-slate-300">
-                    จัดการรายการผลงาน พร้อมรูปภาพ Thumbnail ลิงก์ และคำอธิบาย
+                    จัดการรายการผลงาน พร้อมรูปภาพ Thumbnail ลิงก์ และคำอธิบาย (คลิกเลือกหลายรายการเพื่อลบพร้อมกันได้)
                   </p>
                 </div>
-                <button
-                  onClick={() =>
-                    setEditingWork({
-                      title: '',
-                      category: 'สื่อประชาสัมพันธ์',
-                      description: '',
-                      linkUrl: 'https://pr-request-system.vercel.app',
-                      imageUrl: '/src/assets/images/sai_audit_hero_1791689796943.jpg',
-                      views: '1,500',
-                      badge: 'ผลงานใหม่',
-                    })
-                  }
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>เพิ่มผลงานเผยแพร่</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {data.publishedWorks.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleToggleSelectAllWorks}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
+                        selectedWorkIds.length === data.publishedWorks.length
+                          ? 'bg-amber-500/20 border-amber-400 text-amber-300'
+                          : 'bg-[#040e28] border-cyan-500/30 text-slate-200 hover:border-cyan-400 hover:text-white'
+                      }`}
+                    >
+                      {selectedWorkIds.length === data.publishedWorks.length ? (
+                        <CheckSquare className="w-3.5 h-3.5 text-amber-300" />
+                      ) : (
+                        <Square className="w-3.5 h-3.5 text-cyan-400" />
+                      )}
+                      <span>
+                        {selectedWorkIds.length === data.publishedWorks.length
+                          ? 'ยกเลิกเลือกทั้งหมด'
+                          : `เลือกทั้งหมด (${data.publishedWorks.length})`}
+                      </span>
+                    </button>
+                  )}
+
+                  {selectedWorkIds.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleBulkDeleteWorks}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-500/25 transition-all active:scale-95 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>ลบที่เลือก ({selectedWorkIds.length})</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditingWork({
+                        title: '',
+                        category: 'สื่อประชาสัมพันธ์',
+                        description: '',
+                        linkUrl: 'https://pr-request-system.vercel.app',
+                        imageUrl: '/src/assets/images/sai_audit_hero_1791689796943.jpg',
+                        views: '1,500',
+                        badge: 'ผลงานใหม่',
+                      })
+                    }
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>เพิ่มผลงานเผยแพร่</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {data.publishedWorks.map((work) => (
-                  <div
-                    key={work.id}
-                    className="p-3 rounded-xl bg-[#07173e]/60 border border-cyan-500/20 hover:border-cyan-400/30 transition-colors flex gap-4"
-                  >
-                    <img
-                      src={work.imageUrl}
-                      alt={work.title}
-                      className="w-28 h-24 object-cover rounded-lg shrink-0 border border-cyan-500/30"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
-                      }}
-                    />
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center justify-between text-[11px] text-cyan-300 mb-1">
-                          <span>{work.category}</span>
-                          <span className="text-slate-400">{work.publishDate}</span>
-                        </div>
-                        <h4 className="text-xs font-semibold text-white line-clamp-1">
-                          {work.title}
-                        </h4>
-                        <p className="text-xs text-slate-300 line-clamp-2 mt-1">
-                          {work.description}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-cyan-500/20">
-                        <span className="text-[10px] text-slate-400">
-                          เข้าชม {work.views} ครั้ง
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => setEditingWork(work)}
-                            className="p-1 text-slate-400 hover:text-white"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteWork(work.id)}
-                            className="p-1 text-rose-400 hover:text-rose-300"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+              {/* Sticky Selection Bar when items are checked */}
+              {selectedWorkIds.length > 0 && (
+                <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-950/95 via-[#180c24]/95 to-amber-950/90 border border-rose-500/50 shadow-[0_8px_25px_rgba(0,0,0,0.65)] backdrop-blur-md animate-fadeIn">
+                  <div className="flex items-center gap-2 text-xs">
+                    <CheckSquare className="w-4 h-4 text-amber-300 shrink-0" />
+                    <span className="font-bold text-white">
+                      เลือกไว้แล้ว {selectedWorkIds.length} จาก {data.publishedWorks.length} รายการ
+                    </span>
                   </div>
-                ))}
-              </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playDigitalSound('blip');
+                        setSelectedWorkIds([]);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer"
+                    >
+                      ล้างที่เลือก
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleBulkDeleteWorks}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-500/30 transition-all active:scale-95 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>ยืนยันลบ {selectedWorkIds.length} รายการที่เลือก</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {data.publishedWorks.length === 0 ? (
+                <div className="text-center py-12 px-4 rounded-xl border border-dashed border-cyan-500/30 text-slate-400 text-xs">
+                  ยังไม่มีรายการใน Media Library สามารถกดปุ่ม "เพิ่มผลงานเผยแพร่" เพื่อเพิ่มข้อมูลใหม่ได้ทันที
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {data.publishedWorks.map((work) => {
+                    const isSelected = selectedWorkIds.includes(work.id);
+                    return (
+                      <div
+                        key={work.id}
+                        onClick={() => toggleWorkSelection(work.id)}
+                        className={`p-3 rounded-xl border transition-all flex gap-3.5 cursor-pointer select-none ${
+                          isSelected
+                            ? 'bg-amber-500/10 border-amber-400/80 ring-1 ring-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.18)]'
+                            : 'bg-[#07173e]/60 border-cyan-500/20 hover:border-cyan-400/40'
+                        }`}
+                      >
+                        {/* Multi-select Checkbox */}
+                        <div className="flex items-start pt-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleWorkSelection(work.id);
+                            }}
+                            aria-label={isSelected ? `ยกเลิกเลือก ${work.title}` : `เลือก ${work.title}`}
+                            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-amber-400 border-amber-300 text-slate-950 shadow-sm'
+                                : 'bg-[#040e28] border-cyan-500/40 text-transparent hover:border-amber-400/70'
+                            }`}
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          </button>
+                        </div>
+
+                        <img
+                          src={work.imageUrl}
+                          alt={work.title}
+                          className="w-24 sm:w-28 h-24 object-cover rounded-lg shrink-0 border border-cyan-500/30"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
+                          }}
+                        />
+                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center justify-between gap-2 text-[11px] text-cyan-300 mb-1">
+                              <span className="truncate">{work.category}</span>
+                              <span className="text-slate-400 shrink-0">{work.publishDate}</span>
+                            </div>
+                            <h4 className="text-xs font-semibold text-white line-clamp-1">
+                              {work.title}
+                            </h4>
+                            <p className="text-xs text-slate-300 line-clamp-2 mt-1">
+                              {work.description}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-cyan-500/20">
+                            <span className="text-[10px] text-slate-400">
+                              เข้าชม {work.views} ครั้ง
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingWork(work);
+                                }}
+                                className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                                title="แก้ไข"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteWork(work.id);
+                                }}
+                                className="p-1 text-rose-400 hover:text-rose-300 cursor-pointer"
+                                title="ลบรายการนี้"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
