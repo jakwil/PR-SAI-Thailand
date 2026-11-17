@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MarqueeTickerSettings } from '../types';
 import { BeaconRippleDot } from './BeaconRippleDot';
 
@@ -12,6 +12,19 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
   className = '',
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isInViewport, setIsInViewport] = useState(true);
+  const tickerWrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = tickerWrapperRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInViewport(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Default fallback if settings are missing or disabled
   const isEnabled = settings?.enabled !== false;
@@ -46,10 +59,10 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
   const animationClass = isLeftToRight ? 'animate-marquee-track-right' : 'animate-marquee-track-left';
 
   return (
-    <div className={`w-full ${className}`}>
+    <div ref={tickerWrapperRef} className={`w-full ${className}`}>
       {/* Full-Bleed Edge-to-Edge Outer Frame Container (กรอบชิดซ้ายและขวาเต็มจอ) */}
       <div
-        className="relative w-full rounded-none bg-gradient-to-r from-[#061539]/95 via-[#081a44]/95 to-[#051130]/95 border-y border-x-0 border-amber-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.6),0_0_20px_rgba(245,158,11,0.22)] backdrop-blur-xl overflow-hidden py-1.5 sm:py-2 px-0 flex items-center group/ticker"
+        className="relative w-full rounded-none bg-gradient-to-r from-[#061539]/98 via-[#081a44]/98 to-[#051130]/98 border-y border-x-0 border-amber-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.6),0_0_20px_rgba(245,158,11,0.22)] overflow-hidden py-1.5 sm:py-2 px-0 flex items-center group/ticker"
         onMouseEnter={() => pauseOnHover && setIsHovered(true)}
         onMouseLeave={() => pauseOnHover && setIsHovered(false)}
       >
@@ -71,8 +84,8 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
         {/* Scrolling Marquee Track */}
         <div className="w-full overflow-hidden flex items-center">
           <div
-            className={`flex items-center whitespace-nowrap gap-8 sm:gap-14 ${animationClass} ${
-              isHovered ? 'pause-animation' : ''
+            className={`flex items-center whitespace-nowrap gap-8 sm:gap-14 transform-gpu ${animationClass} ${
+              isHovered || !isInViewport ? 'pause-animation' : ''
             }`}
             style={{
               animationDuration: `${speedSeconds}s`,

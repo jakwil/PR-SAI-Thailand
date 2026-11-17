@@ -13,8 +13,10 @@ interface HeroCarouselProps {
 export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isInViewport, setIsInViewport] = useState(true);
   const [shareStory, setShareStory] = useState<HeroStory | null>(null);
   const [subscribeStory, setSubscribeStory] = useState<HeroStory | null>(null);
+  const heroContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSubscribeSubmit = async (sub: Omit<NewsSubscriber, 'id' | 'subscribedAt'>) => {
     try {
@@ -43,14 +45,25 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
   const validStories = stories.slice(0, 10); // Maximum 10 stories as specified
 
   useEffect(() => {
-    if (validStories.length <= 1 || isPaused) return;
+    const el = heroContainerRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInViewport(entry.isIntersecting),
+      { threshold: 0.05 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (validStories.length <= 1 || isPaused || !isInViewport) return;
 
     const timer = setInterval(() => {
       setCurrentIndex((curr) => (curr + 1) % validStories.length);
     }, INTERVAL_MS);
 
     return () => clearInterval(timer);
-  }, [isPaused, validStories.length, currentIndex]);
+  }, [isPaused, isInViewport, validStories.length, currentIndex]);
 
   if (!validStories || validStories.length === 0) return null;
 
@@ -88,6 +101,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
 
   return (
     <div
+      ref={heroContainerRef}
       className="relative w-full select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -96,7 +110,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
       onTouchEnd={handleTouchEnd}
     >
       {/* Outer Holographic Container - ขยายด้านข้างเต็มความกว้าง (w-full) ด้านข้างไม่มีขอบ มีขอบเฉพาะบน-ล่าง (border-y) */}
-      <div className="relative rounded-none overflow-hidden bg-gradient-to-b from-[#0a1e4d]/95 via-[#061539]/95 to-[#030d26]/98 border-y border-amber-400/40 border-x-0 shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_30px_rgba(245,158,11,0.2)] backdrop-blur-2xl">
+      <div className="relative rounded-none overflow-hidden bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26] border-y border-amber-400/40 border-x-0 shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_30px_rgba(245,158,11,0.2)]">
         {/* Holographic Top Royal Gold Laser Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
 
@@ -127,11 +141,13 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
                       src={story.imageUrl}
                       alt={story.title}
                       referrerPolicy="no-referrer"
+                      loading={idx === currentIndex || idx === (currentIndex + 1) % validStories.length ? 'eager' : 'lazy'}
+                      decoding="async"
                       className={`w-full h-full object-cover object-center transform-gpu ${
                         isActive ? 'animate-hero-zoom-5pct' : 'scale-100'
                       }`}
                       style={{
-                        animationPlayState: isPaused ? 'paused' : 'running',
+                        animationPlayState: isPaused || !isInViewport ? 'paused' : 'running',
                       }}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -223,9 +239,12 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
             </div>
           </div>
 
-          {/* Right Column: News Content with Dissolve Transition */}
-          <div className="lg:col-span-3 p-3.5 sm:p-4 md:max-lg:p-3 md:max-lg:py-2.5 lg:p-6 flex flex-col justify-between text-left space-y-2 md:max-lg:space-y-1 relative z-10 h-full overflow-hidden">
-            <div className="relative w-full">
+          {/* Right Column: News Content with Dissolve Transition (Clean Royal Navy Background) */}
+          <div className="lg:col-span-3 p-3.5 sm:p-4 md:max-lg:p-3 md:max-lg:py-2.5 lg:p-6 flex flex-col justify-between text-left space-y-2 md:max-lg:space-y-1 relative z-10 h-full overflow-hidden lg:bg-gradient-to-b lg:from-[#081942] lg:via-[#061333] lg:to-[#030b21] lg:border-l lg:border-amber-400/25">
+            {/* Subtle Clean Navy Depth Wash on Desktop */}
+            <div className="hidden lg:block absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.14)_0%,transparent_70%)] pointer-events-none" />
+
+            <div className="relative z-10 w-full">
               {validStories.map((story, idx) => {
                 const isActive = idx === currentIndex;
                 return (
@@ -254,7 +273,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
             </div>
 
             {/* Follow News Action Button in Content Box */}
-            <div className="pt-2 border-t border-amber-500/20 flex items-center justify-between gap-2">
+            <div className="relative z-10 pt-2 border-t border-amber-400/25 flex items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={() => {

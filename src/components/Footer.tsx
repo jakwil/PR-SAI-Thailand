@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="border-t border-cyan-500/20 bg-[#020718] text-slate-400 py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+    <footer className="section-cv border-t border-cyan-500/20 bg-[#020718] text-slate-400 py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
       <div className="w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-8 border-b border-cyan-500/15">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
@@ -15,6 +15,8 @@ export const Footer: React.FC = () => {
               src="https://i.postimg.cc/90TgPftw/Untitled-design-2026-10-13T095211-499.png"
               alt="Logo SAI Thailand"
               referrerPolicy="no-referrer"
+              loading="lazy"
+              decoding="async"
               className="h-9 sm:h-[43px] w-auto max-w-[90px] object-contain drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)]"
               onError={(e) => {
                 (e.target as HTMLElement).style.display = 'none';

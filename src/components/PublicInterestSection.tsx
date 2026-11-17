@@ -50,10 +50,15 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ on
 
   return (
     <section id="public-interest" className="relative py-16 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto scroll-mt-20">
-      {/* Dedicated Blurred Ambient Glow Behind e-Audit Section */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl" aria-hidden="true">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[750px] h-[450px] bg-gradient-to-r from-teal-600/18 via-cyan-600/15 to-blue-600/15 rounded-full blur-[130px]" />
-      </div>
+      {/* Dedicated Ambient Glow Behind e-Audit Section (Zero-blur CSS radial gradient) */}
+      <div
+        className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(750px 450px at 50% 42%, rgba(13, 148, 136, 0.16), rgba(8, 145, 178, 0.13) 45%, rgba(37, 99, 235, 0.10) 70%, transparent 82%)',
+        }}
+      />
 
       {/* Section Header */}
       <div className="mb-8 pb-4 border-b border-slate-800/80">
@@ -69,8 +74,8 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ on
         </p>
       </div>
 
-      {/* Accordion List with Frosted Glass Blur & Elevated Contrast */}
-      <div className="grid grid-cols-1 gap-3.5 max-w-4xl 2xl:max-w-5xl mx-auto">
+      {/* Accordion List with Elevated Contrast (Optimized without per-card backdrop-blur) */}
+      <div className="section-cv grid grid-cols-1 gap-3.5 max-w-4xl 2xl:max-w-5xl mx-auto">
         {faqItems.map((item, idx) => {
           const isOpen = openIndex === idx;
           const Icon = item.icon;
@@ -78,10 +83,10 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ on
           return (
             <div
               key={idx}
-              className={`rounded-2xl transition-all duration-300 border backdrop-blur-xl ring-1 ring-white/5 ${
+              className={`rounded-2xl transition-all duration-300 border ring-1 ring-white/5 ${
                 isOpen
-                  ? 'bg-[#0b2256]/90 border-2 border-cyan-400/60 shadow-[0_10px_35px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.25)]'
-                  : 'bg-[#081a44]/85 border border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
+                  ? 'bg-[#0b2256]/96 border-2 border-cyan-400/60 shadow-[0_10px_35px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.25)]'
+                  : 'bg-[#081a44]/94 border border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
               }`}
             >
               <button

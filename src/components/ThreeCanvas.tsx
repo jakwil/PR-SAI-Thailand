@@ -8,18 +8,26 @@ import React from 'react';
 export const ThreeCanvas: React.FC = () => {
   return (
     <div
-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none"
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none transform-gpu"
+      style={{ contain: 'strict' }}
       aria-hidden="true"
     >
       {/* 1. Deep Imperial Royal Navy Gradient Base */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#020717] via-[#041033] to-[#010512]" />
 
-      {/* 2. Soft Royal Gold & Sapphire Ambient Glow Orbs (Soft, Calm, Non-Distracting) */}
-      <div className="absolute top-[-10%] left-[20%] w-[700px] h-[550px] bg-amber-500/10 rounded-full blur-[160px]" />
-      <div className="absolute top-[25%] right-[-5%] w-[650px] h-[500px] bg-blue-600/15 rounded-full blur-[170px]" />
-      <div className="absolute top-[50%] left-[-10%] w-[600px] h-[500px] bg-amber-600/8 rounded-full blur-[160px]" />
-      <div className="absolute top-[70%] right-[15%] w-[700px] h-[550px] bg-indigo-700/12 rounded-full blur-[170px]" />
-      <div className="absolute bottom-[-10%] left-[30%] w-[650px] h-[500px] bg-amber-500/8 rounded-full blur-[160px]" />
+      {/* 2. Soft Royal Gold & Sapphire Ambient Glows (Zero-Cost Radial Gradients instead of GPU Blurs) */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: [
+            'radial-gradient(650px 500px at 35% 5%, rgba(245, 158, 11, 0.11), transparent 72%)',
+            'radial-gradient(620px 480px at 85% 32%, rgba(37, 99, 235, 0.16), transparent 72%)',
+            'radial-gradient(580px 460px at 8% 58%, rgba(217, 119, 6, 0.09), transparent 72%)',
+            'radial-gradient(660px 500px at 78% 76%, rgba(67, 56, 202, 0.14), transparent 72%)',
+            'radial-gradient(620px 480px at 45% 96%, rgba(245, 158, 11, 0.09), transparent 72%)',
+          ].join(', '),
+        }}
+      />
 
       {/* 3. Subtle Royal Gold Diamond Lattice / Guilloché Pattern (Pure SVG, Ultra-Lightweight) */}
       <svg

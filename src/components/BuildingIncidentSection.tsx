@@ -280,9 +280,14 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
         className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
         aria-hidden="true"
       >
-        {/* Tactical Emergency Glows: Crimson Alert & High-Visibility Amber */}
-        <div className="absolute top-10 left-10 w-[600px] h-[450px] bg-gradient-to-r from-rose-600/18 via-orange-600/14 to-amber-500/10 rounded-full blur-[160px]" />
-        <div className="absolute bottom-10 right-10 w-[550px] h-[400px] bg-gradient-to-r from-amber-500/12 via-rose-600/10 to-blue-600/10 rounded-full blur-[150px]" />
+        {/* Tactical Emergency Glows: Crimson Alert & High-Visibility Amber (Zero-blur CSS gradients) */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(620px 440px at 18% 20%, rgba(225, 29, 72, 0.16), rgba(234, 88, 12, 0.11) 45%, transparent 74%), radial-gradient(560px 390px at 84% 84%, rgba(245, 158, 11, 0.11), rgba(225, 29, 72, 0.08) 45%, transparent 74%)',
+          }}
+        />
         {/* Tactical grid background overlay */}
         <div className="absolute inset-0 bg-digital-grid opacity-35" />
       </div>
@@ -386,7 +391,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           ฉากหลัง: เมือง เงาตึก (City Skyline & Building Silhouettes) โทนสว่างกว่าเดิม 30%
           Horizontal Ribbon of Connected Chevron Milestone Blocks + Alternating Branches
           ========================================================================= */}
-      <div className="relative mb-0 rounded-3xl bg-gradient-to-b from-[#1b253c]/95 via-[#233352]/95 to-[#162238]/98 border-2 border-rose-500/45 shadow-[0_20px_70px_rgba(15,23,42,0.65),0_0_45px_rgba(244,63,94,0.22)] p-4 sm:p-6 lg:p-7 backdrop-blur-2xl ring-1 ring-white/10 overflow-clip">
+      <div className="relative mb-0 rounded-3xl bg-gradient-to-b from-[#1b253c]/98 via-[#233352]/98 to-[#162238] border-2 border-rose-500/45 shadow-[0_20px_70px_rgba(15,23,42,0.65),0_0_45px_rgba(244,63,94,0.22)] p-4 sm:p-6 lg:p-7 ring-1 ring-white/10 overflow-clip">
         {/* Holographic Top Laser Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 z-10" />
 

@@ -1,15 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { ThreeCanvas } from './components/ThreeCanvas';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { BuildingIncidentSection } from './components/BuildingIncidentSection';
 import { PublishedWorksSection } from './components/PublishedWorksSection';
 import { PublicInterestSection } from './components/PublicInterestSection';
-import { AIChatbotWidget } from './components/AIChatbotWidget';
-import { AdminPanel } from './components/AdminPanel';
 import { Footer } from './components/Footer';
-import { ExecutiveDashboardModal } from './components/ExecutiveDashboardModal';
-import { AdminAuthModal } from './components/AdminAuthModal';
+
+const AIChatbotWidget = lazy(() =>
+  import('./components/AIChatbotWidget').then((m) => ({ default: m.AIChatbotWidget }))
+);
+const AdminPanel = lazy(() =>
+  import('./components/AdminPanel').then((m) => ({ default: m.AdminPanel }))
+);
+const ExecutiveDashboardModal = lazy(() =>
+  import('./components/ExecutiveDashboardModal').then((m) => ({ default: m.ExecutiveDashboardModal }))
+);
+const AdminAuthModal = lazy(() =>
+  import('./components/AdminAuthModal').then((m) => ({ default: m.AdminAuthModal }))
+);
 import {
   auth,
   onAuthStateChanged,
@@ -888,26 +897,22 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-[#020717] text-slate-100 selection:bg-amber-500/30 selection:text-amber-200 overflow-x-clip">
-      {/* Royal Luxury Ambient Light Orbs (Royal Gold & Imperial Sapphire) */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-        {/* Top Hero Ambient Glow: Radiant Royal Gold & Deep Sapphire */}
-        <div
-          className="absolute -top-32 left-1/4 w-[650px] h-[550px] bg-amber-500/12 rounded-full blur-[160px]"
-        />
-        
-        {/* Incident Section Ambient Glow: Royal Gold & Imperial Blue */}
-        <div className="absolute top-[26%] -left-32 w-[650px] h-[550px] bg-amber-600/10 rounded-full blur-[170px]" />
-        <div className="absolute top-[34%] right-0 w-[550px] h-[500px] bg-blue-700/15 rounded-full blur-[160px]" />
-
-        {/* Digital Media Archive (คลังสื่อดิจิทัล) Glow: Royal Indigo & Champagne Gold */}
-        <div className="absolute top-[52%] left-1/3 w-[700px] h-[550px] bg-indigo-700/14 rounded-full blur-[160px]" />
-
-        {/* Viral Media Glow: Warm Burnished Gold & Royal Sapphire */}
-        <div className="absolute top-[70%] -right-20 w-[600px] h-[500px] bg-amber-500/10 rounded-full blur-[160px]" />
-
-        {/* e-Audit & Footer Glow: Deep Royal Navy & Soft Gold */}
-        <div className="absolute bottom-10 left-10 w-[700px] h-[500px] bg-blue-800/14 rounded-full blur-[160px]" />
-      </div>
+      {/* Royal Luxury Ambient Light Orbs (Zero-Cost Radial Gradients for Smooth 60fps Scroll) */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0 overflow-hidden transform-gpu"
+        style={{
+          contain: 'strict',
+          backgroundImage: [
+            'radial-gradient(650px 550px at 32% 6%, rgba(245, 158, 11, 0.12), transparent 72%)',
+            'radial-gradient(620px 520px at 5% 32%, rgba(217, 119, 6, 0.1), transparent 72%)',
+            'radial-gradient(540px 480px at 94% 40%, rgba(29, 78, 216, 0.15), transparent 72%)',
+            'radial-gradient(680px 540px at 42% 58%, rgba(67, 56, 202, 0.14), transparent 72%)',
+            'radial-gradient(580px 480px at 92% 76%, rgba(245, 158, 11, 0.1), transparent 72%)',
+            'radial-gradient(680px 500px at 14% 94%, rgba(30, 64, 175, 0.14), transparent 72%)',
+          ].join(', '),
+        }}
+        aria-hidden="true"
+      />
 
       {/* Royal Luxury Non-3D Background (หรู เรียบ สง่างาม ไม่ต้อง 3D) */}
       <ThreeCanvas />
@@ -960,40 +965,52 @@ export default function App() {
 
         <Footer />
 
-        {/* Google Account + Passcode Authentication Modal (Opened after 3s biometric hold) */}
-        <AdminAuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          onAuthSuccess={handleAuthSuccess}
-        />
-
-        {/* Admin Management Dashboard (Strict access for authenticated admin only) */}
-        <AdminPanel
-          isOpen={isAdminLoggedIn && isAdminPanelOpen}
-          onClose={() => setIsAdminPanelOpen(false)}
-          data={data}
-          onUpdateData={handleUpdateData}
-          onLogout={handleLogout}
-        />
-
-        {/* Floating Compact AI Chatbot Widget (แสดงเฉพาะเมื่อเปิดใช้งานใน Admin และจะขึ้นมาทันทีแม้อยู่หน้าแรกของทุกมุมมอง) */}
-        {isChatbotEnabled && (
-          <AIChatbotWidget
-            isOpen={isChatbotOpen}
-            onToggle={() => setIsChatbotOpen(!isChatbotOpen)}
-            externalPrompt={externalChatPrompt}
-            onClearExternalPrompt={() => setExternalChatPrompt(null)}
-            welcomeMessage={data.chatbotSettings?.welcomeMessage}
-            appData={data}
-          />
+        {/* Google Account + Passcode Authentication Modal (Lazy-loaded on demand) */}
+        {isAuthModalOpen && (
+          <Suspense fallback={null}>
+            <AdminAuthModal
+              isOpen={isAuthModalOpen}
+              onClose={() => setIsAuthModalOpen(false)}
+              onAuthSuccess={handleAuthSuccess}
+            />
+          </Suspense>
         )}
 
-        {/* Real-time Executive PR Analytics Dashboard (เฉพาะผู้ดูแลระบบ Admin เท่านั้น) */}
+        {/* Admin Management Dashboard (Lazy-loaded strictly for authenticated admin only) */}
+        {isAdminLoggedIn && isAdminPanelOpen && (
+          <Suspense fallback={null}>
+            <AdminPanel
+              isOpen={isAdminLoggedIn && isAdminPanelOpen}
+              onClose={() => setIsAdminPanelOpen(false)}
+              data={data}
+              onUpdateData={handleUpdateData}
+              onLogout={handleLogout}
+            />
+          </Suspense>
+        )}
+
+        {/* Floating Compact AI Chatbot Widget (Lazy-loaded after initial Hero paint) */}
+        {isChatbotEnabled && (
+          <Suspense fallback={null}>
+            <AIChatbotWidget
+              isOpen={isChatbotOpen}
+              onToggle={() => setIsChatbotOpen(!isChatbotOpen)}
+              externalPrompt={externalChatPrompt}
+              onClearExternalPrompt={() => setExternalChatPrompt(null)}
+              welcomeMessage={data.chatbotSettings?.welcomeMessage}
+              appData={data}
+            />
+          </Suspense>
+        )}
+
+        {/* Real-time Executive PR Analytics Dashboard (Lazy-loaded for Admin only) */}
         {isAdminLoggedIn && isExecutiveDashboardOpen && (
-          <ExecutiveDashboardModal
-            isOpen={isExecutiveDashboardOpen}
-            onClose={handleCloseExecutiveDashboard}
-          />
+          <Suspense fallback={null}>
+            <ExecutiveDashboardModal
+              isOpen={isExecutiveDashboardOpen}
+              onClose={handleCloseExecutiveDashboard}
+            />
+          </Suspense>
         )}
       </div>
     </div>

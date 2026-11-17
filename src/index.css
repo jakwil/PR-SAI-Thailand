@@ -90,6 +90,12 @@
   backface-visibility: hidden;
 }
 
+/* Defer layout/paint of offscreen sections without fixed modal descendants */
+.section-cv {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+
 
 
 /* Grid overlay pattern */
@@ -99,6 +105,7 @@
     linear-gradient(to right, rgba(6, 182, 212, 0.04) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
 }
+
 
 /* Subtle Glowing Shimmer and Cinematic Animations */
 @keyframes pulseGlow {

@@ -120,14 +120,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      {/* Apple-Style Ultra-Slim, Fixed Header (อยู่ตลอดไม่หาย ไม่ว่าจะเลื่อนขึ้นหรือเลื่อนลง) */}
-      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-[#03091e]/90 backdrop-blur-xl border-b border-amber-500/25 shadow-[0_2px_20px_rgba(0,0,0,0.7)] select-none">
-        {/* Layer 1: Subtle Royal Guilloché Pattern */}
-        <div className="absolute inset-0 bg-digital-grid opacity-10 pointer-events-none" />
-
-        {/* Layer 2: Subtle Luminous Gold Edge Lines */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent pointer-events-none" />
+      {/* Clean Royal Navy Fixed Header (อยู่ตลอดไม่หาย ไม่ว่าจะเลื่อนขึ้นหรือเลื่อนลง) */}
+      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-gradient-to-r from-[#040e28]/95 via-[#07163d]/95 to-[#040e28]/95 backdrop-blur-xl border-b border-cyan-500/25 shadow-[0_4px_24px_rgba(0,0,0,0.75)] select-none overflow-hidden">
+        {/* Subtle Top Luminous Accent Line */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent pointer-events-none" />
 
         {/* Header Content Container - Slightly Enlarged (+10%) Slim Navbar */}
         <div className="relative w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto h-12 sm:h-[54px] flex items-center justify-between gap-2 sm:gap-4">

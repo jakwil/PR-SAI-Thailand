@@ -245,11 +245,14 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
           <rect width="100%" height="100%" fill="url(#refinedMediaPattern)" />
         </svg>
 
-        {/* Soft Ambient Glows: Midnight Cyan, Royal Sapphire & Warm Amber */}
-        <div className="absolute -top-16 left-1/4 w-[600px] h-[350px] bg-cyan-600/12 rounded-full blur-[150px]" />
-        <div className="absolute top-1/2 right-1/4 w-[650px] h-[360px] bg-blue-700/14 rounded-full blur-[160px]" />
-        <div className="absolute -bottom-16 left-1/3 w-[550px] h-[320px] bg-indigo-700/10 rounded-full blur-[150px]" />
-        <div className="absolute top-1/3 right-10 w-[400px] h-[260px] bg-amber-500/8 rounded-full blur-[140px]" />
+        {/* Soft Ambient Glows: Midnight Cyan, Royal Sapphire & Warm Amber (Zero-blur CSS radial gradients) */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(600px 350px at 32% 8%, rgba(8, 145, 178, 0.12), transparent 72%), radial-gradient(650px 360px at 72% 52%, rgba(29, 78, 216, 0.14), transparent 74%), radial-gradient(550px 320px at 36% 92%, rgba(67, 56, 202, 0.10), transparent 72%), radial-gradient(400px 260px at 90% 35%, rgba(245, 158, 11, 0.08), transparent 70%)',
+          }}
+        />
       </div>
 
       {/* Header & Comprehensive Search Container */}
@@ -341,6 +344,8 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                         src={work.imageUrl}
                         alt={work.title}
                         referrerPolicy="no-referrer"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 transform-gpu"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -421,6 +426,8 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                         src={work.imageUrl}
                         alt={work.title}
                         referrerPolicy="no-referrer"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 transform-gpu"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;

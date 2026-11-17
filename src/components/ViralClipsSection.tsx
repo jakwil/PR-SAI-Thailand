@@ -46,10 +46,15 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
 
   return (
     <div id="viral-clips" className="relative pt-0 pb-1 scroll-mt-20">
-      {/* Dedicated Blurred Ambient Glow Behind Viral Clips */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl" aria-hidden="true">
-        <div className="absolute top-1/4 right-10 w-[700px] h-[350px] bg-gradient-to-r from-amber-600/12 via-rose-600/10 to-blue-600/12 rounded-full blur-[140px]" />
-      </div>
+      {/* Dedicated Ambient Glow Behind Viral Clips (Zero-blur CSS radial gradient) */}
+      <div
+        className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(650px 320px at 80% 45%, rgba(245, 158, 11, 0.11), rgba(225, 29, 72, 0.08) 45%, rgba(37, 99, 235, 0.06) 65%, transparent 78%)',
+        }}
+      />
 
       {/* Horizontal Scroll Track: เลื่อนซ้ายขวาได้สะดวก */}
       <div className="relative group/track">
@@ -84,7 +89,7 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
             <div
               key={clip.id}
               onClick={() => handleOpenClip(clip)}
-              className="group cursor-pointer rounded-xl sm:rounded-2xl bg-[#081a44]/90 border border-amber-400/30 hover:border-amber-400/70 transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.5)] sm:shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.25)] backdrop-blur-xl ring-1 ring-white/5 flex flex-col shrink-0 w-[130px] sm:w-[290px] md:w-[256px] xl:w-[280px] 2xl:w-[304px] snap-start overflow-hidden hover:scale-[1.01] active:scale-[0.98]"
+              className="group cursor-pointer rounded-xl sm:rounded-2xl bg-[#081a44]/96 border border-amber-400/30 hover:border-amber-400/70 transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.5)] sm:shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.25)] ring-1 ring-white/5 flex flex-col shrink-0 w-[130px] sm:w-[290px] md:w-[256px] xl:w-[280px] 2xl:w-[304px] snap-start overflow-hidden hover:scale-[1.01] active:scale-[0.98] transform-gpu"
               title={`กดที่ภาพเพื่อชมคลิป: ${clip.title}`}
             >
               {/* ภาพเต็มของคลิป (Full Edge-to-Edge Image with Centered Play Button) */}
@@ -93,6 +98,8 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
                   src={clip.thumbnail}
                   alt={clip.title}
                   referrerPolicy="no-referrer"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
