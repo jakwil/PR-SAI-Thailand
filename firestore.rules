@@ -27,12 +27,6 @@ service cloud.firestore {
         );
     }
 
-    function isGroupContributor() {
-      return isSignedIn() &&
-        request.auth.token.email_verified == true &&
-        request.auth.token.email == 'auditpicture@gmail.com';
-    }
-
     function isValidMissionIndexes(val) {
       return val is list && val.size() <= 10;
     }
@@ -96,6 +90,10 @@ service cloud.firestore {
              (!('bureauGroup' in data) || isValidBureauGroupId(data.bureauGroup)) &&
              (!('missionIndexes' in data) || isValidMissionIndexes(data.missionIndexes)) &&
              (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
+    }
+
+    function isValidShowcaseGroupId(val) {
+      return val in ['group-media-relations', 'group-corp-strategy', 'group-media-production'];
     }
 
     function isValidGroupWork(data) {
@@ -235,10 +233,11 @@ service cloud.firestore {
       allow delete: if isAdmin() && isValidId(workId);
     }
 
-    // Bureau Group Works Collection
+    // Bureau Group Works Collection (Passcode-gated Add/Edit on client + strict schema gate; Delete restricted to Admin)
     match /groupWorks/{workId} {
       allow read: if true;
-      allow create, update: if (isAdmin() || isGroupContributor()) && isValidId(workId) && isValidGroupWork(incoming());
+      allow create: if (isAdmin() || isValidShowcaseGroupId(incoming().groupId)) && isValidId(workId) && isValidGroupWork(incoming());
+      allow update: if (isAdmin() || (isValidShowcaseGroupId(incoming().groupId) && incoming().id == resource.data.id)) && isValidId(workId) && isValidGroupWork(incoming());
       allow delete: if isAdmin() && isValidId(workId);
     }
 

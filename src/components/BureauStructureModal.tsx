@@ -22,7 +22,7 @@ import {
   Filter,
   Images,
   UserCheck,
-  Mail,
+  KeyRound,
   Plus,
   Edit2,
   Save,
@@ -32,6 +32,8 @@ import {
   LogOut,
   ArrowRight,
   Eye,
+  EyeOff,
+  Home,
 } from 'lucide-react';
 import {
   AppData,
@@ -50,19 +52,30 @@ import {
   defaultGroupWorks,
   getBureauGroupById,
 } from '../data/bureauStructure';
-import {
-  auth,
-  GROUP_CONTRIBUTOR_EMAIL,
-  isAuthorizedPortalEmail,
-  isGroupContributorEmail,
-  onAuthStateChanged,
-  saveSingleItemToFirestore,
-  signInGroupContributorWithGoogle,
-  signOutAdmin,
-} from '../firebase';
+import { saveSingleItemToFirestore } from '../firebase';
 import { playDigitalSound } from '../utils/audioEffects';
 
-const CONTRIBUTOR_SESSION_KEY = 'sai_group_contributor_email';
+const CONTRIBUTOR_SESSION_KEY = 'sai_group_contributor_passcode';
+const CONTRIBUTOR_PASSCODE_SHA256 =
+  'a885cce8a1d8c7da01ba3a4b67be41d98961c6498a2f1ff3681f64367927101f';
+
+async function verifyContributorPasscode(input: string): Promise<boolean> {
+  const trimmed = input.trim();
+  if (!trimmed) return false;
+  if (typeof window !== 'undefined' && window.crypto?.subtle) {
+    const bytes = new TextEncoder().encode(trimmed);
+    const hashBuffer = await window.crypto.subtle.digest('SHA-256', bytes);
+    const digest = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+    return digest === CONTRIBUTOR_PASSCODE_SHA256;
+  }
+  const codes = [97, 117, 100, 105, 116, 112, 105, 99, 116, 117, 114, 101];
+  return (
+    trimmed.length === codes.length &&
+    codes.every((code, idx) => trimmed.charCodeAt(idx) === code)
+  );
+}
 
 interface BureauStructureModalProps {
   isOpen: boolean;
@@ -203,12 +216,15 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
   const [selectedWork, setSelectedWork] = useState<UnifiedGroupWork | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
-  // Right-panel tab state (works view vs standalone contributor submission)
+  // Right-panel tab state (works view vs standalone passcode-only contributor submission)
   const [rightTab, setRightTab] = useState<'works' | 'submit'>('works');
-  const [contributorEmailInput, setContributorEmailInput] = useState('');
-  const [isContributorUnlocked, setIsContributorUnlocked] = useState(false);
-  const [contributorEmailActive, setContributorEmailActive] = useState<string | null>(null);
-  const [isAuthenticatingContributor, setIsAuthenticatingContributor] = useState(false);
+  const [passcodeInput, setPasscodeInput] = useState('');
+  const [showPasscode, setShowPasscode] = useState(false);
+  const [isContributorUnlocked, setIsContributorUnlocked] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.sessionStorage.getItem(CONTRIBUTOR_SESSION_KEY) === 'verified';
+  });
+  const [isVerifyingPasscode, setIsVerifyingPasscode] = useState(false);
   const [contributorError, setContributorError] = useState<string | null>(null);
   const [contributorNotice, setContributorNotice] = useState<string | null>(null);
 
@@ -226,27 +242,6 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
   const submitFormRef = useRef<HTMLFormElement | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Sync standalone contributor unlock state with sessionStorage & Firebase Auth
-  useEffect(() => {
-    const syncContributorState = (email?: string | null) => {
-      const savedEmail =
-        typeof window !== 'undefined' ? window.sessionStorage.getItem(CONTRIBUTOR_SESSION_KEY) : null;
-      if (savedEmail === GROUP_CONTRIBUTOR_EMAIL && isAuthorizedPortalEmail(email)) {
-        setIsContributorUnlocked(true);
-        setContributorEmailActive(GROUP_CONTRIBUTOR_EMAIL);
-      } else {
-        setIsContributorUnlocked(false);
-        setContributorEmailActive(null);
-      }
-    };
-
-    syncContributorState(auth.currentUser?.email);
-    const unsub = onAuthStateChanged(auth, (user) => {
-      syncContributorState(user?.email);
-    });
-    return () => unsub();
-  }, []);
 
   const lightboxPhotos = useMemo(() => {
     if (!selectedWork) return [];
@@ -508,78 +503,56 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
     }
   };
 
-  const handleContributorEmailSubmit = async (e: React.FormEvent) => {
+  const handleContributorPasscodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setContributorError(null);
     setContributorNotice(null);
 
-    const typed = contributorEmailInput.trim().toLowerCase();
+    const typed = passcodeInput.trim();
     if (!typed) {
-      setContributorError(`กรุณาพิมพ์อีเมล ${GROUP_CONTRIBUTOR_EMAIL}`);
+      setContributorError('กรุณากรอก Passcode เพื่อเข้าส่งผลงานกลุ่มงาน');
       playDigitalSound('blip');
       return;
     }
 
-    if (typed !== GROUP_CONTRIBUTOR_EMAIL) {
-      setContributorError(
-        `สิทธิ์ส่งผลงานกลุ่มงานใช้ได้เฉพาะอีเมล ${GROUP_CONTRIBUTOR_EMAIL} เท่านั้น (ไม่ต้องใช้ Passcode)`
-      );
-      playDigitalSound('blip');
-      return;
-    }
-
-    setIsAuthenticatingContributor(true);
+    setIsVerifyingPasscode(true);
     playDigitalSound('select');
 
     try {
-      const currentEmail = auth.currentUser?.email?.trim().toLowerCase();
-      if (!auth.currentUser || !isAuthorizedPortalEmail(currentEmail)) {
-        await signInGroupContributorWithGoogle(GROUP_CONTRIBUTOR_EMAIL);
+      const isValid = await verifyContributorPasscode(typed);
+      if (!isValid) {
+        setContributorError('Passcode ไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง');
+        playDigitalSound('blip');
+        return;
       }
 
       if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem(CONTRIBUTOR_SESSION_KEY, GROUP_CONTRIBUTOR_EMAIL);
+        window.sessionStorage.setItem(CONTRIBUTOR_SESSION_KEY, 'verified');
       }
       setIsContributorUnlocked(true);
-      setContributorEmailActive(GROUP_CONTRIBUTOR_EMAIL);
+      setPasscodeInput('');
       setEditingDraft(createBlankDraft(activeGroup.id));
-      setContributorNotice(`เข้าสู่โหมดส่งผลงานกลุ่มงานด้วยบัญชี ${GROUP_CONTRIBUTOR_EMAIL} เรียบร้อยแล้ว`);
+      setContributorNotice('ยืนยัน Passcode สำเร็จ — เข้าสู่โหมดเพิ่มและแก้ไขผลงานกลุ่มงานเรียบร้อยแล้ว');
       playDigitalSound('confirm');
-    } catch (err: any) {
-      console.error('Group contributor sign-in error:', err);
-      const code = err?.code || '';
-      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-        setContributorError('ยกเลิกหน้าต่างยืนยันบัญชี Google กรุณากดลองใหม่อีกครั้ง');
-      } else if (code === 'auth/popup-blocked') {
-        setContributorError('เบราว์เซอร์บล็อกหน้าต่างป๊อปอัป กรุณาอนุญาต Pop-up สำหรับเว็บไซต์นี้แล้วลองใหม่');
-      } else if (code === 'auth/unauthorized-domain') {
-        const host = typeof window !== 'undefined' ? window.location.hostname : '';
-        setContributorError(
-          `โดเมน "${host}" ยังไม่ได้รับอนุญาตใน Firebase Authentication (Authorized domains)`
-        );
-      } else {
-        setContributorError(err?.message || 'ไม่สามารถเปิดสิทธิ์ส่งผลงานได้ กรุณาลองใหม่อีกครั้ง');
-      }
+    } catch {
+      setContributorError('ไม่สามารถตรวจสอบ Passcode ได้ กรุณาลองใหม่อีกครั้ง');
       playDigitalSound('blip');
     } finally {
-      setIsAuthenticatingContributor(false);
+      setIsVerifyingPasscode(false);
     }
   };
 
-  const handleContributorLogout = async () => {
+  const handleContributorLogout = () => {
     playDigitalSound('blip');
     if (typeof window !== 'undefined') {
       window.sessionStorage.removeItem(CONTRIBUTOR_SESSION_KEY);
     }
     setIsContributorUnlocked(false);
-    setContributorEmailActive(null);
-    setContributorEmailInput('');
+    setPasscodeInput('');
+    setShowPasscode(false);
     setContributorError(null);
     setContributorNotice(null);
     setEditingDraft(createBlankDraft(activeGroup.id));
-    if (isGroupContributorEmail(auth.currentUser?.email)) {
-      await signOutAdmin().catch(() => null);
-    }
   };
 
   const handleUploadDraftCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -717,7 +690,9 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
     setIsSavingWork(true);
     playDigitalSound('select');
     try {
-      await saveSingleItemToFirestore('groupWorks', itemToSave);
+      await saveSingleItemToFirestore('groupWorks', itemToSave, {
+        contributorPasscodeVerified: isContributorUnlocked,
+      });
       onGroupWorkSaved?.(itemToSave);
       setEditingDraft(createBlankDraft(activeGroup.id));
       setGalleryUrlInput('');
@@ -730,7 +705,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
     } catch (err: any) {
       console.error('Save group work error:', err);
       setContributorError(
-        err?.message || 'ไม่สามารถบันทึกผลงานได้ กรุณาตรวจสอบว่าเชื่อมต่อบัญชี auditpicture@gmail.com แล้ว'
+        err?.message || 'ไม่สามารถบันทึกผลงานได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง'
       );
       playDigitalSound('blip');
     } finally {
@@ -793,6 +768,24 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                 <span>จัดการใน Admin</span>
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => {
+                playDigitalSound('select');
+                setSelectedWork(null);
+                onClose();
+                if (typeof window !== 'undefined') {
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }, 80);
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400/15 hover:bg-amber-400 text-amber-200 hover:text-slate-950 border border-amber-400/50 text-xs font-bold transition-all cursor-pointer shadow-sm"
+              title="กลับสู่หน้าหลัก (Home)"
+            >
+              <Home className="w-4 h-4" />
+              <span>Home</span>
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -1278,7 +1271,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                     )}
                   </>
                 ) : (
-                  /* STANDALONE CONTRIBUTOR TAB: ส่งผลงานกลุ่มงาน (Email-only, No Passcode, Add/Edit Only, No CSV, No Admin) */
+                  /* STANDALONE CONTRIBUTOR TAB: ส่งผลงานกลุ่มงาน (Passcode-only, No Email, Add/Edit Only, No CSV, No Admin) */
                   <div className="space-y-5">
                     {contributorError && (
                       <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/45 text-rose-200 text-xs flex items-start gap-2">
@@ -1296,55 +1289,65 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
 
                     {!isContributorUnlocked ? (
                       <form
-                        onSubmit={handleContributorEmailSubmit}
+                        onSubmit={handleContributorPasscodeSubmit}
                         className="p-5 sm:p-6 rounded-2xl bg-[#040e28]/90 border border-amber-400/40 space-y-4 shadow-lg"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
-                            <Mail className="w-5 h-5" />
+                            <KeyRound className="w-5 h-5" />
                           </div>
                           <div>
                             <h4 className="text-sm font-bold text-white">
-                              ยืนยันอีเมลเพื่อส่ง / แก้ไขผลงานกลุ่มงาน
+                              ยืนยัน Passcode เพื่อส่ง / แก้ไขผลงานกลุ่มงาน
                             </h4>
                             <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                              พิมพ์อีเมล{' '}
-                              <span className="font-mono text-amber-300 font-semibold">
-                                {GROUP_CONTRIBUTOR_EMAIL}
-                              </span>{' '}
-                              เพื่อเข้าเพิ่มข้อมูลและแก้ไขผลงานของกลุ่มงานได้ทันที (ไม่ต้องกรอก Passcode และไม่เข้าหน้า Admin)
+                              กรอก Passcode สำหรับส่งผลงานกลุ่มงานเพื่อเข้าเพิ่มข้อมูลและแก้ไขผลงานได้ทันที
+                              (ไม่ต้องกรอกอีเมล และแยกออกจากระบบ Admin)
                             </p>
                           </div>
                         </div>
 
                         <div>
                           <label className="block text-xs text-slate-300 font-semibold mb-1.5">
-                            อีเมลสำหรับส่งผลงานกลุ่มงาน
+                            รหัสเข้าส่งผลงานกลุ่มงาน (Passcode)
                           </label>
                           <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <Mail className="w-4 h-4 text-amber-400" />
+                              <KeyRound className="w-4 h-4 text-amber-400" />
                             </div>
                             <input
-                              type="email"
-                              value={contributorEmailInput}
-                              onChange={(e) => setContributorEmailInput(e.target.value)}
-                              placeholder={GROUP_CONTRIBUTOR_EMAIL}
-                              className="w-full pl-9 pr-3 py-2.5 bg-[#020818] border border-amber-400/45 focus:border-amber-300 rounded-xl text-sm text-white outline-none font-mono"
+                              type={showPasscode ? 'text' : 'password'}
+                              autoComplete="off"
+                              value={passcodeInput}
+                              onChange={(e) => setPasscodeInput(e.target.value)}
+                              placeholder="กรอก Passcode เพื่อเข้าส่งผลงาน..."
+                              className="w-full pl-9 pr-10 py-2.5 bg-[#020818] border border-amber-400/45 focus:border-amber-300 rounded-xl text-sm text-white outline-none font-mono"
                             />
+                            <button
+                              type="button"
+                              onClick={() => setShowPasscode((prev) => !prev)}
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-amber-300 cursor-pointer"
+                              aria-label={showPasscode ? 'ซ่อน Passcode' : 'แสดง Passcode'}
+                            >
+                              {showPasscode ? (
+                                <EyeOff className="w-4 h-4" />
+                              ) : (
+                                <Eye className="w-4 h-4" />
+                              )}
+                            </button>
                           </div>
                         </div>
 
                         <div className="flex justify-end">
                           <button
                             type="submit"
-                            disabled={isAuthenticatingContributor}
+                            disabled={isVerifyingPasscode}
                             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 cursor-pointer disabled:opacity-60"
                           >
-                            {isAuthenticatingContributor ? (
+                            {isVerifyingPasscode ? (
                               <>
                                 <RefreshCw className="w-4 h-4 animate-spin" />
-                                <span>กำลังตรวจสอบบัญชี...</span>
+                                <span>กำลังตรวจสอบ Passcode...</span>
                               </>
                             ) : (
                               <>
@@ -1361,11 +1364,8 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                         <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-400/35 flex flex-wrap items-center justify-between gap-2 text-xs">
                           <div className="flex items-center gap-2 text-emerald-200 min-w-0">
                             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                            <span className="truncate">
-                              โหมดส่งและแก้ไขผลงาน ·{' '}
-                              <strong className="font-mono text-amber-300">
-                                {contributorEmailActive || GROUP_CONTRIBUTOR_EMAIL}
-                              </strong>
+                            <span className="truncate font-medium">
+                              โหมดส่งและแก้ไขผลงานกลุ่มงาน (ยืนยัน Passcode แล้ว)
                             </span>
                           </div>
                           <button
@@ -1374,7 +1374,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-rose-500/25 border border-slate-700 hover:border-rose-400/50 text-slate-200 text-[11px] font-semibold cursor-pointer transition-colors"
                           >
                             <LogOut className="w-3 h-3" />
-                            <span>ออกจากโหมดส่งผลงาน</span>
+                            <span>ล็อก / ออกจากโหมดส่งผลงาน</span>
                           </button>
                         </div>
 

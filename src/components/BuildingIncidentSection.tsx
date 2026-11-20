@@ -32,7 +32,9 @@ import {
   Image as ImageIcon,
   Play,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Scale,
+  Gavel
 } from 'lucide-react';
 import { IncidentMilestone } from '../types';
 import { playDigitalSound } from '../utils/audioEffects';
@@ -53,6 +55,29 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
   const [shareMilestone, setShareMilestone] = useState<IncidentMilestone | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const hasUserInteractedRef = useRef(false);
+
+  const computeTrackingDays = () => {
+    // นับตั้งแต่วันที่ 28 มี.ค. 2568 (2025-03-28) ตามเวลาไทย (UTC+7)
+    const startUtcMidnight = Date.UTC(2025, 2, 28);
+    const nowBangkokMs = Date.now() + 7 * 60 * 60 * 1000;
+    const nowBkk = new Date(nowBangkokMs);
+    const todayBkkMidnight = Date.UTC(
+      nowBkk.getUTCFullYear(),
+      nowBkk.getUTCMonth(),
+      nowBkk.getUTCDate()
+    );
+    const diffDays = Math.floor((todayBkkMidnight - startUtcMidnight) / (1000 * 60 * 60 * 24));
+    return Math.max(601, diffDays);
+  };
+
+  const [trackingDaysCount, setTrackingDaysCount] = useState<number>(computeTrackingDays);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setTrackingDaysCount(computeTrackingDays());
+    }, 60 * 60 * 1000);
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   // Fallback safe item
   const currentItem: IncidentMilestone =
@@ -309,78 +334,88 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
         </div>
       </div>
 
-      {/* Engineering Live HUD Diagnostics Strip (ตัวเลขใหญ่ ชัดเจน มีข้อความบอกด้านล่าง) */}
+      {/* Official SAO Crisis Tracking HUD Dashboard Cards (ค่าจากอินโฟกราฟิกทางการของ สตง.) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 mb-5 sm:mb-6">
-        {/* Card 1: ความปลอดภัยบุคลากร */}
+        {/* Card 1: ระยะเวลาติดตาม (คำนวณอัตโนมัติทุกวันจาก 28 มี.ค. 2568) */}
         <div className="p-3 sm:p-4 rounded-2xl bg-[#0b1222]/90 border border-emerald-500/40 shadow-md hover:border-emerald-400/60 transition-all flex flex-col justify-between gap-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-mono text-emerald-300/80 font-medium">ความปลอดภัย</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] sm:text-[11px] font-mono text-emerald-300/80 font-medium">
+              ระยะเวลาติดตาม
+            </span>
             <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 shrink-0">
-              <CheckCircle2 className="w-4 h-4" />
+              <Clock className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-emerald-400 font-mono tracking-tight">
-              100%
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-emerald-400 font-mono tracking-tight flex items-baseline gap-1.5">
+              <span>{trackingDaysCount.toLocaleString('en-US')}</span>
+              <span className="text-xs sm:text-sm font-semibold text-emerald-300 font-sans">วัน</span>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5 leading-snug">
-              บุคลากรปลอดภัยครบทุกคน
+              นับตั้งแต่เหตุ 28 มี.ค. 2568 (คำนวณอัตโนมัติทุกวัน)
             </p>
           </div>
         </div>
 
-        {/* Card 2: อัตราการขยับตัว 7 วัน */}
+        {/* Card 2: เงินเยียวยาและช่วยเหลือ */}
         <div className="p-3 sm:p-4 rounded-2xl bg-[#0b1222]/90 border border-cyan-500/40 shadow-md hover:border-cyan-400/60 transition-all flex flex-col justify-between gap-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-mono text-cyan-300/80 font-medium">การขยับตัว (7 วัน)</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] sm:text-[11px] font-mono text-cyan-300/80 font-medium">
+              เงินเยียวยาและช่วยเหลือ
+            </span>
             <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0">
-              <Activity className="w-4 h-4" />
+              <Handshake className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-cyan-300 font-mono tracking-tight flex items-baseline gap-1">
-              <span>0.00</span>
-              <span className="text-xs sm:text-sm font-semibold text-cyan-400 font-sans">มม.</span>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-cyan-300 font-mono tracking-tight flex items-baseline gap-1.5">
+              <span>242.66</span>
+              <span className="text-xs sm:text-sm font-semibold text-cyan-400 font-sans">ล้านบาท</span>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5 leading-snug">
-              โครงสร้างนิ่ง ไม่พบการขยับตัว
+              ยอดรวมเบื้องต้น ณ 15 ต.ค. 2569
             </p>
           </div>
         </div>
 
-        {/* Card 3: ภารกิจ Digital Audit (BCP) */}
+        {/* Card 3: ผู้ถูกฟ้องคดีอาญา */}
         <div className="p-3 sm:p-4 rounded-2xl bg-[#0b1222]/90 border border-amber-500/40 shadow-md hover:border-amber-400/60 transition-all flex flex-col justify-between gap-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-mono text-amber-300/80 font-medium">ระบบงาน BCP</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] sm:text-[11px] font-mono text-amber-300/80 font-medium">
+              ผู้ถูกฟ้องคดีอาญา
+            </span>
             <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
-              <Cpu className="w-4 h-4" />
+              <Gavel className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-amber-300 font-mono tracking-tight">
-              100%
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-amber-300 font-mono tracking-tight flex items-baseline gap-1.5">
+              <span>23</span>
+              <span className="text-xs sm:text-sm font-semibold text-amber-400 font-sans">ราย</span>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5 leading-snug">
-              ตรวจเงินแผ่นดินดำเนินการต่อเนื่อง
+              ศาลอาญารับฟ้องแล้ว อยู่ระหว่างสืบพยาน
             </p>
           </div>
         </div>
 
-        {/* Card 4: Roadmap Milestones */}
+        {/* Card 4: คดีที่ติดตาม */}
         <div className="p-3 sm:p-4 rounded-2xl bg-[#0b1222]/90 border border-rose-500/40 shadow-md hover:border-rose-400/60 transition-all flex flex-col justify-between gap-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-mono text-rose-300/80 font-medium">ไทม์ไลน์</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] sm:text-[11px] font-mono text-rose-300/80 font-medium">
+              คดีที่ติดตาม
+            </span>
             <div className="w-7 h-7 rounded-lg bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-300 shrink-0">
-              <Layers className="w-4 h-4" />
+              <Scale className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-rose-300 font-mono tracking-tight flex items-baseline gap-1">
-              <span>{timeline.length}</span>
-              <span className="text-xs sm:text-sm font-semibold text-rose-400 font-sans">ช่วง</span>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-rose-300 font-mono tracking-tight flex items-baseline gap-1.5">
+              <span>3</span>
+              <span className="text-xs sm:text-sm font-semibold text-rose-400 font-sans">คดี</span>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5 leading-snug">
-              เหตุการณ์สำคัญติดตามต่อเนื่อง
+              อาญา / นอมินี (ศาลชั้นต้นพิพากษาแล้ว) / ป.ป.ช. (ไต่สวน)
             </p>
           </div>
         </div>

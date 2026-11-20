@@ -45,21 +45,10 @@ export const ADMIN_EMAILS = [
   'auditpicture.webapp@gmail.com',
 ] as const;
 
-export const GROUP_CONTRIBUTOR_EMAIL = 'auditpicture@gmail.com';
-
 export function isAuthorizedAdminEmail(email?: string | null): boolean {
   if (!email) return false;
   const normalized = email.trim().toLowerCase();
   return (ADMIN_EMAILS as readonly string[]).includes(normalized);
-}
-
-export function isGroupContributorEmail(email?: string | null): boolean {
-  if (!email) return false;
-  return email.trim().toLowerCase() === GROUP_CONTRIBUTOR_EMAIL;
-}
-
-export function isAuthorizedPortalEmail(email?: string | null): boolean {
-  return isAuthorizedAdminEmail(email) || isGroupContributorEmail(email);
 }
 
 export async function signInAdminWithGoogle(hintEmail?: string): Promise<User> {
@@ -74,25 +63,6 @@ export async function signInAdminWithGoogle(hintEmail?: string): Promise<User> {
     await signOut(auth);
     throw new Error(
       `บัญชี Google (${result.user?.email || 'ไม่ระบุอีเมล'}) ไม่มีสิทธิ์ผู้ดูแลระบบ (อนุญาตเฉพาะ jakwil@jakwil.page และ auditpicture.webapp@gmail.com)`
-    );
-  }
-  return result.user;
-}
-
-export async function signInGroupContributorWithGoogle(
-  hintEmail: string = GROUP_CONTRIBUTOR_EMAIL
-): Promise<User> {
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({
-    prompt: 'select_account',
-    login_hint: hintEmail,
-  });
-  const result = await signInWithPopup(auth, provider);
-  const email = result.user?.email?.trim().toLowerCase();
-  if (!isAuthorizedPortalEmail(email)) {
-    await signOut(auth);
-    throw new Error(
-      `บัญชี Google (${result.user?.email || 'ไม่ระบุอีเมล'}) ไม่มีสิทธิ์เพิ่มผลงานกลุ่ม (อนุญาตเฉพาะ ${GROUP_CONTRIBUTOR_EMAIL} หรือบัญชีผู้ดูแลระบบ)`
     );
   }
   return result.user;
@@ -814,20 +784,25 @@ export async function seedFirestoreIfEmpty(initialData: AppData) {
   return seedingInFlight;
 }
 
+export interface SaveItemOptions {
+  contributorPasscodeVerified?: boolean;
+}
+
 // Save single item directly to Firestore collection (fast & atomic)
 export async function saveSingleItemToFirestore<T extends { id: string }>(
   collectionName: AppCollectionName,
-  item: T
+  item: T,
+  options?: SaveItemOptions
 ): Promise<void> {
   const currentEmail = auth.currentUser?.email;
   const isAdmin = isAuthorizedAdminEmail(currentEmail);
-  const isContributorForGroupWorks =
-    collectionName === 'groupWorks' && isGroupContributorEmail(currentEmail);
+  const isPasscodeContributorForGroupWorks =
+    collectionName === 'groupWorks' && options?.contributorPasscodeVerified === true;
 
-  if (!isAdmin && !isContributorForGroupWorks) {
+  if (!isAdmin && !isPasscodeContributorForGroupWorks) {
     throw new Error(
       collectionName === 'groupWorks'
-        ? `กรุณาเข้าสู่ระบบด้วยบัญชี ${GROUP_CONTRIBUTOR_EMAIL} หรือผู้ดูแลระบบก่อนบันทึกผลงานกลุ่ม`
+        ? 'กรุณายืนยัน Passcode ส่งผลงานกลุ่มงาน หรือเข้าสู่ระบบผู้ดูแลระบบก่อนบันทึกผลงาน'
         : 'กรุณาเข้าสู่ระบบด้วยบัญชี Google Admin ก่อนบันทึกข้อมูล'
     );
   }
