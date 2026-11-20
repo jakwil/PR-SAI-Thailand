@@ -9,6 +9,39 @@ export interface KnowledgeItem {
   updatedAt?: string;
 }
 
+export type BureauGroupId =
+  | 'group-media-relations'
+  | 'group-corp-strategy'
+  | 'group-media-production'
+  | 'group-general-admin';
+
+export interface BureauGroupInfo {
+  id: BureauGroupId;
+  order: number;
+  name: string;
+  shortName: string;
+  englishName: string;
+  accentColor: 'amber' | 'cyan' | 'emerald' | 'indigo';
+  summary: string;
+  missions: string[];
+  showWorks?: boolean;
+}
+
+export interface GroupWorkItem {
+  id: string;
+  groupId: BureauGroupId;
+  missionIndexes?: number[];
+  title: string;
+  description: string;
+  imageUrl: string;
+  galleryImages?: string[];
+  workDate: string;
+  linkUrl?: string;
+  badge?: string;
+  mediaType?: 'photo' | 'infographic' | 'video' | 'report';
+  updatedAt?: string;
+}
+
 export interface PublishedWork {
   id: string;
   title: string;
@@ -24,6 +57,8 @@ export interface PublishedWork {
   resolution?: '16:9' | '9:16' | '1:1' | '4:3' | '21:9';
   duration?: string;
   creator?: string;
+  bureauGroup?: BureauGroupId;
+  missionIndexes?: number[];
   updatedAt?: string;
 }
 
@@ -37,6 +72,8 @@ export interface ViralClip {
   linkUrl: string;
   highlight: string;
   mediaType?: 'video' | 'motion_graphic' | 'short';
+  bureauGroup?: BureauGroupId;
+  missionIndexes?: number[];
   updatedAt?: string;
 }
 
@@ -72,6 +109,8 @@ export interface HeroStory {
   badge?: string;
   mediaType?: 'photo' | 'infographic' | 'video' | 'report';
   order: number;
+  bureauGroup?: BureauGroupId;
+  missionIndexes?: number[];
   updatedAt?: string;
 }
 
@@ -162,6 +201,7 @@ export interface AppData {
   publishedWorks: PublishedWork[];
   viralClips: ViralClip[];
   incidentTimeline: IncidentMilestone[];
+  groupWorks?: GroupWorkItem[];
   musicSettings?: MusicSettings;
   chatbotSettings?: ChatbotSettings;
   newsSubscribers?: NewsSubscriber[];

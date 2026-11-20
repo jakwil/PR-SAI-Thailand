@@ -15,6 +15,16 @@
         "badge": { "type": "string", "maxLength": 50 },
         "mediaType": { "type": "string", "enum": ["photo", "infographic", "video", "report"] },
         "order": { "type": "number" },
+        "bureauGroup": {
+          "type": "string",
+          "enum": [
+            "group-media-relations",
+            "group-corp-strategy",
+            "group-media-production",
+            "group-general-admin"
+          ]
+        },
+        "missionIndexes": { "type": "array" },
         "updatedAt": { "type": "string", "maxLength": 100 }
       },
       "required": ["id", "title", "subtitle", "category", "imageUrl", "linkUrl", "date", "order"]
@@ -54,9 +64,47 @@
         "resolution": { "type": "string", "enum": ["16:9", "9:16", "1:1", "4:3", "21:9"] },
         "duration": { "type": "string", "maxLength": 50 },
         "creator": { "type": "string", "maxLength": 150 },
+        "bureauGroup": {
+          "type": "string",
+          "enum": [
+            "group-media-relations",
+            "group-corp-strategy",
+            "group-media-production",
+            "group-general-admin"
+          ]
+        },
+        "missionIndexes": { "type": "array" },
         "updatedAt": { "type": "string", "maxLength": 100 }
       },
       "required": ["id", "title", "category", "description", "linkUrl", "imageUrl", "publishDate", "views"]
+    },
+    "GroupWork": {
+      "title": "GroupWork",
+      "description": "Showcase work item linked to one of the four internal PR bureau groups",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "groupId": {
+          "type": "string",
+          "enum": [
+            "group-media-relations",
+            "group-corp-strategy",
+            "group-media-production",
+            "group-general-admin"
+          ]
+        },
+        "missionIndexes": { "type": "array" },
+        "title": { "type": "string", "maxLength": 300 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "imageUrl": { "type": "string", "maxLength": 700000 },
+        "galleryImages": { "type": "array" },
+        "workDate": { "type": "string", "maxLength": 50 },
+        "linkUrl": { "type": "string", "maxLength": 1000 },
+        "badge": { "type": "string", "maxLength": 100 },
+        "mediaType": { "type": "string", "enum": ["photo", "infographic", "video", "report"] },
+        "updatedAt": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["id", "groupId", "title", "description", "imageUrl", "workDate"]
     },
     "ViralClip": {
       "title": "ViralClip",
@@ -72,6 +120,16 @@
         "linkUrl": { "type": "string", "maxLength": 1000 },
         "highlight": { "type": "string", "maxLength": 500 },
         "mediaType": { "type": "string", "enum": ["video", "motion_graphic", "short"] },
+        "bureauGroup": {
+          "type": "string",
+          "enum": [
+            "group-media-relations",
+            "group-corp-strategy",
+            "group-media-production",
+            "group-general-admin"
+          ]
+        },
+        "missionIndexes": { "type": "array" },
         "updatedAt": { "type": "string", "maxLength": 100 }
       },
       "required": ["id", "title", "creator", "views", "duration", "thumbnail", "linkUrl", "highlight"]
@@ -205,6 +263,10 @@
     "/publishedWorks/{workId}": {
       "schema": { "$ref": "#/entities/PublishedWork" },
       "description": "Published works showcase items"
+    },
+    "/groupWorks/{workId}": {
+      "schema": { "$ref": "#/entities/GroupWork" },
+      "description": "Works and visual highlights linked to the 4 PR bureau groups"
     },
     "/viralClips/{clipId}": {
       "schema": { "$ref": "#/entities/ViralClip" },

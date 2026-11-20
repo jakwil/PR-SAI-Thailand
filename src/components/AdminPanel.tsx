@@ -48,7 +48,8 @@ import {
   Search,
   CheckCircle2,
   CheckSquare,
-  Square
+  Square,
+  Network
 } from 'lucide-react';
 import {
   AppData,
@@ -61,8 +62,15 @@ import {
   NewsSubscriber,
   NewsBroadcastLog,
   MarqueeTickerSettings,
-  MarqueeMessageItem
+  MarqueeMessageItem,
+  BureauGroupId,
+  GroupWorkItem
 } from '../types';
+import {
+  BUREAU_GROUPS_WITH_WORKS,
+  getBureauGroupById,
+  getBureauGroupLabel,
+} from '../data/bureauStructure';
 import {
   defaultChatbotSettings,
   defaultNewsSubscribers,
@@ -88,12 +96,25 @@ import { MarqueeTicker } from './MarqueeTicker';
 import { AdminTickerTab } from './AdminTickerTab';
 import { playDigitalSound } from '../utils/audioEffects';
 
+type AdminTabType =
+  | 'summaries'
+  | 'ticker'
+  | 'chatbot'
+  | 'stories'
+  | 'subscribers'
+  | 'kb'
+  | 'works'
+  | 'groupWorks'
+  | 'clips'
+  | 'timeline';
+
 interface AdminPanelProps {
   isOpen: boolean;
   onClose: () => void;
   data: AppData;
   onUpdateData: (newData: AppData, options?: { skipFirestoreSync?: boolean }) => Promise<void>;
   onLogout: () => void;
+  initialTab?: AdminTabType;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -102,8 +123,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   data,
   onUpdateData,
   onLogout,
+  initialTab = 'summaries',
 }) => {
-  const [activeTab, setActiveTab] = useState<'summaries' | 'ticker' | 'chatbot' | 'stories' | 'subscribers' | 'kb' | 'works' | 'clips' | 'timeline'>('summaries');
+  const [activeTab, setActiveTab] = useState<AdminTabType>(initialTab);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
   const [timeframe, setTimeframe] = useState<'today' | '7days' | '30days' | 'all'>('7days');
   const [analyticsData, setAnalyticsData] = useState<AnalyticsSummary>(getAnalyticsSummary());
   const [isRefreshingStats, setIsRefreshingStats] = useState(false);
@@ -187,6 +216,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingKb, setEditingKb] = useState<Partial<KnowledgeItem> | null>(null);
   const [editingWork, setEditingWork] = useState<Partial<PublishedWork> | null>(null);
   const [selectedWorkIds, setSelectedWorkIds] = useState<string[]>([]);
+  const [editingGroupWork, setEditingGroupWork] = useState<Partial<GroupWorkItem> | null>(null);
+  const [selectedGroupWorkIds, setSelectedGroupWorkIds] = useState<string[]>([]);
+  const [groupWorkFilter, setGroupWorkFilter] = useState<'all' | BureauGroupId>('all');
+  const groupWorkImageInputRef = useRef<HTMLInputElement | null>(null);
+  const groupWorkGalleryInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingGroupWorkImage, setIsUploadingGroupWorkImage] = useState(false);
+  const [isUploadingGalleryImage, setIsUploadingGalleryImage] = useState(false);
+  const [galleryUrlInput, setGalleryUrlInput] = useState('');
   const [editingClip, setEditingClip] = useState<Partial<ViralClip> | null>(null);
   const [editingMilestone, setEditingMilestone] = useState<Partial<IncidentMilestone> | null>(null);
 
@@ -194,6 +231,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const validIds = new Set(data.publishedWorks.map((w) => w.id));
     setSelectedWorkIds((prev) => prev.filter((id) => validIds.has(id)));
   }, [data.publishedWorks]);
+
+  useEffect(() => {
+    const validIds = new Set((data.groupWorks || []).map((w) => w.id));
+    setSelectedGroupWorkIds((prev) => prev.filter((id) => validIds.has(id)));
+  }, [data.groupWorks]);
 
   // Hero Story Cover Image Upload & AI Generator State
   const coverFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -654,6 +696,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         linkUrl: editingStory.linkUrl || 'https://pr-request-system.vercel.app',
         date: editingStory.date || 'ตุลาคม 2569',
         badge: editingStory.badge || 'ข่าวใหม่',
+        mediaType: editingStory.mediaType,
+        bureauGroup: editingStory.bureauGroup,
+        missionIndexes:
+          editingStory.bureauGroup && editingStory.missionIndexes?.length
+            ? editingStory.missionIndexes
+            : undefined,
         order: storiesList.length + 1,
       };
     }
@@ -1016,6 +1064,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           duration: editingWork.duration,
           creator: editingWork.creator,
           videoUrl: editingWork.videoUrl,
+          bureauGroup: editingWork.bureauGroup,
+          missionIndexes:
+            editingWork.bureauGroup && editingWork.missionIndexes?.length
+              ? editingWork.missionIndexes
+              : undefined,
           updatedAt: new Date().toISOString(),
         };
 
@@ -1115,6 +1168,201 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     });
   };
 
+  // Bureau Group Works Handlers (ผลงานตาม 4 กลุ่มงานของสำนักฯ)
+  const handleUploadGroupWorkImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingGroupWorkImage(true);
+    try {
+      const dataUrl = await compressImageToDataUrl(file, 1100, 0.78);
+      setEditingGroupWork((prev) => (prev ? { ...prev, imageUrl: dataUrl } : prev));
+    } catch {
+      alert('ไม่สามารถอัปโหลดรูปภาพได้ กรุณาลองใหม่อีกครั้ง');
+    } finally {
+      setIsUploadingGroupWorkImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleUploadGroupWorkGalleryImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    const currentGallery = editingGroupWork?.galleryImages || [];
+    const remainingSlots = Math.max(0, 5 - currentGallery.length);
+    if (remainingSlots === 0) {
+      setSaveError('ภาพประกอบเพิ่มเติมรองรับสูงสุด 5 ภาพต่อ 1 ผลงาน');
+      setTimeout(() => setSaveError(null), 4000);
+      e.target.value = '';
+      return;
+    }
+
+    setIsUploadingGalleryImage(true);
+    try {
+      const toProcess = files.slice(0, remainingSlots);
+      const uploaded: string[] = [];
+      for (const file of toProcess) {
+        const dataUrl = await compressImageToDataUrl(file, 960, 0.72);
+        uploaded.push(dataUrl);
+      }
+      setEditingGroupWork((prev) =>
+        prev
+          ? {
+              ...prev,
+              galleryImages: [...(prev.galleryImages || []), ...uploaded].slice(0, 5),
+            }
+          : prev
+      );
+    } catch {
+      alert('ไม่สามารถอัปโหลดภาพประกอบได้ กรุณาลองใหม่อีกครั้ง');
+    } finally {
+      setIsUploadingGalleryImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleSaveGroupWork = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGroupWork || !editingGroupWork.title || !editingGroupWork.groupId) return;
+
+    const currentList = data.groupWorks || [];
+    const isEdit = Boolean(editingGroupWork.id);
+    const existing = editingGroupWork.id
+      ? currentList.find((item) => item.id === editingGroupWork.id)
+      : undefined;
+
+    const cleanMissions = Array.from(
+      new Set((editingGroupWork.missionIndexes || []).filter((n) => Number.isInteger(n) && n >= 1))
+    ).sort((a, b) => a - b);
+
+    const cleanGallery = (editingGroupWork.galleryImages || [])
+      .map((u) => u.trim())
+      .filter(Boolean)
+      .slice(0, 5);
+
+    const itemToSave: GroupWorkItem = existing
+      ? ({
+          ...existing,
+          ...editingGroupWork,
+          missionIndexes: cleanMissions.length > 0 ? cleanMissions : undefined,
+          galleryImages: cleanGallery.length > 0 ? cleanGallery : undefined,
+          updatedAt: new Date().toISOString(),
+        } as GroupWorkItem)
+      : {
+          id: `gw-${Date.now()}`,
+          groupId: editingGroupWork.groupId,
+          missionIndexes: cleanMissions.length > 0 ? cleanMissions : undefined,
+          title: editingGroupWork.title.trim(),
+          description: (editingGroupWork.description || '').trim(),
+          imageUrl: editingGroupWork.imageUrl || '/src/assets/images/sai_press_photo_1791791796122.jpg',
+          galleryImages: cleanGallery.length > 0 ? cleanGallery : undefined,
+          workDate: editingGroupWork.workDate || new Date().toISOString().split('T')[0],
+          linkUrl: editingGroupWork.linkUrl?.trim() || undefined,
+          badge: editingGroupWork.badge?.trim() || undefined,
+          mediaType: editingGroupWork.mediaType || 'photo',
+          updatedAt: new Date().toISOString(),
+        };
+
+    const updatedList = isEdit
+      ? currentList.map((w) => (w.id === itemToSave.id ? itemToSave : w))
+      : [itemToSave, ...currentList];
+
+    playDigitalSound('select');
+    setPendingAdminAction({
+      mode: isEdit ? 'update' : 'publish',
+      sectionName: 'โครงสร้าง & ผลงานตามกลุ่มงาน',
+      actionTitle: isEdit ? 'ยืนยันแก้ไขผลงานของกลุ่มงาน' : 'ยืนยันเพิ่มผลงานกลุ่มงานขึ้นหน้าเว็บไซต์',
+      itemTitle: itemToSave.title,
+      imageUrl: itemToSave.imageUrl,
+      summaryFields: [
+        { label: 'กลุ่มงาน', value: getBureauGroupLabel(itemToSave.groupId) },
+        {
+          label: 'ภารกิจที่เชื่อมโยง',
+          value: cleanMissions.length > 0 ? cleanMissions.map((n) => `ข้อ ${n}`).join(', ') : 'ไม่ได้ระบุ',
+        },
+        { label: 'วันที่ผลงาน', value: itemToSave.workDate, mono: true },
+        { label: 'ภาพประกอบเพิ่มเติม', value: `${cleanGallery.length} ภาพ` },
+      ],
+      onConfirm: async () => {
+        await saveSingleItemToFirestore('groupWorks', itemToSave);
+        await triggerSave({ ...data, groupWorks: updatedList }, { skipFirestoreSync: true, rethrow: true });
+        setEditingGroupWork(null);
+      },
+    });
+  };
+
+  const handleDeleteGroupWork = (id: string) => {
+    const currentList = data.groupWorks || [];
+    const target = currentList.find((w) => w.id === id);
+    const updated = currentList.filter((w) => w.id !== id);
+    playDigitalSound('blip');
+    setPendingAdminAction({
+      mode: 'delete',
+      sectionName: 'โครงสร้าง & ผลงานตามกลุ่มงาน',
+      actionTitle: 'ยืนยันลบผลงานออกจากกลุ่มงาน',
+      itemTitle: target?.title || id,
+      imageUrl: target?.imageUrl,
+      summaryFields: [
+        { label: 'กลุ่มงาน', value: getBureauGroupLabel(target?.groupId) },
+        { label: 'รหัสเอกสาร', value: id, mono: true },
+      ],
+      onConfirm: async () => {
+        await deleteItemFromFirestore('groupWorks', id);
+        setSelectedGroupWorkIds((prev) => prev.filter((sid) => sid !== id));
+        await triggerSave({ ...data, groupWorks: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
+  };
+
+  const toggleGroupWorkSelection = (id: string) => {
+    playDigitalSound('blip');
+    setSelectedGroupWorkIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleToggleSelectAllGroupWorks = (visibleItems: GroupWorkItem[]) => {
+    playDigitalSound('select');
+    const visibleIds = visibleItems.map((w) => w.id);
+    const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedGroupWorkIds.includes(id));
+    if (allSelected) {
+      setSelectedGroupWorkIds((prev) => prev.filter((id) => !visibleIds.includes(id)));
+    } else {
+      setSelectedGroupWorkIds((prev) => Array.from(new Set([...prev, ...visibleIds])));
+    }
+  };
+
+  const handleBulkDeleteGroupWorks = () => {
+    if (selectedGroupWorkIds.length === 0) return;
+    const currentList = data.groupWorks || [];
+    const selectedSet = new Set(selectedGroupWorkIds);
+    const targets = currentList.filter((w) => selectedSet.has(w.id));
+    const updated = currentList.filter((w) => !selectedSet.has(w.id));
+    playDigitalSound('blip');
+    setPendingAdminAction({
+      mode: 'delete',
+      sectionName: 'โครงสร้าง & ผลงานตามกลุ่มงาน',
+      actionTitle: `ยืนยันลบผลงานกลุ่มที่เลือกทั้งหมด ${targets.length} รายการ`,
+      itemTitle: `ผลงานกลุ่มงาน ${targets.length} รายการ`,
+      imageUrl: targets[0]?.imageUrl,
+      summaryFields: [
+        { label: 'จำนวนที่จะลบ', value: `${targets.length} รายการ` },
+        {
+          label: 'รายการตัวอย่าง',
+          value: targets
+            .slice(0, 3)
+            .map((t, i) => `${i + 1}. ${t.title}`)
+            .join(' | '),
+        },
+      ],
+      confirmLabel: `ยืนยันลบถาวร (${targets.length} รายการ)`,
+      onConfirm: async () => {
+        await deleteMultipleItemsFromFirestore('groupWorks', selectedGroupWorkIds);
+        setSelectedGroupWorkIds([]);
+        await triggerSave({ ...data, groupWorks: updated }, { skipFirestoreSync: true, rethrow: true });
+      },
+    });
+  };
+
   // Viral Clips Handlers (with Confirmation Modal + Atomic Firestore Operations)
   const handleSaveClip = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1134,6 +1382,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           linkUrl: editingClip.linkUrl || 'https://youtube.com',
           highlight: editingClip.highlight || 'คลิปประชาสัมพันธ์น่าสนใจ',
           mediaType: editingClip.mediaType || 'video',
+          bureauGroup: editingClip.bureauGroup,
+          missionIndexes:
+            editingClip.bureauGroup && editingClip.missionIndexes?.length
+              ? editingClip.missionIndexes
+              : undefined,
           updatedAt: new Date().toISOString(),
         };
 
@@ -1310,9 +1563,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <Layers className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 flex-wrap">
                 <span>ระบบบริหารจัดการข้อมูล PR - SAI Thailand</span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono border border-cyan-400/30">
+                <span className="text-[10px] px-2 py-0.5 rounded font-mono border bg-cyan-500/20 text-cyan-300 border-cyan-400/30">
                   ADMIN
                 </span>
               </h2>
@@ -1347,7 +1600,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         </div>
 
-        {/* Tab Navigation - Compact & Streamlined */}
+        {/* Tab Navigation */}
         <div className="flex items-center gap-1.5 px-4 sm:px-6 py-2 border-b border-cyan-500/20 bg-[#040e28] overflow-x-auto select-none">
           <button
             onClick={() => {
@@ -1462,16 +1715,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <span>Media Library ({data.publishedWorks.length})</span>
           </button>
           <button
-            onClick={() => setActiveTab('clips')}
+            onClick={() => setActiveTab('groupWorks')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
-              activeTab === 'clips'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold'
+              activeTab === 'groupWorks'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
             }`}
           >
-            <Film className="w-3.5 h-3.5" />
-            <span>คลิปวิดีโอ ({data.viralClips.length})</span>
+            <Network className="w-3.5 h-3.5" />
+            <span>ผลงานกลุ่มงาน ({(data.groupWorks || []).length})</span>
           </button>
+          <button
+            onClick={() => setActiveTab('clips')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
+                  activeTab === 'clips'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                }`}
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span>คลิปวิดีโอ ({data.viralClips.length})</span>
+              </button>
           <button
             onClick={() => setActiveTab('timeline')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors shrink-0 ${
@@ -3273,6 +3537,230 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
+          {/* TAB: BUREAU GROUP WORKS (โครงสร้าง & ผลงานตาม 4 กลุ่มงาน) */}
+          {activeTab === 'groupWorks' && (
+            <div className="space-y-4">
+              {(() => {
+                const allGroupWorks = (data.groupWorks || []).filter(
+                  (item) => item.groupId !== 'group-general-admin'
+                );
+                const visibleGroupWorks =
+                  groupWorkFilter === 'all'
+                    ? allGroupWorks
+                    : allGroupWorks.filter((item) => item.groupId === groupWorkFilter);
+                const allVisibleSelected =
+                  visibleGroupWorks.length > 0 &&
+                  visibleGroupWorks.every((item) => selectedGroupWorkIds.includes(item.id));
+
+                return (
+                  <>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[#061539] border border-amber-500/25">
+                      <div>
+                        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                          <Network className="w-4 h-4 text-amber-400" />
+                          <span>ผลงานตามกลุ่มงาน (โครงสร้างสำนักประชาสัมพันธ์และสื่อสารองค์กร)</span>
+                        </h3>
+                        <p className="text-xs text-slate-300 mt-0.5">
+                          เพิ่ม แก้ไข หรือลบ ภาพและรายละเอียดผลงานแยกตาม 3 กลุ่มงานหลัก
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {visibleGroupWorks.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleSelectAllGroupWorks(visibleGroupWorks)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
+                              allVisibleSelected
+                                ? 'bg-amber-500/20 border-amber-400 text-amber-300'
+                                : 'bg-[#040e28] border-cyan-500/30 text-slate-200 hover:border-cyan-400 hover:text-white'
+                            }`}
+                          >
+                            {allVisibleSelected ? (
+                              <CheckSquare className="w-3.5 h-3.5 text-amber-300" />
+                            ) : (
+                              <Square className="w-3.5 h-3.5 text-cyan-400" />
+                            )}
+                            <span>{allVisibleSelected ? 'ยกเลิกเลือกทั้งหมด' : `เลือกทั้งหมด (${visibleGroupWorks.length})`}</span>
+                          </button>
+                        )}
+                        {selectedGroupWorkIds.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleBulkDeleteGroupWorks}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-500/25 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>ลบที่เลือก ({selectedGroupWorkIds.length})</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditingGroupWork({
+                              groupId: groupWorkFilter === 'all' ? 'group-media-relations' : groupWorkFilter,
+                              missionIndexes: [],
+                              galleryImages: [],
+                              title: '',
+                              description: '',
+                              imageUrl: '/src/assets/images/sai_press_photo_1791791796122.jpg',
+                              workDate: new Date().toISOString().split('T')[0],
+                              linkUrl: '',
+                              badge: '',
+                              mediaType: 'photo',
+                            })
+                          }
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>เพิ่มผลงานกลุ่มงาน</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Group Filter Tabs */}
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setGroupWorkFilter('all')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                          groupWorkFilter === 'all'
+                            ? 'bg-amber-500/20 border-amber-400 text-amber-300'
+                            : 'bg-[#040e28] border-slate-700 text-slate-300 hover:border-slate-500'
+                        }`}
+                      >
+                        ทุกกลุ่มงาน ({allGroupWorks.length})
+                      </button>
+                      {BUREAU_GROUPS_WITH_WORKS.map((g) => {
+                        const directCount = allGroupWorks.filter((w) => w.groupId === g.id).length;
+                        const mediaLibCount = data.publishedWorks.filter((w) => w.bureauGroup === g.id).length;
+                        const heroCount = (data.heroStories || []).filter((s) => s.bureauGroup === g.id).length;
+                        const clipCount = (data.viralClips || []).filter((c) => c.bureauGroup === g.id).length;
+                        const linkedExtra = mediaLibCount + heroCount + clipCount;
+                        return (
+                          <button
+                            key={g.id}
+                            type="button"
+                            onClick={() => setGroupWorkFilter(g.id)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                              groupWorkFilter === g.id
+                                ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200'
+                                : 'bg-[#040e28] border-slate-700 text-slate-300 hover:border-slate-500'
+                            }`}
+                          >
+                            {g.order}. {g.shortName} ({directCount}
+                            {linkedExtra > 0 ? ` + ${linkedExtra} เชื่อมโยง` : ''})
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {visibleGroupWorks.length === 0 ? (
+                      <div className="text-center py-12 px-4 rounded-xl border border-dashed border-amber-500/30 text-slate-400 text-xs">
+                        ยังไม่มีผลงานในหมวดนี้ สามารถกดปุ่ม "เพิ่มผลงานกลุ่มงาน" เพื่อเพิ่มภาพและรายละเอียดได้ทันที
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {visibleGroupWorks.map((item) => {
+                          const isSelected = selectedGroupWorkIds.includes(item.id);
+                          return (
+                            <div
+                              key={item.id}
+                              onClick={() => toggleGroupWorkSelection(item.id)}
+                              className={`p-3 rounded-xl border transition-all flex gap-3.5 select-none cursor-pointer ${
+                                isSelected
+                                  ? 'bg-amber-500/10 border-amber-400/80 ring-1 ring-amber-400/40'
+                                  : 'bg-[#07173e]/60 border-cyan-500/20 hover:border-cyan-400/40'
+                              }`}
+                            >
+                              <div className="flex items-start pt-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleGroupWorkSelection(item.id);
+                                  }}
+                                  className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-amber-400 border-amber-300 text-slate-950'
+                                      : 'bg-[#040e28] border-cyan-500/40 text-transparent hover:border-amber-400/70'
+                                  }`}
+                                >
+                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                </button>
+                              </div>
+                              <img
+                                src={item.imageUrl}
+                                alt={item.title}
+                                className="w-24 sm:w-28 h-24 object-cover rounded-lg shrink-0 border border-cyan-500/30"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.onerror = null;
+                                  target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
+                                }}
+                              />
+                              <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                <div>
+                                  <div className="flex items-center justify-between gap-2 text-[11px] text-amber-300 mb-1">
+                                    <span className="truncate font-semibold">{getBureauGroupLabel(item.groupId)}</span>
+                                    <span className="text-slate-400 shrink-0">{item.workDate}</span>
+                                  </div>
+                                  <h4 className="text-xs font-semibold text-white line-clamp-1">{item.title}</h4>
+                                  <p className="text-xs text-slate-300 line-clamp-2 mt-1">{item.description}</p>
+                                </div>
+                                <div className="flex items-center justify-between pt-2 border-t border-cyan-500/20 gap-2">
+                                  <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                                    <span className="text-[10px] text-slate-400 truncate max-w-[120px]">
+                                      {item.badge || item.mediaType || 'photo'}
+                                    </span>
+                                    {item.missionIndexes && item.missionIndexes.length > 0 && (
+                                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-400/15 text-amber-200 border border-amber-400/30">
+                                        ภารกิจ {item.missionIndexes.join(',')}
+                                      </span>
+                                    )}
+                                    {item.galleryImages && item.galleryImages.length > 0 && (
+                                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-200 border border-cyan-400/30">
+                                        +{item.galleryImages.length} ภาพ
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setGalleryUrlInput('');
+                                        setEditingGroupWork(item);
+                                      }}
+                                      className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                                      title="แก้ไข"
+                                    >
+                                      <Edit2 className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteGroupWork(item.id);
+                                      }}
+                                      className="p-1 text-rose-400 hover:text-rose-300 cursor-pointer"
+                                      title="ลบรายการนี้"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
           {/* TAB 3: VIRAL CLIPS */}
           {activeTab === 'clips' && (
             <div className="space-y-4">
@@ -3616,6 +4104,68 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-400 font-mono"
                       />
                     </div>
+                  </div>
+
+                  {/* Link Story to Bureau Group & Missions */}
+                  <div className="p-3 rounded-xl bg-[#030d26]/80 border border-amber-500/25 space-y-2.5">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-amber-300 mb-1">
+                        เชื่อมโยงเข้าหน้า "โครงสร้างและภารกิจ" (เลือกกลุ่มงานเจ้าของข่าว - ไม่บังคับ)
+                      </label>
+                      <select
+                        value={editingStory.bureauGroup || ''}
+                        onChange={(e) =>
+                          setEditingStory({
+                            ...editingStory,
+                            bureauGroup: (e.target.value || undefined) as BureauGroupId | undefined,
+                            missionIndexes: [],
+                          })
+                        }
+                        className="w-full px-3 py-2 bg-[#040e28] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                      >
+                        <option value="">-- ไม่ระบุกลุ่มงาน (แสดงเฉพาะบน Highlight) --</option>
+                        {BUREAU_GROUPS_WITH_WORKS.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            กลุ่มงานที่ {g.order}: {g.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {editingStory.bureauGroup && (
+                      <div className="space-y-1.5">
+                        <span className="block text-[10px] text-slate-300 font-semibold">
+                          แท็กภารกิจที่เกี่ยวข้อง (เพื่อให้กรองดูผลงานรายภารกิจได้):
+                        </span>
+                        <div className="space-y-1">
+                          {(getBureauGroupById(editingStory.bureauGroup)?.missions || []).map((mText, idx) => {
+                            const mNum = idx + 1;
+                            const checked = (editingStory.missionIndexes || []).includes(mNum);
+                            return (
+                              <label
+                                key={mNum}
+                                className="flex items-start gap-2 text-[11px] text-slate-200 cursor-pointer hover:text-white"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    const current = editingStory.missionIndexes || [];
+                                    const next = checked
+                                      ? current.filter((n) => n !== mNum)
+                                      : [...current, mNum].sort((a, b) => a - b);
+                                    setEditingStory({ ...editingStory, missionIndexes: next });
+                                  }}
+                                  className="mt-0.5 accent-amber-400"
+                                />
+                                <span>
+                                  <strong className="text-amber-300">{mNum}.</strong> {mText}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* COVER IMAGE SELECTOR WITH LOCAL UPLOAD & AI GENERATOR */}
@@ -3986,6 +4536,66 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       placeholder="เช่น 📷 ภาพนิ่งล่าสุด, 📊 Infographic"
                     />
                   </div>
+                  <div className="p-3 rounded-xl bg-[#030d26]/80 border border-amber-500/25 space-y-2.5">
+                    <div>
+                      <label className="block text-[11px] text-amber-300 mb-1 font-semibold">
+                        เชื่อมโยงกับกลุ่มงานในโครงสร้างสำนัก (ไม่บังคับ)
+                      </label>
+                      <select
+                        value={editingWork.bureauGroup || ''}
+                        onChange={(e) =>
+                          setEditingWork({
+                            ...editingWork,
+                            bureauGroup: (e.target.value || undefined) as BureauGroupId | undefined,
+                            missionIndexes: [],
+                          })
+                        }
+                        className="w-full px-3 py-2 bg-[#040e28] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                      >
+                        <option value="">-- ไม่ระบุกลุ่มงาน (แสดงเฉพาะในคลังสื่อ) --</option>
+                        {BUREAU_GROUPS_WITH_WORKS.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            กลุ่มงานที่ {g.order}: {g.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {editingWork.bureauGroup && (
+                      <div className="space-y-1.5">
+                        <span className="block text-[10px] text-slate-300 font-semibold">
+                          แท็กภารกิจที่เกี่ยวข้อง:
+                        </span>
+                        <div className="space-y-1">
+                          {(getBureauGroupById(editingWork.bureauGroup)?.missions || []).map((mText, idx) => {
+                            const mNum = idx + 1;
+                            const checked = (editingWork.missionIndexes || []).includes(mNum);
+                            return (
+                              <label
+                                key={mNum}
+                                className="flex items-start gap-2 text-[11px] text-slate-200 cursor-pointer hover:text-white"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    const current = editingWork.missionIndexes || [];
+                                    const next = checked
+                                      ? current.filter((n) => n !== mNum)
+                                      : [...current, mNum].sort((a, b) => a - b);
+                                    setEditingWork({ ...editingWork, missionIndexes: next });
+                                  }}
+                                  className="mt-0.5 accent-amber-400"
+                                />
+                                <span>
+                                  <strong className="text-amber-300">{mNum}.</strong> {mText}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <div>
                     <label className="block text-[11px] text-slate-300 mb-1 font-semibold">คำอธิบายรายละเอียด</label>
                     <textarea
@@ -4175,6 +4785,66 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       placeholder="/src/assets/images/... หรือ https://..."
                       className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
                     />
+                  </div>
+                  <div className="p-3 rounded-xl bg-[#030d26]/80 border border-amber-500/25 space-y-2.5">
+                    <div>
+                      <label className="block text-[11px] text-amber-300 mb-1 font-semibold">
+                        เชื่อมโยงเข้าหน้า "โครงสร้างและภารกิจ" (ไม่บังคับ)
+                      </label>
+                      <select
+                        value={editingClip.bureauGroup || ''}
+                        onChange={(e) =>
+                          setEditingClip({
+                            ...editingClip,
+                            bureauGroup: (e.target.value || undefined) as BureauGroupId | undefined,
+                            missionIndexes: [],
+                          })
+                        }
+                        className="w-full px-3 py-2 bg-[#040e28] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                      >
+                        <option value="">-- ไม่ระบุกลุ่มงาน (แสดงเฉพาะหมวดคลิปไวรัล) --</option>
+                        {BUREAU_GROUPS_WITH_WORKS.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            กลุ่มงานที่ {g.order}: {g.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {editingClip.bureauGroup && (
+                      <div className="space-y-1.5">
+                        <span className="block text-[10px] text-slate-300 font-semibold">
+                          แท็กภารกิจที่เกี่ยวข้อง:
+                        </span>
+                        <div className="space-y-1">
+                          {(getBureauGroupById(editingClip.bureauGroup)?.missions || []).map((mText, idx) => {
+                            const mNum = idx + 1;
+                            const checked = (editingClip.missionIndexes || []).includes(mNum);
+                            return (
+                              <label
+                                key={mNum}
+                                className="flex items-start gap-2 text-[11px] text-slate-200 cursor-pointer hover:text-white"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    const current = editingClip.missionIndexes || [];
+                                    const next = checked
+                                      ? current.filter((n) => n !== mNum)
+                                      : [...current, mNum].sort((a, b) => a - b);
+                                    setEditingClip({ ...editingClip, missionIndexes: next });
+                                  }}
+                                  className="mt-0.5 accent-amber-400"
+                                />
+                                <span>
+                                  <strong className="text-amber-300">{mNum}.</strong> {mText}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="px-5 py-3 border-t border-cyan-500/25 bg-[#040e28] flex justify-end gap-2 shrink-0">
@@ -4659,6 +5329,300 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   ปิดหน้าต่าง
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Edit Bureau Group Work */}
+        {editingGroupWork && (
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-[70] overflow-y-auto animate-fadeIn">
+            <div className="w-full max-w-lg max-h-[92vh] bg-gradient-to-b from-[#091b48] via-[#07153b] to-[#040e28] border border-amber-400/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto ring-1 ring-amber-500/20">
+              <div className="px-5 py-3.5 border-b border-amber-500/25 bg-[#05112f] flex items-center justify-between shrink-0">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Network className="w-4 h-4 text-amber-400" />
+                  <span>{editingGroupWork.id ? 'แก้ไขผลงานกลุ่มงาน' : 'เพิ่มผลงานกลุ่มงานใหม่'}</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setEditingGroupWork(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <form onSubmit={handleSaveGroupWork} className="flex flex-col flex-1 overflow-hidden">
+                <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 flex-1 overscroll-contain">
+                  <div>
+                    <label className="block text-[11px] text-slate-300 mb-1 font-semibold">กลุ่มงานเจ้าของผลงาน</label>
+                    <select
+                      value={editingGroupWork.groupId || 'group-media-relations'}
+                      onChange={(e) =>
+                        setEditingGroupWork({
+                          ...editingGroupWork,
+                          groupId: e.target.value as BureauGroupId,
+                          missionIndexes: [],
+                        })
+                      }
+                      required
+                      className="w-full px-3 py-2 bg-[#030d26] border border-amber-500/30 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    >
+                      {BUREAU_GROUPS_WITH_WORKS.map((g) => (
+                        <option key={g.id} value={g.id}>
+                          กลุ่มงานที่ {g.order}: {g.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Mission Tags Selection */}
+                  <div className="p-3 rounded-xl bg-[#030d26]/90 border border-amber-400/25 space-y-2">
+                    <span className="block text-[11px] text-amber-300 font-semibold">
+                      แท็กภารกิจที่เกี่ยวข้องของกลุ่มนี้ (เพื่อให้ผู้ชมกดกรองผลงานรายข้อได้)
+                    </span>
+                    <div className="space-y-1.5">
+                      {(getBureauGroupById(editingGroupWork.groupId || 'group-media-relations')?.missions || []).map(
+                        (mText, idx) => {
+                          const mNum = idx + 1;
+                          const checked = (editingGroupWork.missionIndexes || []).includes(mNum);
+                          return (
+                            <label
+                              key={mNum}
+                              className="flex items-start gap-2 text-[11px] text-slate-200 cursor-pointer hover:text-white"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => {
+                                  const current = editingGroupWork.missionIndexes || [];
+                                  const next = checked
+                                    ? current.filter((n) => n !== mNum)
+                                    : [...current, mNum].sort((a, b) => a - b);
+                                  setEditingGroupWork({ ...editingGroupWork, missionIndexes: next });
+                                }}
+                                className="mt-0.5 accent-amber-400"
+                              />
+                              <span className="leading-relaxed">
+                                <strong className="text-amber-300">ภารกิจ {mNum}:</strong> {mText}
+                              </span>
+                            </label>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-slate-300 mb-1 font-semibold">ชื่อผลงาน / กิจกรรม</label>
+                    <input
+                      type="text"
+                      value={editingGroupWork.title || ''}
+                      onChange={(e) => setEditingGroupWork({ ...editingGroupWork, title: e.target.value })}
+                      required
+                      placeholder="เช่น โครงการสื่อสารเชิงรุกเครือข่ายสื่อมวลชน"
+                      className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] text-slate-300 mb-1 font-semibold">รูปแบบสื่อ</label>
+                      <select
+                        value={editingGroupWork.mediaType || 'photo'}
+                        onChange={(e) =>
+                          setEditingGroupWork({
+                            ...editingGroupWork,
+                            mediaType: e.target.value as GroupWorkItem['mediaType'],
+                          })
+                        }
+                        className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                      >
+                        <option value="photo">📷 ภาพกิจกรรม (Photo)</option>
+                        <option value="infographic">📊 อินโฟกราฟิก (Infographic)</option>
+                        <option value="video">🎬 วิดีโอ / ถ่ายทอดสด (Video)</option>
+                        <option value="report">📄 รายงาน / ข้อเท็จจริง (Report)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-300 mb-1 font-semibold">วันที่ผลงาน (YYYY-MM-DD)</label>
+                      <input
+                        type="text"
+                        value={editingGroupWork.workDate || ''}
+                        onChange={(e) => setEditingGroupWork({ ...editingGroupWork, workDate: e.target.value })}
+                        required
+                        placeholder="2026-10-15"
+                        className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-slate-300 mb-1 font-semibold">ป้ายกำกับย่อย (Badge - ไม่บังคับ)</label>
+                    <input
+                      type="text"
+                      value={editingGroupWork.badge || ''}
+                      onChange={(e) => setEditingGroupWork({ ...editingGroupWork, badge: e.target.value })}
+                      placeholder="เช่น สื่อมวลชนสัมพันธ์, Live Studio"
+                      className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-slate-300 mb-1 font-semibold">รายละเอียดผลงาน (แนะนำ 3–5 บรรทัด)</label>
+                    <textarea
+                      rows={3}
+                      value={editingGroupWork.description || ''}
+                      onChange={(e) => setEditingGroupWork({ ...editingGroupWork, description: e.target.value })}
+                      required
+                      className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 leading-relaxed"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] text-slate-300 font-semibold">ภาพปกผลงาน (Cover URL หรืออัปโหลด)</label>
+                      <input
+                        ref={groupWorkImageInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleUploadGroupWorkImage}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => groupWorkImageInputRef.current?.click()}
+                        disabled={isUploadingGroupWorkImage}
+                        className="text-[11px] px-2.5 py-0.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/40 cursor-pointer"
+                      >
+                        {isUploadingGroupWorkImage ? 'กำลังบีบอัด...' : '📁 อัปโหลดภาพปก'}
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={editingGroupWork.imageUrl || ''}
+                      onChange={(e) => setEditingGroupWork({ ...editingGroupWork, imageUrl: e.target.value })}
+                      required
+                      className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
+                    />
+                  </div>
+
+                  {/* Multi-Image Gallery Section (up to 5 additional photos) */}
+                  <div className="p-3 rounded-xl bg-[#030d26]/90 border border-cyan-500/25 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-cyan-300 font-semibold">
+                        ภาพประกอบเพิ่มเติม (Gallery {(editingGroupWork.galleryImages || []).length}/5 ภาพ)
+                      </span>
+                      <input
+                        ref={groupWorkGalleryInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleUploadGroupWorkGalleryImage}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => groupWorkGalleryInputRef.current?.click()}
+                        disabled={
+                          isUploadingGalleryImage || (editingGroupWork.galleryImages || []).length >= 5
+                        }
+                        className="text-[11px] px-2.5 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 cursor-pointer disabled:opacity-50"
+                      >
+                        {isUploadingGalleryImage ? 'กำลังอัปโหลด...' : '+ อัปโหลดภาพชุด'}
+                      </button>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={galleryUrlInput}
+                        onChange={(e) => setGalleryUrlInput(e.target.value)}
+                        placeholder="วางลิงก์ภาพเพิ่มเติม (https://...)"
+                        className="flex-1 px-2.5 py-1.5 bg-[#040e28] border border-cyan-500/30 rounded-lg text-[11px] text-white outline-none font-mono"
+                      />
+                      <button
+                        type="button"
+                        disabled={!galleryUrlInput.trim() || (editingGroupWork.galleryImages || []).length >= 5}
+                        onClick={() => {
+                          const url = galleryUrlInput.trim();
+                          if (!url) return;
+                          setEditingGroupWork((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  galleryImages: [...(prev.galleryImages || []), url].slice(0, 5),
+                                }
+                              : prev
+                          );
+                          setGalleryUrlInput('');
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 text-[11px] font-semibold cursor-pointer disabled:opacity-40"
+                      >
+                        เพิ่มลิงก์
+                      </button>
+                    </div>
+
+                    {(editingGroupWork.galleryImages || []).length > 0 && (
+                      <div className="grid grid-cols-5 gap-2 pt-1">
+                        {(editingGroupWork.galleryImages || []).map((imgUrl, idx) => (
+                          <div
+                            key={`${idx}-${imgUrl.slice(0, 20)}`}
+                            className="relative aspect-square rounded-lg overflow-hidden border border-white/15 bg-black/40 group"
+                          >
+                            <img
+                              src={imgUrl}
+                              alt={`Gallery ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingGroupWork((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        galleryImages: (prev.galleryImages || []).filter((_, i) => i !== idx),
+                                      }
+                                    : prev
+                                );
+                              }}
+                              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/80 hover:bg-rose-600 text-white flex items-center justify-center cursor-pointer"
+                              title="ลบภาพนี้"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-slate-300 mb-1 font-semibold">ลิงก์เพิ่มเติม (URL หรือ #section - ไม่บังคับ)</label>
+                    <input
+                      type="text"
+                      value={editingGroupWork.linkUrl || ''}
+                      onChange={(e) => setEditingGroupWork({ ...editingGroupWork, linkUrl: e.target.value })}
+                      placeholder="https://... หรือ #published-works"
+                      className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
+                    />
+                  </div>
+                </div>
+                <div className="px-5 py-3 border-t border-amber-500/25 bg-[#040e28] flex justify-end gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setEditingGroupWork(null)}
+                    className="px-4 py-2 text-xs text-slate-400 hover:text-white rounded-xl border border-slate-700"
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20"
+                  >
+                    บันทึกผลงานกลุ่ม
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

@@ -31,7 +31,8 @@ import {
   ChatbotSettings,
   NewsSubscriber,
   NewsBroadcastLog,
-  MarqueeTickerSettings
+  MarqueeTickerSettings,
+  GroupWorkItem
 } from './types';
 
 // Initialize Firebase
@@ -44,10 +45,21 @@ export const ADMIN_EMAILS = [
   'auditpicture.webapp@gmail.com',
 ] as const;
 
+export const GROUP_CONTRIBUTOR_EMAIL = 'auditpicture@gmail.com';
+
 export function isAuthorizedAdminEmail(email?: string | null): boolean {
   if (!email) return false;
   const normalized = email.trim().toLowerCase();
   return (ADMIN_EMAILS as readonly string[]).includes(normalized);
+}
+
+export function isGroupContributorEmail(email?: string | null): boolean {
+  if (!email) return false;
+  return email.trim().toLowerCase() === GROUP_CONTRIBUTOR_EMAIL;
+}
+
+export function isAuthorizedPortalEmail(email?: string | null): boolean {
+  return isAuthorizedAdminEmail(email) || isGroupContributorEmail(email);
 }
 
 export async function signInAdminWithGoogle(hintEmail?: string): Promise<User> {
@@ -62,6 +74,25 @@ export async function signInAdminWithGoogle(hintEmail?: string): Promise<User> {
     await signOut(auth);
     throw new Error(
       `บัญชี Google (${result.user?.email || 'ไม่ระบุอีเมล'}) ไม่มีสิทธิ์ผู้ดูแลระบบ (อนุญาตเฉพาะ jakwil@jakwil.page และ auditpicture.webapp@gmail.com)`
+    );
+  }
+  return result.user;
+}
+
+export async function signInGroupContributorWithGoogle(
+  hintEmail: string = GROUP_CONTRIBUTOR_EMAIL
+): Promise<User> {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({
+    prompt: 'select_account',
+    login_hint: hintEmail,
+  });
+  const result = await signInWithPopup(auth, provider);
+  const email = result.user?.email?.trim().toLowerCase();
+  if (!isAuthorizedPortalEmail(email)) {
+    await signOut(auth);
+    throw new Error(
+      `บัญชี Google (${result.user?.email || 'ไม่ระบุอีเมล'}) ไม่มีสิทธิ์เพิ่มผลงานกลุ่ม (อนุญาตเฉพาะ ${GROUP_CONTRIBUTOR_EMAIL} หรือบัญชีผู้ดูแลระบบ)`
     );
   }
   return result.user;
@@ -375,7 +406,8 @@ export type AppCollectionName =
   | 'knowledgeBase'
   | 'publishedWorks'
   | 'viralClips'
-  | 'incidentTimeline';
+  | 'incidentTimeline'
+  | 'groupWorks';
 
 let seedingInFlight: Promise<void> | null = null;
 const LOCAL_DELETED_KEY = 'sai_deleted_mockup_keys_v1';
@@ -416,6 +448,7 @@ function clearLocalDeletedKeys() {
 export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
   const unsubscribers: (() => void)[] = [];
   let hasSeededInFirestore = false;
+  let hasSeededGroupWorksInFirestore = false;
   const emptyCollectionsSeen = new Set<AppCollectionName>();
 
   // Watch mockup_version so we know whether Firestore owns empty collections
@@ -424,7 +457,10 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
     (docSnap) => {
       if (docSnap.exists()) {
         hasSeededInFirestore = true;
+        const versionData = docSnap.data();
+        hasSeededGroupWorksInFirestore = Boolean(versionData?.groupWorksSeeded);
         emptyCollectionsSeen.forEach((col) => {
+          if (col === 'groupWorks' && !hasSeededGroupWorksInFirestore) return;
           onUpdate({ [col]: [] } as Partial<AppData>);
         });
       }
@@ -556,6 +592,31 @@ export function subscribeToAppData(onUpdate: (data: Partial<AppData>) => void) {
   );
   unsubscribers.push(unsubTimeline);
 
+  // 5b. Bureau Group Works (ผลงานตามกลุ่มงานโครงสร้างสำนัก)
+  const unsubGroupWorks = onSnapshot(
+    collection(db, 'groupWorks'),
+    (snapshot) => {
+      if (!snapshot.empty) {
+        emptyCollectionsSeen.delete('groupWorks');
+        const items: GroupWorkItem[] = [];
+        snapshot.forEach((docSnap) => {
+          items.push({ ...(docSnap.data() as GroupWorkItem), id: docSnap.id });
+        });
+        items.sort((a, b) => (b.workDate || '').localeCompare(a.workDate || ''));
+        onUpdate({ groupWorks: items });
+      } else {
+        emptyCollectionsSeen.add('groupWorks');
+        if (hasSeededGroupWorksInFirestore) {
+          onUpdate({ groupWorks: [] });
+        }
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'groupWorks');
+    }
+  );
+  unsubscribers.push(unsubGroupWorks);
+
   // 6. Music Settings
   const unsubMusic = onSnapshot(
     doc(db, 'settings', 'music'),
@@ -680,8 +741,26 @@ export async function seedFirestoreIfEmpty(initialData: AppData) {
         }
       }
 
-      // If mockup_version already exists, database was already initialized — NEVER re-seed!
+      // If mockup_version already exists, only ensure groupWorks baseline is seeded once if missing
       if (versionDoc && versionDoc.exists()) {
+        const versionData = versionDoc.data();
+        if (!versionData?.groupWorksSeeded && (initialData.groupWorks || []).length > 0) {
+          const existingGw = await getDocs(collection(db, 'groupWorks'));
+          if (existingGw.empty) {
+            const localDeleted = getLocalDeletedSet();
+            const toWrite = (initialData.groupWorks || []).filter(
+              (item) => !localDeleted.has(`groupWorks:${item.id}`)
+            );
+            await Promise.all(
+              toWrite.map((item) => setDoc(doc(db, 'groupWorks', item.id), stripUndefined(item)))
+            );
+          }
+          await setDoc(
+            versionRef,
+            { groupWorksSeeded: true, updatedAt: new Date().toISOString() },
+            { merge: true }
+          );
+        }
         return;
       }
 
@@ -708,6 +787,7 @@ export async function seedFirestoreIfEmpty(initialData: AppData) {
         seedCollectionIfEmpty('publishedWorks', initialData.publishedWorks),
         seedCollectionIfEmpty('viralClips', initialData.viralClips),
         seedCollectionIfEmpty('incidentTimeline', initialData.incidentTimeline),
+        seedCollectionIfEmpty('groupWorks', initialData.groupWorks || []),
         setDoc(doc(db, 'settings', 'music'), stripUndefined(defaultMusicSettings), { merge: true }),
         setDoc(doc(db, 'settings', 'chatbot'), stripUndefined(defaultChatbotSettings), { merge: true }),
       ]);
@@ -716,6 +796,7 @@ export async function seedFirestoreIfEmpty(initialData: AppData) {
         versionRef,
         {
           version: 'v2_multimodal_news',
+          groupWorksSeeded: true,
           seededAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           categories: ['photo', 'infographic', 'video'],
@@ -738,14 +819,30 @@ export async function saveSingleItemToFirestore<T extends { id: string }>(
   collectionName: AppCollectionName,
   item: T
 ): Promise<void> {
-  if (!isAuthorizedAdminEmail(auth.currentUser?.email)) {
-    throw new Error('กรุณาเข้าสู่ระบบด้วยบัญชี Google Admin ก่อนบันทึกข้อมูล');
+  const currentEmail = auth.currentUser?.email;
+  const isAdmin = isAuthorizedAdminEmail(currentEmail);
+  const isContributorForGroupWorks =
+    collectionName === 'groupWorks' && isGroupContributorEmail(currentEmail);
+
+  if (!isAdmin && !isContributorForGroupWorks) {
+    throw new Error(
+      collectionName === 'groupWorks'
+        ? `กรุณาเข้าสู่ระบบด้วยบัญชี ${GROUP_CONTRIBUTOR_EMAIL} หรือผู้ดูแลระบบก่อนบันทึกผลงานกลุ่ม`
+        : 'กรุณาเข้าสู่ระบบด้วยบัญชี Google Admin ก่อนบันทึกข้อมูล'
+    );
   }
   if (!item.id) {
     throw new Error('ไม่พบรหัสเอกสารสำหรับบันทึก');
   }
   try {
     await setDoc(doc(db, collectionName, item.id), stripUndefined(item));
+    if (collectionName === 'groupWorks' && isAdmin) {
+      await setDoc(
+        doc(db, 'settings', 'mockup_version'),
+        { groupWorksSeeded: true, updatedAt: new Date().toISOString() },
+        { merge: true }
+      ).catch(() => null);
+    }
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, `${collectionName}/${item.id}`);
     throw err;
@@ -922,6 +1019,11 @@ export async function syncAllDataToFirestore(data: AppData) {
   if (data.incidentTimeline) {
     for (const tl of data.incidentTimeline) {
       await safeSet('incidentTimeline', tl.id, tl);
+    }
+  }
+  if (data.groupWorks) {
+    for (const gw of data.groupWorks) {
+      await safeSet('groupWorks', gw.id, gw);
     }
   }
   if (data.musicSettings) {

@@ -4,8 +4,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import { Readable } from 'stream';
-import { GoogleGenAI } from '@google/genai';
-import nodemailer from 'nodemailer';
+import type { GoogleGenAI } from '@google/genai';
 
 dotenv.config();
 
@@ -26,17 +25,32 @@ const PORT =
 
 app.use(express.json({ limit: '25mb' }));
 
-// Initialize Gemini SDK
-let ai: GoogleGenAI | null = null;
-if (process.env.GEMINI_API_KEY) {
-  ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
+// Lazy-load Gemini SDK & Nodemailer only when their API endpoints are invoked
+// so cold boot binds port 3000 immediately.
+let aiInstance: GoogleGenAI | null = null;
+async function getGenAIClient(): Promise<GoogleGenAI | null> {
+  if (!process.env.GEMINI_API_KEY) return null;
+  if (!aiInstance) {
+    const { GoogleGenAI } = await import('@google/genai');
+    aiInstance = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
       },
-    },
-  });
+    });
+  }
+  return aiInstance;
+}
+
+let nodemailerModule: typeof import('nodemailer') | null = null;
+async function getNodemailer() {
+  if (!nodemailerModule) {
+    const mod = await import('nodemailer');
+    nodemailerModule = (mod as any).default || mod;
+  }
+  return nodemailerModule!;
 }
 
 // Initial seed data for PR - SAI Thailand
@@ -626,6 +640,7 @@ function getSmtpConfig(override?: any) {
 }
 
 async function createEmailTransporter(config: ReturnType<typeof getSmtpConfig>) {
+  const nodemailer = await getNodemailer();
   if (config.isConfigured) {
     if (config.service === 'gmail' || config.user.toLowerCase().endsWith('@gmail.com')) {
       const transporter = nodemailer.createTransport({
@@ -955,6 +970,7 @@ app.post('/api/email/test-smtp', async (req, res) => {
       html: htmlContent
     });
 
+    const nodemailer = await getNodemailer();
     const previewUrl = nodemailer.getTestMessageUrl(info) || null;
 
     res.json({
@@ -1021,6 +1037,7 @@ app.post('/api/broadcast', async (req, res) => {
 
           deliveredEmails.push(email);
           if (!previewUrl) {
+            const nodemailer = await getNodemailer();
             const testUrl = nodemailer.getTestMessageUrl(info);
             if (testUrl) previewUrl = testUrl;
           }
@@ -1289,6 +1306,7 @@ ${timelineContext}
 `;
 
   try {
+    const ai = await getGenAIClient();
     if (!ai) {
       // Graceful fallback if no API key provided
       return res.json({
@@ -1326,6 +1344,7 @@ app.post('/api/tts', async (req, res) => {
   const cleanText = text.replace(/[*#_`]/g, '').trim().slice(0, 300);
 
   try {
+    const ai = await getGenAIClient();
     if (!ai) {
       return res.status(503).json({ error: 'Gemini API not configured' });
     }
@@ -1427,6 +1446,7 @@ app.post('/api/ai/recommend-news-broadcast', async (req, res) => {
   };
 
   try {
+    const ai = await getGenAIClient();
     if (!ai) {
       return res.json(fallbackRecommendation());
     }
@@ -1573,6 +1593,7 @@ app.post('/api/ai/generate-cover', async (req, res) => {
       default: '/src/assets/images/sai_hero_inspection_1792297056517.jpg'
     };
 
+    const ai = await getGenAIClient();
     if (!ai) {
       const fallbackUrl = curatedFallbacks[style || 'default'] || curatedFallbacks.default;
       return res.json({
@@ -1673,17 +1694,25 @@ async function startServer() {
     console.log(`Server listening on http://0.0.0.0:${PORT}`);
   });
 
+  httpServer.on('error', (err) => {
+    console.error('HTTP server listen error:', err);
+  });
+
   if (!isProduction) {
-    viteServerPromise = import('vite').then(({ createServer: createViteServer }) =>
-      createViteServer({
-        server: {
-          middlewareMode: true,
-          hmr: process.env.DISABLE_HMR === 'true' ? false : { server: httpServer },
-        },
-        appType: 'spa',
-      })
-    );
-    await viteServerPromise;
+    viteServerPromise = import('vite')
+      .then(({ createServer: createViteServer }) =>
+        createViteServer({
+          server: {
+            middlewareMode: true,
+            hmr: false,
+          },
+          appType: 'spa',
+        })
+      )
+      .catch((err) => {
+        console.error('Failed to initialize Vite dev middleware:', err);
+        throw err;
+      });
   }
 }
 

@@ -19,6 +19,10 @@ const ExecutiveDashboardModal = lazy(() =>
 const AdminAuthModal = lazy(() =>
   import('./components/AdminAuthModal').then((m) => ({ default: m.AdminAuthModal }))
 );
+const BureauStructureModal = lazy(() =>
+  import('./components/BureauStructureModal').then((m) => ({ default: m.BureauStructureModal }))
+);
+import { defaultGroupWorks } from './data/bureauStructure';
 import {
   auth,
   onAuthStateChanged,
@@ -35,8 +39,8 @@ import {
   defaultNewsBroadcasts,
   defaultMarqueeTicker
 } from './firebase';
-import { AppData } from './types';
-import { ShieldCheck } from 'lucide-react';
+import { AppData, GroupWorkItem } from './types';
+import { ShieldCheck, Network, ChevronRight } from 'lucide-react';
 import { recordVisitorVisit } from './utils/analytics';
 
 const ADMIN_VERIFIED_SESSION_KEY = 'sai_admin_verified_email';
@@ -48,6 +52,7 @@ const initialData: AppData = {
   newsSubscribers: defaultNewsSubscribers,
   newsBroadcasts: defaultNewsBroadcasts,
   marqueeTicker: defaultMarqueeTicker,
+  groupWorks: defaultGroupWorks,
   heroStories: [
     {
       id: 'story-photo-1',
@@ -698,13 +703,22 @@ export default function App() {
   const [loginToast, setLoginToast] = useState(false);
   const [isMediaPlaying, setIsMediaPlaying] = useState(false);
   const [isExecutiveDashboardOpen, setIsExecutiveDashboardOpen] = useState(false);
+  const [isBureauModalOpen, setIsBureauModalOpen] = useState(false);
+  const [adminInitialTab, setAdminInitialTab] = useState<'summaries' | 'groupWorks'>('summaries');
 
-  // Check URL hash for direct links to dashboard (#dashboard, #analytics, #stats) - Restrict strictly to logged-in Admin
+  // Check URL hash for direct links to dashboard (#dashboard, #analytics, #stats) or bureau structure (#org-structure, #bureau-structure)
   useEffect(() => {
     const checkHash = () => {
       if (typeof window === 'undefined') return;
       const hash = window.location.hash.toLowerCase();
       const search = window.location.search.toLowerCase();
+      if (
+        hash === '#org-structure' ||
+        hash === '#bureau-structure' ||
+        search.includes('view=structure')
+      ) {
+        setIsBureauModalOpen(true);
+      }
       if (
         hash === '#dashboard' ||
         hash === '#analytics' ||
@@ -726,6 +740,23 @@ export default function App() {
     window.addEventListener('hashchange', checkHash);
     return () => window.removeEventListener('hashchange', checkHash);
   }, [isAdminLoggedIn]);
+
+  const handleOpenBureauStructure = () => {
+    setIsBureauModalOpen(true);
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', '#org-structure');
+    }
+  };
+
+  const handleCloseBureauStructure = () => {
+    setIsBureauModalOpen(false);
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#org-structure' || hash === '#bureau-structure') {
+        window.history.pushState(null, '', window.location.pathname);
+      }
+    }
+  };
 
   const handleCloseExecutiveDashboard = () => {
     setIsExecutiveDashboardOpen(false);
@@ -786,18 +817,18 @@ export default function App() {
       }
 
       const email = user?.email?.trim().toLowerCase() || '';
+      const verifiedEmail =
+        typeof window !== 'undefined' ? window.sessionStorage.getItem(ADMIN_VERIFIED_SESSION_KEY) : null;
+
       if (user && isAuthorizedAdminEmail(email)) {
         // Seed Firestore if still unseeded now that an authorized admin is signed in
         seedFirestoreIfEmpty(initialData);
 
-        // Subscribe to restricted admin collections (newsSubscribers, newsBroadcasts)
-        unsubAdminData = subscribeToAdminData((partial) => {
-          setData((prev) => ({ ...prev, ...partial }));
-        });
-
-        const verifiedEmail =
-          typeof window !== 'undefined' ? window.sessionStorage.getItem(ADMIN_VERIFIED_SESSION_KEY) : null;
         if (verifiedEmail === email) {
+          // Subscribe to restricted admin collections ONLY when verified as Full Admin
+          unsubAdminData = subscribeToAdminData((partial) => {
+            setData((prev) => ({ ...prev, ...partial }));
+          });
           setIsAdminLoggedIn(true);
           setAdminEmail(email);
         } else {
@@ -837,6 +868,18 @@ export default function App() {
     }).catch(() => null);
   };
 
+  // Optimistic local state update when adding/editing group work directly inside BureauStructureModal
+  const handleGroupWorkSaved = (savedItem: GroupWorkItem) => {
+    setData((prev) => {
+      const currentList = prev.groupWorks || [];
+      const exists = currentList.some((item) => item.id === savedItem.id);
+      const nextList = exists
+        ? currentList.map((item) => (item.id === savedItem.id ? savedItem : item))
+        : [savedItem, ...currentList];
+      return { ...prev, groupWorks: nextList };
+    });
+  };
+
   // Triggered after holding biometric fingerprint button for 3 seconds
   const handleBiometricSuccess = () => {
     const currentEmail = auth.currentUser?.email?.trim().toLowerCase() || '';
@@ -846,13 +889,14 @@ export default function App() {
     if (currentEmail && isAuthorizedAdminEmail(currentEmail) && verifiedEmail === currentEmail) {
       setIsAdminLoggedIn(true);
       setAdminEmail(currentEmail);
+      setAdminInitialTab('summaries');
       setIsAdminPanelOpen(true);
       setLoginToast(true);
       setTimeout(() => setLoginToast(false), 4000);
       return;
     }
 
-    // Enter Google Account selection + passcode mode
+    // Open Admin Google + Passcode Authentication Modal
     setIsAuthModalOpen(true);
   };
 
@@ -864,6 +908,7 @@ export default function App() {
     setAdminEmail(normalized);
     setIsAdminLoggedIn(true);
     setIsAuthModalOpen(false);
+    setAdminInitialTab('summaries');
     setIsAdminPanelOpen(true);
     setLoginToast(true);
     setTimeout(() => {
@@ -921,8 +966,12 @@ export default function App() {
       <div className="relative z-10 flex flex-col min-h-screen">
         <Navbar
           isAdminLoggedIn={isAdminLoggedIn}
-          onOpenAdminPanel={() => setIsAdminPanelOpen(true)}
+          onOpenAdminPanel={() => {
+            setAdminInitialTab('summaries');
+            setIsAdminPanelOpen(true);
+          }}
           onBiometricSuccess={handleBiometricSuccess}
+          onOpenBureauStructure={handleOpenBureauStructure}
           searchData={data}
         />
 
@@ -931,7 +980,9 @@ export default function App() {
           <div className="fixed top-20 right-5 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#06153d] border border-cyan-500/50 text-cyan-300 text-xs shadow-2xl shadow-cyan-500/20 animate-fadeIn">
             <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
             <div>
-              <span className="font-semibold block text-white">ยืนยันตัวตนผู้ดูแลระบบสำเร็จ</span>
+              <span className="font-semibold block text-white">
+                ยืนยันตัวตนผู้ดูแลระบบสำเร็จ
+              </span>
               <span className="text-[11px] text-cyan-400 font-mono">
                 เข้าสู่ระบบ: {adminEmail || 'ผู้ดูแลระบบ สตง.'}
               </span>
@@ -961,11 +1012,38 @@ export default function App() {
 
           {/* 6. ข้อมูล e-Audit */}
           <PublicInterestSection onAskAi={handleAskAi} />
+
+          {/* Quick End CTA Strip: รู้จัก 4 กลุ่มงานของเรา */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+            <div className="rounded-2xl bg-gradient-to-r from-[#071946]/95 via-[#0a2159]/95 to-[#061539]/95 border border-amber-400/35 px-5 py-4 sm:px-7 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_12px_36px_rgba(2,10,31,0.7)]">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/40 flex items-center justify-center shrink-0 text-amber-300">
+                  <Network className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white">
+                    รู้จัก 4 กลุ่มงานของเรา · สำนักประชาสัมพันธ์และสื่อสารองค์กร
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    ดูแผนผังโครงสร้างภายใน บทบาทภารกิจหลัก และผลงานเชื่อมโยงของแต่ละกลุ่มงานแบบเต็มจอ
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenBureauStructure}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 transition-all cursor-pointer shrink-0"
+              >
+                <span>เปิดดูโครงสร้างและภารกิจ</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </section>
         </main>
 
         <Footer />
 
-        {/* Google Account + Passcode Authentication Modal (Lazy-loaded on demand) */}
+        {/* Google Account + Passcode Admin Authentication Modal (Lazy-loaded on demand) */}
         {isAuthModalOpen && (
           <Suspense fallback={null}>
             <AdminAuthModal
@@ -976,7 +1054,7 @@ export default function App() {
           </Suspense>
         )}
 
-        {/* Admin Management Dashboard (Lazy-loaded strictly for authenticated admin only) */}
+        {/* Full Admin Management Dashboard (Strictly Admin Only) */}
         {isAdminLoggedIn && isAdminPanelOpen && (
           <Suspense fallback={null}>
             <AdminPanel
@@ -985,6 +1063,24 @@ export default function App() {
               data={data}
               onUpdateData={handleUpdateData}
               onLogout={handleLogout}
+              initialTab={adminInitialTab}
+            />
+          </Suspense>
+        )}
+
+        {/* Full-Screen Bureau Structure & Group Works Modal (Lazy-loaded on demand) */}
+        {isBureauModalOpen && (
+          <Suspense fallback={null}>
+            <BureauStructureModal
+              isOpen={isBureauModalOpen}
+              onClose={handleCloseBureauStructure}
+              data={data}
+              isAdminLoggedIn={isAdminLoggedIn}
+              onOpenAdminGroupWorks={() => {
+                setAdminInitialTab('groupWorks');
+                setIsAdminPanelOpen(true);
+              }}
+              onGroupWorkSaved={handleGroupWorkSaved}
             />
           </Suspense>
         )}

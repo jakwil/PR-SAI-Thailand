@@ -15,7 +15,8 @@ import {
   PhoneCall,
   Sparkles,
   Lock,
-  BarChart3
+  BarChart3,
+  Network
 } from 'lucide-react';
 import { AppData } from '../types';
 import { QuickSearchBar } from './QuickSearchBar';
@@ -25,6 +26,7 @@ interface NavbarProps {
   isAdminLoggedIn: boolean;
   onOpenAdminPanel: () => void;
   onBiometricSuccess: () => void;
+  onOpenBureauStructure: () => void;
   searchData: AppData;
 }
 
@@ -32,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   isAdminLoggedIn,
   onOpenAdminPanel,
   onBiometricSuccess,
+  onOpenBureauStructure,
   searchData,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -156,7 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               />
             </div>
 
-            {/* Brand Typography: PR - SAI Thailand + สำนักงานการตรวจเงินแผ่นดิน */}
+            {/* Brand Typography: PR - SAI Thailand + สำนักประชาสัมพันธ์และสื่อสารองค์กร */}
             <div className="flex items-center">
               <div className="flex flex-col justify-center leading-none">
                 <span className="text-[13px] sm:text-[15px] font-bold tracking-tight leading-tight text-white group-hover:text-amber-300 transition-colors">
@@ -164,13 +167,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     PR - SAI Thailand
                   </span>
                 </span>
-                <span className="text-[9.5px] sm:text-[11px] font-medium tracking-wide text-amber-300/90 group-hover:text-amber-200 transition-colors leading-tight mt-[1px]">
-                  สำนักงานการตรวจเงินแผ่นดิน
+                <span className="text-[9px] sm:text-[10.5px] font-medium tracking-wide text-amber-300/90 group-hover:text-amber-200 transition-colors leading-tight mt-[1px]">
+                  สำนักประชาสัมพันธ์และสื่อสารองค์กร
                 </span>
               </div>
-              <span className="hidden 2xl:inline text-[12px] text-amber-300/80 font-normal pl-2.5 ml-3 border-l border-amber-500/30 whitespace-nowrap">
-                สำนักประชาสัมพันธ์และสื่อสารองค์กร
-              </span>
             </div>
           </a>
 
@@ -182,6 +182,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               หน้าแรก
             </a>
+            <button
+              type="button"
+              onClick={() => {
+                playDigitalSound('select');
+                onOpenBureauStructure();
+              }}
+              className="hover:text-amber-300 transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5 text-amber-200/95 font-medium cursor-pointer"
+              title="เปิดดูโครงสร้าง 4 กลุ่มงาน ภารกิจ และผลงานสำนักประชาสัมพันธ์ฯ (เต็มจอ)"
+            >
+              <Network className="w-3.5 h-3.5 text-amber-400" />
+              <span>โครงสร้างและภารกิจ</span>
+            </button>
             <a
               href="#viral-clips"
               className="hover:text-white transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5"
@@ -245,9 +257,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-bold text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all whitespace-nowrap shrink-0"
-              title="ระบบขอรับการสนับสนุนสื่อประชาสัมพันธ์และวิทยากร สตง."
+              title="ขอรับการสนับสนุนงาน PR สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง."
             >
-              <span>ขอสนับสนุนสื่อ</span>
+              <span>ขอรับการสนับสนุนงาน PR</span>
               <ExternalLink className="w-3 h-3" />
             </a>
 
@@ -434,6 +446,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>หน้าแรก (ข่าวม้าหมุน)</span>
             </a>
 
+            <button
+              type="button"
+              onClick={() => {
+                playDigitalSound('select');
+                setMobileMenuOpen(false);
+                onOpenBureauStructure();
+              }}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all text-left cursor-pointer"
+            >
+              <Network className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>โครงสร้างและภารกิจ</span>
+            </button>
+
             <a
               href="#viral-clips"
               onClick={() => {
@@ -539,7 +564,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-between px-2.5 py-1.5 text-[11px] font-bold text-slate-950 bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-500 hover:from-yellow-300 hover:to-yellow-400 rounded-lg shadow-md shadow-yellow-500/20 active:scale-95 transition-all"
             >
-              <span className="truncate">ระบบขอสนับสนุนสื่อ สตง.</span>
+              <span className="truncate">ขอรับการสนับสนุนงาน PR</span>
               <ExternalLink className="w-3 h-3 shrink-0 ml-1" />
             </a>
           </div>
@@ -552,14 +577,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 if (isAdminLoggedIn) {
                   onOpenAdminPanel();
                 } else {
-                  // Prompt hold instruction or open panel if authorized
                   onBiometricSuccess();
                 }
               }}
               className="w-full flex items-center justify-center gap-1.5 px-2 py-1 text-[10px] text-cyan-400/80 hover:text-cyan-200 transition-colors"
             >
               <Lock className="w-2.5 h-2.5" />
-              <span>{isAdminLoggedIn ? 'เปิดหน้าต่าง Admin' : 'เข้าสู่ระบบผู้ดูแล (Admin)'}</span>
+              <span>{isAdminLoggedIn ? 'เปิดหน้าต่าง Admin' : 'เข้าสู่ระบบ Admin'}</span>
             </button>
           </div>
         </div>

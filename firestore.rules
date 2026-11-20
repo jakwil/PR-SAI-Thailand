@@ -27,9 +27,23 @@ service cloud.firestore {
         );
     }
 
+    function isGroupContributor() {
+      return isSignedIn() &&
+        request.auth.token.email_verified == true &&
+        request.auth.token.email == 'auditpicture@gmail.com';
+    }
+
+    function isValidMissionIndexes(val) {
+      return val is list && val.size() <= 10;
+    }
+
+    function isValidGalleryImages(val) {
+      return val is list && val.size() <= 5;
+    }
+
     function isValidHeroStory(data) {
       return data.keys().hasAll(['id', 'title', 'subtitle', 'category', 'imageUrl', 'linkUrl', 'date', 'order']) &&
-             data.keys().hasOnly(['id', 'title', 'subtitle', 'category', 'imageUrl', 'linkUrl', 'date', 'badge', 'mediaType', 'order', 'updatedAt']) &&
+             data.keys().hasOnly(['id', 'title', 'subtitle', 'category', 'imageUrl', 'linkUrl', 'date', 'badge', 'mediaType', 'order', 'bureauGroup', 'missionIndexes', 'updatedAt']) &&
              data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
              data.title is string && data.title.size() <= 300 &&
              data.subtitle is string && data.subtitle.size() <= 1000 &&
@@ -40,6 +54,8 @@ service cloud.firestore {
              data.order is number &&
              (!('badge' in data) || (data.badge is string && data.badge.size() <= 100)) &&
              (!('mediaType' in data) || data.mediaType in ['photo', 'infographic', 'video', 'report']) &&
+             (!('bureauGroup' in data) || isValidBureauGroupId(data.bureauGroup)) &&
+             (!('missionIndexes' in data) || isValidMissionIndexes(data.missionIndexes)) &&
              (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
     }
 
@@ -56,9 +72,13 @@ service cloud.firestore {
              (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
     }
 
+    function isValidBureauGroupId(val) {
+      return val in ['group-media-relations', 'group-corp-strategy', 'group-media-production', 'group-general-admin'];
+    }
+
     function isValidPublishedWork(data) {
       return data.keys().hasAll(['id', 'title', 'category', 'description', 'linkUrl', 'imageUrl', 'publishDate', 'views']) &&
-             data.keys().hasOnly(['id', 'title', 'category', 'description', 'linkUrl', 'imageUrl', 'publishDate', 'views', 'badge', 'mediaType', 'videoUrl', 'resolution', 'duration', 'creator', 'updatedAt']) &&
+             data.keys().hasOnly(['id', 'title', 'category', 'description', 'linkUrl', 'imageUrl', 'publishDate', 'views', 'badge', 'mediaType', 'videoUrl', 'resolution', 'duration', 'creator', 'bureauGroup', 'missionIndexes', 'updatedAt']) &&
              data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
              data.title is string && data.title.size() <= 300 &&
              data.category is string && data.category.size() <= 100 &&
@@ -73,12 +93,31 @@ service cloud.firestore {
              (!('resolution' in data) || data.resolution in ['16:9', '9:16', '1:1', '4:3', '21:9']) &&
              (!('duration' in data) || (data.duration is string && data.duration.size() <= 50)) &&
              (!('creator' in data) || (data.creator is string && data.creator.size() <= 150)) &&
+             (!('bureauGroup' in data) || isValidBureauGroupId(data.bureauGroup)) &&
+             (!('missionIndexes' in data) || isValidMissionIndexes(data.missionIndexes)) &&
+             (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
+    }
+
+    function isValidGroupWork(data) {
+      return data.keys().hasAll(['id', 'groupId', 'title', 'description', 'imageUrl', 'workDate']) &&
+             data.keys().hasOnly(['id', 'groupId', 'missionIndexes', 'title', 'description', 'imageUrl', 'galleryImages', 'workDate', 'linkUrl', 'badge', 'mediaType', 'updatedAt']) &&
+             data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+             isValidBureauGroupId(data.groupId) &&
+             (!('missionIndexes' in data) || isValidMissionIndexes(data.missionIndexes)) &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 300 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.imageUrl is string && data.imageUrl.size() <= 700000 &&
+             (!('galleryImages' in data) || isValidGalleryImages(data.galleryImages)) &&
+             data.workDate is string && data.workDate.size() <= 50 &&
+             (!('linkUrl' in data) || (data.linkUrl is string && data.linkUrl.size() <= 1000)) &&
+             (!('badge' in data) || (data.badge is string && data.badge.size() <= 100)) &&
+             (!('mediaType' in data) || data.mediaType in ['photo', 'infographic', 'video', 'report']) &&
              (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
     }
 
     function isValidViralClip(data) {
       return data.keys().hasAll(['id', 'title', 'creator', 'views', 'duration', 'thumbnail', 'linkUrl', 'highlight']) &&
-             data.keys().hasOnly(['id', 'title', 'creator', 'views', 'duration', 'thumbnail', 'linkUrl', 'highlight', 'mediaType', 'updatedAt']) &&
+             data.keys().hasOnly(['id', 'title', 'creator', 'views', 'duration', 'thumbnail', 'linkUrl', 'highlight', 'mediaType', 'bureauGroup', 'missionIndexes', 'updatedAt']) &&
              data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
              data.title is string && data.title.size() <= 300 &&
              data.creator is string && data.creator.size() <= 150 &&
@@ -88,6 +127,8 @@ service cloud.firestore {
              data.linkUrl is string && data.linkUrl.size() <= 1000 &&
              data.highlight is string && data.highlight.size() <= 500 &&
              (!('mediaType' in data) || data.mediaType in ['video', 'motion_graphic', 'short']) &&
+             (!('bureauGroup' in data) || isValidBureauGroupId(data.bureauGroup)) &&
+             (!('missionIndexes' in data) || isValidMissionIndexes(data.missionIndexes)) &&
              (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
     }
 
@@ -191,6 +232,13 @@ service cloud.firestore {
     match /publishedWorks/{workId} {
       allow read: if true;
       allow create, update: if isAdmin() && isValidId(workId) && isValidPublishedWork(incoming());
+      allow delete: if isAdmin() && isValidId(workId);
+    }
+
+    // Bureau Group Works Collection
+    match /groupWorks/{workId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || isGroupContributor()) && isValidId(workId) && isValidGroupWork(incoming());
       allow delete: if isAdmin() && isValidId(workId);
     }
 
