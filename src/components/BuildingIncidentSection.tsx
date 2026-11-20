@@ -632,11 +632,11 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               <Compass className="w-4 h-4 text-rose-400 animate-spin-slow" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="block text-sm sm:text-base font-bold text-white tracking-wide">
-                  Timeline เหตุการณ์
+                  Timeline เหตุการณ์อาคาร สตง. แห่งใหม่ ทรุดตัวจากเหตุแผ่นดินไหว
                 </span>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 font-mono font-bold">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 font-mono font-bold shrink-0">
                   {timeline.length} MILESTONES
                 </span>
               </div>

@@ -1011,7 +1011,7 @@ export default function App() {
           <PublishedWorksSection works={data.publishedWorks} />
 
           {/* 6. ข้อมูล e-Audit */}
-          <PublicInterestSection onAskAi={handleAskAi} />
+          <PublicInterestSection />
 
           {/* Quick End CTA Strip: รู้จัก 4 กลุ่มงานของเรา */}
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">

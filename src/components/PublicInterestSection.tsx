@@ -1,55 +1,69 @@
 import React, { useState } from 'react';
-import { HelpCircle, ChevronDown, PhoneCall, Search, FileCheck, Share2, ExternalLink, ArrowRight } from 'lucide-react';
+import {
+  HelpCircle,
+  ChevronDown,
+  PhoneCall,
+  FileCheck,
+  Share2,
+  ExternalLink,
+  ArrowRight,
+  Sparkles,
+  Users,
+  Compass,
+  Cpu,
+  ChevronRight,
+} from 'lucide-react';
 import { ShareModal } from './ShareModal';
+import { EAuditDeepDiveModal } from './EAuditDeepDiveModal';
+import { EAUDIT_FAQS, EAuditDeepDiveTabId, EAuditFaqItem } from '../data/eAuditData';
+import { playDigitalSound } from '../utils/audioEffects';
 
-interface PublicInterestSectionProps {
-  onAskAi: (question: string) => void;
+interface PublicInterestSectionProps {}
+
+function renderFaqIcon(iconKey: EAuditFaqItem['iconKey']) {
+  switch (iconKey) {
+    case 'sparkles':
+      return <Sparkles className="w-4 h-4" />;
+    case 'users':
+      return <Users className="w-4 h-4" />;
+    case 'compass':
+      return <Compass className="w-4 h-4" />;
+    case 'cpu':
+      return <Cpu className="w-4 h-4" />;
+    case 'phone':
+      return <PhoneCall className="w-4 h-4" />;
+    case 'external':
+      return <ExternalLink className="w-4 h-4" />;
+    case 'shield':
+      return <FileCheck className="w-4 h-4" />;
+    default:
+      return <HelpCircle className="w-4 h-4" />;
+  }
 }
 
-export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ onAskAi }) => {
+export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const [shareEaudit, setShareEaudit] = useState<{ id: string; title: string; category?: string; description?: string; linkUrl?: string } | null>(null);
+  const [shareEaudit, setShareEaudit] = useState<{
+    id: string;
+    title: string;
+    category?: string;
+    description?: string;
+    linkUrl?: string;
+  } | null>(null);
+  const [deepDiveTab, setDeepDiveTab] = useState<EAuditDeepDiveTabId>('overview');
+  const [isDeepDiveOpen, setIsDeepDiveOpen] = useState(false);
 
-  const faqItems = [
-    {
-      q: 'ประชาชนสามารถแจ้งเบาะแสการใช้เงินแผ่นดินที่น่าสงสัยได้อย่างไร?',
-      a: 'ประชาชนสามารถแจ้งเบาะแสผ่านสายด่วน สตง. 1730 หรือส่งหนังสือร้องเรียนผ่านสำนักตรวจเงินแผ่นดินจังหวัดทั่วประเทศ โดยข้อมูลของผู้แจ้งจะถูกเก็บเป็นความลับตามมาตรการคุ้มครองพยานและผู้แจ้งเบาะแสของ สตง. อย่างเคร่งครัด',
-      actionText: 'โทรสายด่วน 1730',
-      actionLink: 'tel:1730',
-      icon: PhoneCall,
-    },
-    {
-      q: 'วิธีตรวจสอบโครงการก่อสร้างภาครัฐในหมู่บ้านหรือตำบลของตนเอง?',
-      a: 'สังเกตป้ายโครงการก่อสร้างซึ่งต้องระบุ: วงเงินงบประมาณ, วันเริ่มต้นและสิ้นสุดสัญญา, ผู้รับจ้าง, และผู้ควบคุมงาน หากพบว่างานก่อสร้างล่าช้าหรือใช้วัสดุไม่ตรงตามมาตรฐาน สามารถถ่ายภาพและแจ้งเบาะแสให้ สตง. ลงพื้นที่ตรวจสอบได้ทันที',
-      actionText: 'ถาม AI แนะนำขั้นตอน',
-      isAiPrompt: true,
-      icon: Search,
-    },
-    {
-      q: 'เหตุการณ์อาคาร สตง. ทรุดตัว กระทบต่อการตรวจสอบเงินแผ่นดินทั่วประเทศหรือไม่?',
-      a: 'ไม่กระทบครับ/ค่ะ เนื่องจากสำนักงานการตรวจเงินแผ่นดินได้เปิดศูนย์บัญชาการปฏิบัติการชั่วคราว และปรับสู่ระบบ Digital Audit บน Secure Cloud เต็มรูปแบบ งานตรวจสอบงบประมาณและบัญชีแผ่นดินทั่วประเทศยังดำเนินไปตามกำหนดการ 100%',
-      actionText: 'ดูไทม์ไลน์วิศวกรรม',
-      actionAnchor: '#incident-timeline',
-      icon: FileCheck,
-    },
-    {
-      q: 'หน่วยงานภายนอก ชุมชน หรือสถาบันการศึกษา ขอรับการสนับสนุนสื่อ สตง. ได้อย่างไร?',
-      a: 'สามารถขอรับสื่อประชาสัมพันธ์ วิทยากรบรรยาย หรือคลิปวิดีโอเพื่อการศึกษาได้ง่ายๆ ผ่านระบบคำขอออนไลน์ของสำนักประชาสัมพันธ์และสื่อสารองค์กร ที่เว็บไซต์ https://pr-request-system.vercel.app',
-      actionText: 'ไปที่ระบบคำขอรับสื่อ',
-      actionLink: 'https://pr-request-system.vercel.app',
-      icon: ExternalLink,
-    },
-    {
-      q: 'สตง. แตกต่างจาก ป.ป.ช. และ ป.ป.ท. อย่างไร?',
-      a: 'สตง. (สำนักงานการตรวจเงินแผ่นดิน) ทำหน้าที่ตรวจสอบความถูกต้อง คุ้มค่า และโปร่งใสของการใช้เงินงบประมาณและทรัพย์สินของแผ่นดิน ส่วน ป.ป.ช. และ ป.ป.ท. มีอำนาจหลักในการไต่สวนชี้มูลความผิดทางวินัยและอาญาเกี่ยวกับการทุจริตประพฤติมิชอบ โดย สตง. จะส่งรายงานผลการตรวจสอบให้ ป.ป.ช./ป.ป.ท. ดำเนินคดีต่อไปเมื่อพบข้อบ่งชี้การทุจริต',
-      actionText: 'ถาม AI เพิ่มเติม',
-      isAiPrompt: true,
-      icon: HelpCircle,
-    },
-  ];
+  const openDeepDive = (tab: EAuditDeepDiveTabId = 'overview') => {
+    playDigitalSound('select');
+    setDeepDiveTab(tab);
+    setIsDeepDiveOpen(true);
+  };
 
   return (
-    <section id="public-interest" className="relative py-16 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto scroll-mt-20">
+    <section
+      id="public-interest"
+      className="relative py-16 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto scroll-mt-20"
+    >
       {/* Dedicated Ambient Glow Behind e-Audit Section (Zero-blur CSS radial gradient) */}
       <div
         className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
@@ -64,25 +78,24 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ on
       <div className="mb-8 pb-4 border-b border-slate-800/80">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/35 text-amber-300 text-xs font-medium mb-3 backdrop-blur-sm">
           <HelpCircle className="w-3.5 h-3.5" />
-          <span>ประเด็นเด่นที่ประชาชนสนใจ</span>
+          <span>ประเด็นเด่นที่น่าสนใจ</span>
         </div>
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
-          ข้อมูล e-Audit (Public Interest & Insights)
+          ข้อมูล e-Audit (Public Interest &amp; Insights)
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">
-          ตอบข้อสงสัยที่พบบ่อย สิทธิของประชาชนในการมีส่วนร่วมตรวจสอบเงินแผ่นดิน และช่องทางการสื่อสาร
+        <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+          เรื่องใหม่และสำคัญของ สตง. กับการตรวจเงินแผ่นดินทางอิเล็กทรอนิกส์ (e-Audit) เริ่มตั้งแต่ปีงบประมาณ 2570 พร้อมสิทธิการมีส่วนร่วมของประชาชน
         </p>
       </div>
 
-      {/* Accordion List with Elevated Contrast (Optimized without per-card backdrop-blur) */}
+      {/* Accordion List (Clean, concise 3-5 line / bullet answers for mobile & desktop) */}
       <div className="section-cv grid grid-cols-1 gap-3.5 max-w-4xl 2xl:max-w-5xl mx-auto">
-        {faqItems.map((item, idx) => {
+        {EAUDIT_FAQS.map((item, idx) => {
           const isOpen = openIndex === idx;
-          const Icon = item.icon;
 
           return (
             <div
-              key={idx}
+              key={item.id}
               className={`rounded-2xl transition-all duration-300 border ring-1 ring-white/5 ${
                 isOpen
                   ? 'bg-[#0b2256]/96 border-2 border-cyan-400/60 shadow-[0_10px_35px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.25)]'
@@ -90,26 +103,34 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ on
               }`}
             >
               <button
+                type="button"
                 onClick={() => setOpenIndex(isOpen ? null : idx)}
-                className="w-full flex items-center justify-between p-4 sm:p-5 text-left gap-4"
+                className="w-full flex items-center justify-between p-4 sm:p-5 text-left gap-4 cursor-pointer"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors mt-0.5 sm:mt-0 ${
                       isOpen
                         ? 'bg-amber-500 text-slate-950 font-bold'
                         : 'bg-slate-800 text-slate-300'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    {renderFaqIcon(item.iconKey)}
                   </div>
-                  <h3
-                    className={`text-xs sm:text-sm font-semibold transition-colors ${
-                      isOpen ? 'text-amber-300' : 'text-white'
-                    }`}
-                  >
-                    {item.q}
-                  </h3>
+                  <div className="min-w-0 space-y-1">
+                    {item.badge && (
+                      <span className="inline-block px-2 py-0.5 rounded-md bg-amber-400/15 border border-amber-400/35 text-[10px] font-semibold text-amber-300">
+                        {item.badge}
+                      </span>
+                    )}
+                    <h3
+                      className={`text-xs sm:text-sm font-semibold transition-colors leading-snug ${
+                        isOpen ? 'text-amber-300' : 'text-white'
+                      }`}
+                    >
+                      {item.q}
+                    </h3>
+                  </div>
                 </div>
 
                 <ChevronDown
@@ -120,66 +141,111 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ on
               </button>
 
               {isOpen && (
-                <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-1 border-t border-slate-800/80 animate-fadeIn">
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pl-11">
-                    {item.a}
-                  </p>
+                <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-2 border-t border-slate-800/80 animate-fadeIn">
+                  <div className="pl-11 space-y-2.5">
+                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                      {item.summary}
+                    </p>
 
-                  <div className="pl-11 mt-3 flex flex-wrap items-center gap-2">
-                    {item.isAiPrompt ? (
-                      <button
-                        onClick={() => onAskAi(item.q)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs font-medium transition-colors"
-                      >
-                        <span>{item.actionText}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    ) : item.actionAnchor ? (
-                      <a
-                        href={item.actionAnchor}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-medium transition-colors"
-                      >
-                        <span>{item.actionText}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </a>
-                    ) : (
-                      <a
-                        href={item.actionLink}
-                        target={item.actionLink?.startsWith('http') ? '_blank' : undefined}
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition-colors"
-                      >
-                        <span>{item.actionText}</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
+                    {item.bullets && item.bullets.length > 0 && (
+                      <ul className="space-y-1.5 text-xs text-slate-300 leading-relaxed">
+                        {item.bullets.map((b, bIdx) => (
+                          <li key={bIdx} className="flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                            <span>{b}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )}
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShareEaudit({
-                          id: `eaudit-${idx}`,
-                          title: item.q,
-                          category: 'ข้อมูล e-Audit สตง.',
-                          description: item.a,
-                          linkUrl:
-                            typeof window !== 'undefined'
-                              ? `${window.location.origin}/#public-interest`
-                              : '',
-                        })
-                      }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 text-xs font-medium transition-colors"
-                      title="แชร์คำถาม-คำตอบนี้"
-                    >
-                      <Share2 className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>แชร์ข้อมูลนี้</span>
-                    </button>
+                    <div className="pt-1.5 flex flex-wrap items-center gap-2">
+                      {item.deepDiveTab ? (
+                        <button
+                          type="button"
+                          onClick={() => openDeepDive(item.deepDiveTab)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition-colors cursor-pointer"
+                        >
+                          <span>{item.actionText}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      ) : item.actionAnchor ? (
+                        <a
+                          href={item.actionAnchor}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-medium transition-colors"
+                        >
+                          <span>{item.actionText}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </a>
+                      ) : (
+                        <a
+                          href={item.actionLink}
+                          target={item.actionLink?.startsWith('http') ? '_blank' : undefined}
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition-colors"
+                        >
+                          <span>{item.actionText}</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShareEaudit({
+                            id: item.id,
+                            title: item.q,
+                            category: 'ข้อมูล e-Audit สตง. (ปีงบประมาณ 2570)',
+                            description: `${item.summary}${
+                              item.bullets ? ' • ' + item.bullets.join(' • ') : ''
+                            }`,
+                            linkUrl:
+                              typeof window !== 'undefined'
+                                ? `${window.location.origin}/#public-interest`
+                                : '',
+                          })
+                        }
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 text-xs font-medium transition-colors cursor-pointer"
+                        title="แชร์คำถาม-คำตอบนี้"
+                      >
+                        <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>แชร์ข้อมูลนี้</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
           );
         })}
+
+        {/* Companion Highlight Card for Deep-Dive Technical Explorer (Separate from Accordion to keep mobile clean) */}
+        <div className="mt-2 rounded-2xl bg-gradient-to-r from-[#071a49]/95 via-[#0b235d]/95 to-[#061539]/95 border border-cyan-400/40 px-5 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_12px_36px_rgba(2,10,31,0.65)]">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-cyan-400/15 border border-cyan-400/40 flex items-center justify-center shrink-0 text-cyan-300">
+              <Cpu className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-300 uppercase tracking-wider mb-0.5">
+                <Sparkles className="w-3 h-3" />
+                <span>ชุดข้อมูล e-Audit ปีงบประมาณ 2570 (ฉบับสมบูรณ์)</span>
+              </div>
+              <h3 className="text-sm sm:text-base font-bold text-white">
+                สำรวจเทคโนโลยีการตรวจเงินแผ่นดินยุคดิจิทัล (Drone • GIS • Big Data 5V &amp; AI)
+              </h3>
+              <p className="text-xs text-slate-300 mt-0.5">
+                เจาะลึกโครงสร้าง 11+10 ระบบหลัก แพลตฟอร์ม 13 ระบบ กรณีศึกษาจริง และบริการ Joint SAO (รอภาพประกอบเพิ่มเติม)
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => openDeepDive('overview')}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-slate-950 text-xs font-bold shadow-lg shadow-cyan-500/20 transition-all cursor-pointer shrink-0"
+          >
+            <span>เปิดดูข้อมูล e-Audit ครบทุกมิติ</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Share Modal Dialog */}
@@ -187,6 +253,13 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = ({ on
         isOpen={!!shareEaudit}
         onClose={() => setShareEaudit(null)}
         item={shareEaudit}
+      />
+
+      {/* Full-Screen e-Audit Deep Dive Modal */}
+      <EAuditDeepDiveModal
+        isOpen={isDeepDiveOpen}
+        initialTab={deepDiveTab}
+        onClose={() => setIsDeepDiveOpen(false)}
       />
     </section>
   );
