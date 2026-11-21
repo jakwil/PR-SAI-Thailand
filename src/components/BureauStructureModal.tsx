@@ -106,48 +106,120 @@ const ACCENT_STYLES: Record<
   {
     activeBorder: string;
     activeBg: string;
+    idleCardBg: string;
+    panelBg: string;
+    innerCardBg: string;
+    missionHover: string;
+    workCardBg: string;
+    tabTrackBg: string;
+    activeTabBg: string;
+    activePillBg: string;
+    headingText: string;
+    iconTint: string;
     badgeBg: string;
     badgeText: string;
     iconBg: string;
     dot: string;
     ring: string;
+    ambientGlow: string;
+    lightboxBg: string;
   }
 > = {
   amber: {
     activeBorder: 'border-amber-400 shadow-[0_0_28px_rgba(245,158,11,0.28)]',
-    activeBg: 'bg-gradient-to-br from-amber-500/18 via-[#0a1d48]/95 to-[#061333]',
+    activeBg: 'bg-gradient-to-br from-[#33240c]/95 via-[#1c1814]/96 to-[#10121c]/98',
+    idleCardBg:
+      'bg-gradient-to-br from-[#1f1709]/85 via-[#14131c]/90 to-[#0c101b]/95 border-amber-500/25 hover:border-amber-400/55 hover:from-[#291e0b]/90',
+    panelBg:
+      'bg-gradient-to-br from-[#231908]/95 via-[#15141e]/96 to-[#0c101a]/98 border-amber-400/35',
+    innerCardBg: 'bg-[#16120c]/85 border-amber-400/20',
+    missionHover: 'hover:border-amber-400/50 hover:bg-[#231b0e]/90',
+    workCardBg: 'bg-[#15120d]/92 border-amber-400/20 hover:border-amber-400/60',
+    tabTrackBg: 'bg-[#130f09]/95 border-amber-400/25',
+    activeTabBg: 'bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-bold shadow',
+    activePillBg: 'bg-amber-400 text-slate-950 border-amber-300',
+    headingText: 'text-amber-300',
+    iconTint: 'text-amber-400',
     badgeBg: 'bg-amber-400/20 border-amber-400/40',
     badgeText: 'text-amber-300',
     iconBg: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
     dot: 'bg-amber-400',
     ring: 'ring-amber-400/40',
+    ambientGlow:
+      'radial-gradient(750px 450px at 50% 8%, rgba(245, 158, 11, 0.16), transparent 70%), radial-gradient(600px 450px at 85% 80%, rgba(217, 119, 6, 0.11), transparent 70%)',
+    lightboxBg: 'from-[#261b09] via-[#15141e] to-[#0a0c14] border-amber-400/50',
   },
   cyan: {
     activeBorder: 'border-cyan-400 shadow-[0_0_28px_rgba(34,211,238,0.28)]',
-    activeBg: 'bg-gradient-to-br from-cyan-500/18 via-[#0a1d48]/95 to-[#061333]',
+    activeBg: 'bg-gradient-to-br from-[#092f46]/95 via-[#091f36]/96 to-[#061326]/98',
+    idleCardBg:
+      'bg-gradient-to-br from-[#072030]/85 via-[#081729]/90 to-[#06101f]/95 border-cyan-500/25 hover:border-cyan-400/55 hover:from-[#09293d]/90',
+    panelBg:
+      'bg-gradient-to-br from-[#08263a]/95 via-[#081b2f]/96 to-[#051120]/98 border-cyan-400/35',
+    innerCardBg: 'bg-[#061a29]/85 border-cyan-400/20',
+    missionHover: 'hover:border-cyan-400/50 hover:bg-[#092438]/90',
+    workCardBg: 'bg-[#061826]/92 border-cyan-400/20 hover:border-cyan-400/60',
+    tabTrackBg: 'bg-[#041422]/95 border-cyan-400/25',
+    activeTabBg: 'bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 font-bold shadow',
+    activePillBg: 'bg-cyan-400 text-slate-950 border-cyan-300',
+    headingText: 'text-cyan-300',
+    iconTint: 'text-cyan-400',
     badgeBg: 'bg-cyan-400/20 border-cyan-400/40',
     badgeText: 'text-cyan-300',
     iconBg: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
     dot: 'bg-cyan-400',
     ring: 'ring-cyan-400/40',
+    ambientGlow:
+      'radial-gradient(750px 450px at 50% 8%, rgba(6, 182, 212, 0.16), transparent 70%), radial-gradient(600px 450px at 85% 80%, rgba(14, 165, 233, 0.12), transparent 70%)',
+    lightboxBg: 'from-[#09293d] via-[#071a2d] to-[#040e1a] border-cyan-400/50',
   },
   emerald: {
     activeBorder: 'border-emerald-400 shadow-[0_0_28px_rgba(52,211,153,0.28)]',
-    activeBg: 'bg-gradient-to-br from-emerald-500/18 via-[#0a1d48]/95 to-[#061333]',
+    activeBg: 'bg-gradient-to-br from-[#093227]/95 via-[#09211d]/96 to-[#061416]/98',
+    idleCardBg:
+      'bg-gradient-to-br from-[#07211b]/85 via-[#081818]/90 to-[#061014]/95 border-emerald-500/25 hover:border-emerald-400/55 hover:from-[#092b23]/90',
+    panelBg:
+      'bg-gradient-to-br from-[#072720]/95 via-[#081c1a]/96 to-[#051214]/98 border-emerald-400/35',
+    innerCardBg: 'bg-[#061b17]/85 border-emerald-400/20',
+    missionHover: 'hover:border-emerald-400/50 hover:bg-[#092620]/90',
+    workCardBg: 'bg-[#061915]/92 border-emerald-400/20 hover:border-emerald-400/60',
+    tabTrackBg: 'bg-[#041512]/95 border-emerald-400/25',
+    activeTabBg: 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-bold shadow',
+    activePillBg: 'bg-emerald-400 text-slate-950 border-emerald-300',
+    headingText: 'text-emerald-300',
+    iconTint: 'text-emerald-400',
     badgeBg: 'bg-emerald-400/20 border-emerald-400/40',
     badgeText: 'text-emerald-300',
     iconBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
     dot: 'bg-emerald-400',
     ring: 'ring-emerald-400/40',
+    ambientGlow:
+      'radial-gradient(750px 450px at 50% 8%, rgba(16, 185, 129, 0.16), transparent 70%), radial-gradient(600px 450px at 85% 80%, rgba(20, 184, 166, 0.11), transparent 70%)',
+    lightboxBg: 'from-[#082b23] via-[#071c19] to-[#040f10] border-emerald-400/50',
   },
   indigo: {
     activeBorder: 'border-indigo-400 shadow-[0_0_28px_rgba(129,140,248,0.28)]',
-    activeBg: 'bg-gradient-to-br from-indigo-500/20 via-[#0a1d48]/95 to-[#061333]',
+    activeBg: 'bg-gradient-to-br from-[#281d52]/95 via-[#191538]/96 to-[#0e0f22]/98',
+    idleCardBg:
+      'bg-gradient-to-br from-[#191336]/85 via-[#121126]/90 to-[#0a0c1b]/95 border-indigo-400/25 hover:border-indigo-400/55 hover:from-[#211946]/90',
+    panelBg:
+      'bg-gradient-to-br from-[#1d153e]/95 via-[#14122b]/96 to-[#0b0d1d]/98 border-indigo-400/35',
+    innerCardBg: 'bg-[#14102b]/85 border-indigo-400/20',
+    missionHover: 'hover:border-indigo-400/50 hover:bg-[#1e173d]/90',
+    workCardBg: 'bg-[#131026]/92 border-indigo-400/20 hover:border-indigo-400/60',
+    tabTrackBg: 'bg-[#100d21]/95 border-indigo-400/25',
+    activeTabBg: 'bg-gradient-to-r from-indigo-400 to-violet-400 text-slate-950 font-bold shadow',
+    activePillBg: 'bg-indigo-400 text-slate-950 border-indigo-300',
+    headingText: 'text-indigo-300',
+    iconTint: 'text-indigo-400',
     badgeBg: 'bg-indigo-400/20 border-indigo-400/40',
     badgeText: 'text-indigo-300',
     iconBg: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/40',
     dot: 'bg-indigo-400',
     ring: 'ring-indigo-400/40',
+    ambientGlow:
+      'radial-gradient(750px 450px at 50% 8%, rgba(129, 140, 248, 0.17), transparent 70%), radial-gradient(600px 450px at 85% 80%, rgba(167, 139, 250, 0.12), transparent 70%)',
+    lightboxBg: 'from-[#211845] via-[#15122e] to-[#0a0b1a] border-indigo-400/50',
   },
 };
 
@@ -723,15 +795,11 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
       aria-modal="true"
       aria-label="โครงสร้างและภารกิจสำนักประชาสัมพันธ์และสื่อสารองค์กร"
     >
-      {/* Subtle Ambient Background Gradient */}
+      {/* Subtle Ambient Background Gradient synced with Active Group Theme */}
       <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-70"
+        className="pointer-events-none fixed inset-0 z-0 opacity-80 transition-all duration-500"
         style={{
-          backgroundImage: [
-            'radial-gradient(700px 420px at 50% 0%, rgba(245, 158, 11, 0.14), transparent 70%)',
-            'radial-gradient(600px 450px at 10% 70%, rgba(14, 165, 233, 0.12), transparent 70%)',
-            'radial-gradient(600px 450px at 90% 80%, rgba(16, 185, 129, 0.10), transparent 70%)',
-          ].join(', '),
+          backgroundImage: activeAccent.ambientGlow,
         }}
         aria-hidden="true"
       />
@@ -854,7 +922,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                     className={`group text-left p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between gap-3 ${
                       isSelected
                         ? `${accent.activeBg} ${accent.activeBorder} ring-1 ${accent.ring} -translate-y-0.5`
-                        : 'bg-[#061438]/75 border-slate-700/60 hover:border-slate-500/80 hover:bg-[#091c4a]/80'
+                        : accent.idleCardBg
                     }`}
                   >
                     <div className="space-y-2.5">
@@ -917,7 +985,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
             <div
               className={`${
                 activeGroupShowsWorks ? 'lg:col-span-5' : 'lg:col-span-12'
-              } rounded-2xl bg-[#061438]/90 border border-white/15 p-5 sm:p-6 shadow-xl space-y-5`}
+              } rounded-2xl border p-5 sm:p-6 shadow-xl space-y-5 transition-colors duration-300 ${activeAccent.panelBg}`}
             >
               <div className="flex items-start gap-3.5 pb-4 border-b border-white/10">
                 <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${activeAccent.iconBg}`}>
@@ -938,7 +1006,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#040e28]/80 border border-white/10">
+              <div className={`p-3.5 rounded-xl border ${activeAccent.innerCardBg}`}>
                 <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
                   {activeGroup.summary}
                 </p>
@@ -946,8 +1014,8 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
 
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-300">
-                    <Layers className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div className={`flex items-center gap-2 text-xs sm:text-sm font-bold ${activeAccent.headingText}`}>
+                    <Layers className={`w-4 h-4 shrink-0 ${activeAccent.iconTint}`} />
                     <span>
                       ภารกิจสำคัญของกลุ่มงาน
                       {activeGroupShowsWorks && (
@@ -962,7 +1030,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setSelectedMissionIndex(null)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-amber-200 text-[11px] font-semibold cursor-pointer transition-colors"
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition-colors ${activeAccent.badgeBg} ${activeAccent.badgeText}`}
                     >
                       <Filter className="w-3 h-3" />
                       <span>แสดงทุกภารกิจ</span>
@@ -989,7 +1057,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                       return (
                         <li
                           key={idx}
-                          className="flex items-start gap-3 p-3.5 rounded-xl bg-[#040e28]/70 border border-white/8"
+                          className={`flex items-start gap-3 p-3.5 rounded-xl border ${activeAccent.innerCardBg}`}
                         >
                           <span
                             className={`w-6 h-6 rounded-lg border text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${activeAccent.badgeBg} ${activeAccent.badgeText}`}
@@ -1011,13 +1079,13 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                           className={`w-full text-left flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer ${
                             isMissionSelected
                               ? `${activeAccent.activeBg} ${activeAccent.activeBorder} ring-1 ${activeAccent.ring}`
-                              : 'bg-[#040e28]/70 border-white/10 hover:border-amber-400/45 hover:bg-[#081942]/80'
+                              : `${activeAccent.innerCardBg} ${activeAccent.missionHover}`
                           }`}
                         >
                           <span
                             className={`w-6 h-6 rounded-lg border text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${
                               isMissionSelected
-                                ? 'bg-amber-400 text-slate-950 border-amber-300'
+                                ? activeAccent.activePillBg
                                 : `${activeAccent.badgeBg} ${activeAccent.badgeText}`
                             }`}
                           >
@@ -1057,7 +1125,9 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
 
             {/* Right Column: Linked Works & Standalone Submission Tab (Groups 1, 2, 3 ONLY) */}
             {activeGroupShowsWorks && (
-              <div className="lg:col-span-7 rounded-2xl bg-[#061438]/90 border border-white/15 p-5 sm:p-6 shadow-xl space-y-5">
+              <div
+                className={`lg:col-span-7 rounded-2xl border p-5 sm:p-6 shadow-xl space-y-5 transition-colors duration-300 ${activeAccent.panelBg}`}
+              >
                 {/* Right Column Header + Standalone Two-Tab Bar */}
                 <div className="flex flex-col gap-3.5 pb-4 border-b border-white/10">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1081,7 +1151,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                   </div>
 
                   {/* Two-Tab Toggle: ผลงานของกลุ่ม | ส่งผลงานกลุ่มงาน */}
-                  <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#030d26] border border-white/15 text-xs font-semibold">
+                  <div className={`grid grid-cols-2 gap-1.5 p-1 rounded-xl border text-xs font-semibold ${activeAccent.tabTrackBg}`}>
                     <button
                       type="button"
                       onClick={() => {
@@ -1090,7 +1160,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                       }}
                       className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         rightTab === 'works'
-                          ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold shadow'
+                          ? activeAccent.activeTabBg
                           : 'text-slate-300 hover:text-white hover:bg-white/5'
                       }`}
                     >
@@ -1187,7 +1257,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                                 playDigitalSound('select');
                                 setSelectedWork(work);
                               }}
-                              className="group rounded-xl overflow-hidden bg-[#040e28]/90 border border-white/12 hover:border-amber-400/60 transition-all duration-200 cursor-pointer flex flex-col shadow-lg hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                              className={`group rounded-xl overflow-hidden border transition-all duration-200 cursor-pointer flex flex-col shadow-lg hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)] ${activeAccent.workCardBg}`}
                             >
                               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
                                 <img
@@ -1259,7 +1329,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                                   )}
                                 </div>
 
-                                <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] font-semibold text-amber-300">
+                                <div className={`pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] font-semibold ${activeAccent.headingText}`}>
                                   <span>คลิกดูภาพและรายละเอียด</span>
                                   <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                                 </div>
@@ -1818,7 +1888,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
           onClick={() => setSelectedWork(null)}
         >
           <div
-            className="w-full max-w-3xl max-h-[92vh] bg-gradient-to-b from-[#0a1d48] via-[#061538] to-[#030b20] border border-amber-400/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            className={`w-full max-w-3xl max-h-[92vh] bg-gradient-to-b border rounded-2xl shadow-2xl overflow-hidden flex flex-col ${activeAccent.lightboxBg}`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Lightbox Header */}
