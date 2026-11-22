@@ -12,9 +12,6 @@ import {
   HelpCircle,
   Radio,
   Search,
-  PhoneCall,
-  Sparkles,
-  Lock,
   BarChart3,
   Network
 } from 'lucide-react';
@@ -404,7 +401,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Compact Right-Aligned Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed top-[50px] sm:top-[56px] right-2 sm:right-3 md:right-4 z-50 w-[225px] sm:w-[240px] md:w-[255px] bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26]/98 backdrop-blur-2xl border-2 border-amber-400/60 rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.3)] p-3 space-y-2 lg:hidden animate-slide-in-right overflow-hidden select-none">
+        <div className="fixed top-[50px] sm:top-[56px] right-2 sm:right-3 md:right-4 z-50 w-[245px] sm:w-[260px] md:w-[275px] bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26]/98 backdrop-blur-2xl border-2 border-amber-400/60 rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.3)] p-3 space-y-2 lg:hidden animate-slide-in-right overflow-hidden select-none">
           {/* Royal Gold Grid Texture */}
           <div className="absolute inset-0 bg-digital-grid opacity-20 pointer-events-none" />
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_8px_rgba(245,158,11,0.8)] pointer-events-none" />
@@ -415,21 +412,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="absolute bottom-1.5 left-1.5 w-2 h-2 border-b-2 border-l-2 border-amber-400/80 pointer-events-none" />
           <div className="absolute bottom-1.5 right-1.5 w-2 h-2 border-b-2 border-r-2 border-amber-400/80 pointer-events-none" />
 
-          {/* Drawer Header with Data Telemetry Badge */}
-          <div className="flex items-center justify-between pb-1.5 border-b border-amber-500/25 relative z-10">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-[11px] font-bold text-white tracking-wide">เมนูหลัก สตง.</span>
-              <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 font-bold">
-                ROYAL NODE
-              </span>
-            </div>
+          {/* Drawer Close Button */}
+          <div className="flex items-center justify-end relative z-10">
             <button
               onClick={() => {
                 playDigitalSound('blip');
                 setMobileMenuOpen(false);
               }}
-              className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               aria-label="ปิดเมนู"
             >
               <X className="w-3.5 h-3.5" />
@@ -437,17 +427,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Navigation Links with Icons & Royal Hover Effects (Complete access to all data) */}
-          <nav className="space-y-1 relative z-10 text-[11px]">
+          <nav className="space-y-1 relative z-10 text-[12.5px]">
             <a
               href="#home"
               onClick={() => {
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
+              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
             >
-              <Home className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>หน้าแรก (ข่าวม้าหมุน)</span>
+              <Home className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>หน้าแรก</span>
             </a>
 
             <button
@@ -457,9 +447,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setMobileMenuOpen(false);
                 onOpenBureauStructure();
               }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all text-left cursor-pointer"
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 font-medium text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all text-left cursor-pointer"
             >
-              <Network className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <Network className="w-4 h-4 text-amber-400 shrink-0" />
               <span>โครงสร้างและภารกิจ</span>
             </button>
 
@@ -469,9 +459,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-amber-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
+              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-amber-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
             >
-              <Radio className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <Radio className="w-4 h-4 text-amber-400 shrink-0" />
               <span>ข่าว & คลิปไวรัล สตง.</span>
             </a>
 
@@ -481,9 +471,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-amber-300 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all"
+              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-amber-300 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all"
             >
-              <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <Clock className="w-4 h-4 text-amber-400 shrink-0" />
               <span>สถานการณ์อาคาร สตง.</span>
             </a>
 
@@ -493,10 +483,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
+              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
             >
-              <Film className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>คลังสื่อดิจิทัล & วารสาร</span>
+              <Film className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>คลังสื่อดิจิทัล</span>
             </a>
 
             <a
@@ -505,10 +495,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
+              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
             >
-              <HelpCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>ข้อมูล e-Audit (ข้อสงสัย)</span>
+              <HelpCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>ประเด็นเด่นที่น่าสนใจ (e-Audit)</span>
             </a>
 
             {isAdminLoggedIn && (
@@ -519,76 +509,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   onOpenAdminPanel();
                 }}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-amber-300 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all text-left"
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 font-medium text-amber-300 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all text-left"
               >
-                <BarChart3 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <BarChart3 className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>แดชบอร์ดสถิติ (Admin)</span>
               </button>
             )}
           </nav>
 
-          {/* Quick Search Shortcut inside Drawer */}
-          <div className="pt-1.5 border-t border-amber-500/20 relative z-10">
-            <button
-              onClick={() => {
-                playDigitalSound('blip');
-                setMobileMenuOpen(false);
-                setSearchModalOpen(true);
-              }}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 rounded-lg transition-all"
-            >
-              <span className="flex items-center gap-1.5">
-                <Search className="w-3 h-3 text-amber-400" />
-                <span>ค้นหาข่าวและสื่อ สตง.</span>
-              </span>
-              <span className="text-[9px] font-mono text-amber-300/80">CTRL+K</span>
-            </button>
-          </div>
-
-          {/* Quick Hotline 1730 Contact */}
-          <div className="relative z-10">
-            <a
-              href="tel:1730"
-              className="flex items-center justify-between px-2.5 py-1.5 text-[11px] font-medium text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/30 rounded-lg transition-all"
-            >
-              <span className="flex items-center gap-1.5">
-                <PhoneCall className="w-3 h-3 text-emerald-400" />
-                <span>สายด่วน สตง. 1730</span>
-              </span>
-              <span className="text-[9px] font-mono bg-emerald-500/20 text-emerald-300 px-1 rounded">โทรฟรี</span>
-            </a>
-          </div>
-
           {/* Request Media Portal Button */}
-          <div className="pt-1 border-t border-cyan-500/20 relative z-10">
+          <div className="pt-2 border-t border-cyan-500/20 relative z-10">
             <a
               href="https://pr-request-system.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between px-2.5 py-1.5 text-[11px] font-bold text-slate-950 bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-500 hover:from-yellow-300 hover:to-yellow-400 rounded-lg shadow-md shadow-yellow-500/20 active:scale-95 transition-all"
+              className="flex items-center justify-between px-3 py-2 text-[12.5px] font-bold text-slate-950 bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-500 hover:from-yellow-300 hover:to-yellow-400 rounded-lg shadow-md shadow-yellow-500/20 active:scale-95 transition-all"
             >
               <span className="truncate">ขอรับการสนับสนุนงาน PR</span>
-              <ExternalLink className="w-3 h-3 shrink-0 ml-1" />
+              <ExternalLink className="w-3.5 h-3.5 shrink-0 ml-1" />
             </a>
-          </div>
-
-          {/* Admin Login Quick Link */}
-          <div className="relative z-10 pt-0.5">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                if (isAdminLoggedIn) {
-                  onOpenAdminPanel();
-                } else {
-                  onBiometricSuccess();
-                }
-              }}
-              className="w-full flex items-center justify-center gap-1.5 px-2 py-1 text-[10px] text-cyan-400/80 hover:text-cyan-200 transition-colors"
-            >
-              <Lock className="w-2.5 h-2.5" />
-              <span>{isAdminLoggedIn ? 'เปิดหน้าต่าง Admin' : 'เข้าสู่ระบบ Admin'}</span>
-            </button>
           </div>
         </div>
       )}
