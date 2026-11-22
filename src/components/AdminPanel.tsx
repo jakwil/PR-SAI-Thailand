@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   X,
   Plus,
@@ -49,7 +49,13 @@ import {
   CheckCircle2,
   CheckSquare,
   Square,
-  Network
+  Network,
+  ChevronDown,
+  ChevronRight,
+  ArrowUpDown,
+  Building2,
+  Tag,
+  LayoutGrid
 } from 'lucide-react';
 import {
   AppData,
@@ -95,6 +101,155 @@ import { BeaconRippleDot } from './BeaconRippleDot';
 import { MarqueeTicker } from './MarqueeTicker';
 import { AdminTickerTab } from './AdminTickerTab';
 import { playDigitalSound } from '../utils/audioEffects';
+
+const THAI_MONTHS_FULL = [
+  'มกราคม',
+  'กุมภาพันธ์',
+  'มีนาคม',
+  'เมษายน',
+  'พฤษภาคม',
+  'มิถุนายน',
+  'กรกฎาคม',
+  'สิงหาคม',
+  'กันยายน',
+  'ตุลาคม',
+  'พฤศจิกายน',
+  'ธันวาคม',
+];
+
+const THAI_MONTHS_SHORT = [
+  'ม.ค.',
+  'ก.พ.',
+  'มี.ค.',
+  'เม.ย.',
+  'พ.ค.',
+  'มิ.ย.',
+  'ก.ค.',
+  'ส.ค.',
+  'ก.ย.',
+  'ต.ค.',
+  'พ.ย.',
+  'ธ.ค.',
+];
+
+function parseWorkDateInfo(work: PublishedWork): {
+  monthKey: string;
+  monthLabel: string;
+  sortTimestamp: number;
+  formattedDate: string;
+} {
+  const candidates = [work.publishDate, work.updatedAt].filter(Boolean) as string[];
+
+  for (const rawInput of candidates) {
+    const raw = rawInput.trim();
+    if (!raw) continue;
+
+    // 1. YYYY-MM-DD or ISO string (supports CE or BE years)
+    const isoMatch = raw.match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?/);
+    if (isoMatch) {
+      let year = parseInt(isoMatch[1], 10);
+      const month = parseInt(isoMatch[2], 10);
+      const day = isoMatch[3] ? parseInt(isoMatch[3], 10) : 1;
+      if (month >= 1 && month <= 12) {
+        if (year > 2400) year -= 543;
+        const thaiYear = year + 543;
+        const mm = String(month).padStart(2, '0');
+        return {
+          monthKey: `${year}-${mm}`,
+          monthLabel: `${THAI_MONTHS_FULL[month - 1]} ${thaiYear}`,
+          sortTimestamp: Date.UTC(year, month - 1, day),
+          formattedDate: `${day} ${THAI_MONTHS_SHORT[month - 1]} ${thaiYear}`,
+        };
+      }
+    }
+
+    // 2. DD/MM/YYYY or DD-MM-YYYY
+    const dmyMatch = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+    if (dmyMatch) {
+      const day = parseInt(dmyMatch[1], 10);
+      const month = parseInt(dmyMatch[2], 10);
+      let year = parseInt(dmyMatch[3], 10);
+      if (month >= 1 && month <= 12) {
+        if (year > 2400) year -= 543;
+        const thaiYear = year + 543;
+        const mm = String(month).padStart(2, '0');
+        return {
+          monthKey: `${year}-${mm}`,
+          monthLabel: `${THAI_MONTHS_FULL[month - 1]} ${thaiYear}`,
+          sortTimestamp: Date.UTC(year, month - 1, day),
+          formattedDate: `${day} ${THAI_MONTHS_SHORT[month - 1]} ${thaiYear}`,
+        };
+      }
+    }
+
+    // 3. Fallback Date.parse
+    const parsed = Date.parse(raw);
+    if (!Number.isNaN(parsed)) {
+      const dt = new Date(parsed);
+      const year = dt.getUTCFullYear();
+      const month = dt.getUTCMonth() + 1;
+      const day = dt.getUTCDate();
+      const thaiYear = year + 543;
+      const mm = String(month).padStart(2, '0');
+      return {
+        monthKey: `${year}-${mm}`,
+        monthLabel: `${THAI_MONTHS_FULL[month - 1]} ${thaiYear}`,
+        sortTimestamp: parsed,
+        formattedDate: `${day} ${THAI_MONTHS_SHORT[month - 1]} ${thaiYear}`,
+      };
+    }
+  }
+
+  return {
+    monthKey: 'unknown',
+    monthLabel: 'ไม่ระบุเดือน/ปี',
+    sortTimestamp: 0,
+    formattedDate: work.publishDate || '-',
+  };
+}
+
+function getAdminYouTubeEmbedUrl(url?: string): string | null {
+  if (!url) return null;
+  const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2] && match[2].length === 11
+    ? `https://www.youtube.com/embed/${match[2]}?rel=0`
+    : null;
+}
+
+function isAdminDirectVideoUrl(url?: string): boolean {
+  if (!url) return false;
+  const cleanUrl = url.split('?')[0].toLowerCase();
+  return /\.(mp4|webm|mov|m4v|ogg)$/.test(cleanUrl);
+}
+
+function getMediaTypeLabel(mediaType?: PublishedWork['mediaType']): {
+  label: string;
+  badgeClass: string;
+} {
+  switch (mediaType) {
+    case 'video':
+      return {
+        label: '🎬 คลิปวิดีโอ / รายการ',
+        badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-400/40',
+      };
+    case 'infographic':
+      return {
+        label: '📊 อินโฟกราฟิก',
+        badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
+      };
+    case 'report':
+      return {
+        label: '📄 รายงาน / เอกสาร',
+        badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+      };
+    default:
+      return {
+        label: '📷 ภาพข่าว / สื่อประชาสัมพันธ์',
+        badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
+      };
+  }
+}
 
 type AdminTabType =
   | 'summaries'
@@ -215,7 +370,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingStory, setEditingStory] = useState<Partial<HeroStory> | null>(null);
   const [editingKb, setEditingKb] = useState<Partial<KnowledgeItem> | null>(null);
   const [editingWork, setEditingWork] = useState<Partial<PublishedWork> | null>(null);
+  const [previewWork, setPreviewWork] = useState<PublishedWork | null>(null);
   const [selectedWorkIds, setSelectedWorkIds] = useState<string[]>([]);
+  const [workSearchQuery, setWorkSearchQuery] = useState('');
+  const [workMonthFilter, setWorkMonthFilter] = useState<string>('all');
+  const [workSortOrder, setWorkSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [workGroupByMonth, setWorkGroupByMonth] = useState<boolean>(true);
+  const [collapsedWorkMonths, setCollapsedWorkMonths] = useState<Record<string, boolean>>({});
   const [editingGroupWork, setEditingGroupWork] = useState<Partial<GroupWorkItem> | null>(null);
   const [selectedGroupWorkIds, setSelectedGroupWorkIds] = useState<string[]>([]);
   const [groupWorkFilter, setGroupWorkFilter] = useState<'all' | BureauGroupId>('all');
@@ -230,7 +391,105 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   useEffect(() => {
     const validIds = new Set(data.publishedWorks.map((w) => w.id));
     setSelectedWorkIds((prev) => prev.filter((id) => validIds.has(id)));
+    setPreviewWork((prev) => (prev ? data.publishedWorks.find((w) => w.id === prev.id) || null : null));
   }, [data.publishedWorks]);
+
+  const workDateMap = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof parseWorkDateInfo>>();
+    for (const work of data.publishedWorks) {
+      map.set(work.id, parseWorkDateInfo(work));
+    }
+    return map;
+  }, [data.publishedWorks]);
+
+  const workMonthOptions = useMemo(() => {
+    const counts = new Map<string, { key: string; label: string; count: number }>();
+    for (const work of data.publishedWorks) {
+      const info = workDateMap.get(work.id) || parseWorkDateInfo(work);
+      const existing = counts.get(info.monthKey);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        counts.set(info.monthKey, {
+          key: info.monthKey,
+          label: info.monthLabel,
+          count: 1,
+        });
+      }
+    }
+    return Array.from(counts.values()).sort((a, b) => {
+      if (a.key === 'unknown') return 1;
+      if (b.key === 'unknown') return -1;
+      return workSortOrder === 'newest'
+        ? b.key.localeCompare(a.key)
+        : a.key.localeCompare(b.key);
+    });
+  }, [data.publishedWorks, workDateMap, workSortOrder]);
+
+  useEffect(() => {
+    if (
+      workMonthFilter !== 'all' &&
+      !workMonthOptions.some((opt) => opt.key === workMonthFilter)
+    ) {
+      setWorkMonthFilter('all');
+    }
+  }, [workMonthFilter, workMonthOptions]);
+
+  const filteredSortedWorks = useMemo(() => {
+    const q = workSearchQuery.trim().toLowerCase();
+    const filtered = data.publishedWorks.filter((work) => {
+      const info = workDateMap.get(work.id) || parseWorkDateInfo(work);
+      if (workMonthFilter !== 'all' && info.monthKey !== workMonthFilter) {
+        return false;
+      }
+      if (q) {
+        const hay = [
+          work.title,
+          work.category,
+          work.description,
+          work.badge,
+          work.publishDate,
+          info.monthLabel,
+          info.formattedDate,
+          work.creator,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    return [...filtered].sort((a, b) => {
+      const infoA = workDateMap.get(a.id) || parseWorkDateInfo(a);
+      const infoB = workDateMap.get(b.id) || parseWorkDateInfo(b);
+      if (infoA.sortTimestamp !== infoB.sortTimestamp) {
+        return workSortOrder === 'newest'
+          ? infoB.sortTimestamp - infoA.sortTimestamp
+          : infoA.sortTimestamp - infoB.sortTimestamp;
+      }
+      return a.title.localeCompare(b.title, 'th');
+    });
+  }, [data.publishedWorks, workDateMap, workMonthFilter, workSearchQuery, workSortOrder]);
+
+  const groupedWorksByMonth = useMemo(() => {
+    const groups = new Map<string, { monthKey: string; monthLabel: string; items: PublishedWork[] }>();
+    for (const work of filteredSortedWorks) {
+      const info = workDateMap.get(work.id) || parseWorkDateInfo(work);
+      const existing = groups.get(info.monthKey);
+      if (existing) {
+        existing.items.push(work);
+      } else {
+        groups.set(info.monthKey, {
+          monthKey: info.monthKey,
+          monthLabel: info.monthLabel,
+          items: [work],
+        });
+      }
+    }
+    return Array.from(groups.values());
+  }, [filteredSortedWorks, workDateMap]);
 
   useEffect(() => {
     const validIds = new Set((data.groupWorks || []).map((w) => w.id));
@@ -1056,7 +1315,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           description: editingWork.description || '',
           linkUrl: editingWork.linkUrl || 'https://pr-request-system.vercel.app',
           imageUrl: editingWork.imageUrl || '/src/assets/images/sai_audit_hero_1791689796943.jpg',
-          publishDate: new Date().toISOString().split('T')[0],
+          publishDate: editingWork.publishDate || new Date().toISOString().split('T')[0],
           views: editingWork.views || '1,500',
           badge: editingWork.badge || 'ผลงานใหม่',
           mediaType: editingWork.mediaType || 'photo',
@@ -1128,10 +1387,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const handleToggleSelectAllWorks = () => {
     playDigitalSound('select');
-    if (selectedWorkIds.length === data.publishedWorks.length && data.publishedWorks.length > 0) {
-      setSelectedWorkIds([]);
+    const targetIds = filteredSortedWorks.map((w) => w.id);
+    if (targetIds.length === 0) return;
+    const allVisibleSelected = targetIds.every((id) => selectedWorkIds.includes(id));
+    if (allVisibleSelected) {
+      const targetSet = new Set(targetIds);
+      setSelectedWorkIds((prev) => prev.filter((id) => !targetSet.has(id)));
     } else {
-      setSelectedWorkIds(data.publishedWorks.map((w) => w.id));
+      setSelectedWorkIds((prev) => Array.from(new Set([...prev, ...targetIds])));
+    }
+  };
+
+  const handleToggleSelectMonthWorks = (monthItems: PublishedWork[]) => {
+    playDigitalSound('select');
+    const monthIds = monthItems.map((w) => w.id);
+    if (monthIds.length === 0) return;
+    const allMonthSelected = monthIds.every((id) => selectedWorkIds.includes(id));
+    if (allMonthSelected) {
+      const monthSet = new Set(monthIds);
+      setSelectedWorkIds((prev) => prev.filter((id) => !monthSet.has(id)));
+    } else {
+      setSelectedWorkIds((prev) => Array.from(new Set([...prev, ...monthIds])));
     }
   };
 
@@ -3347,33 +3623,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <h3 className="text-sm font-semibold text-white">
                     Media Library (คลังสื่อดิจิทัล & ข่าวสาร)
                   </h3>
-                  <p className="text-xs text-slate-300">
-                    จัดการรายการผลงาน พร้อมรูปภาพ Thumbnail ลิงก์ และคำอธิบาย (คลิกเลือกหลายรายการเพื่อลบพร้อมกันได้)
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    คลิกที่การ์ดแต่ละรายการเพื่อดูคลิปวิดีโอหรือรายละเอียดข่าว · กดช่องสี่เหลี่ยมด้านซ้ายเพื่อเลือกหลายรายการสำหรับลบ · จัดเรียงและกรองรายเดือนได้
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  {data.publishedWorks.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleToggleSelectAllWorks}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
-                        selectedWorkIds.length === data.publishedWorks.length
-                          ? 'bg-amber-500/20 border-amber-400 text-amber-300'
-                          : 'bg-[#040e28] border-cyan-500/30 text-slate-200 hover:border-cyan-400 hover:text-white'
-                      }`}
-                    >
-                      {selectedWorkIds.length === data.publishedWorks.length ? (
-                        <CheckSquare className="w-3.5 h-3.5 text-amber-300" />
-                      ) : (
-                        <Square className="w-3.5 h-3.5 text-cyan-400" />
-                      )}
-                      <span>
-                        {selectedWorkIds.length === data.publishedWorks.length
-                          ? 'ยกเลิกเลือกทั้งหมด'
-                          : `เลือกทั้งหมด (${data.publishedWorks.length})`}
-                      </span>
-                    </button>
-                  )}
+                  {filteredSortedWorks.length > 0 && (() => {
+                    const allVisibleSelected =
+                      filteredSortedWorks.length > 0 &&
+                      filteredSortedWorks.every((w) => selectedWorkIds.includes(w.id));
+                    return (
+                      <button
+                        type="button"
+                        onClick={handleToggleSelectAllWorks}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
+                          allVisibleSelected
+                            ? 'bg-amber-500/20 border-amber-400 text-amber-300'
+                            : 'bg-[#040e28] border-cyan-500/30 text-slate-200 hover:border-cyan-400 hover:text-white'
+                        }`}
+                      >
+                        {allVisibleSelected ? (
+                          <CheckSquare className="w-3.5 h-3.5 text-amber-300" />
+                        ) : (
+                          <Square className="w-3.5 h-3.5 text-cyan-400" />
+                        )}
+                        <span>
+                          {allVisibleSelected
+                            ? 'ยกเลิกเลือกที่แสดง'
+                            : `เลือกทั้งหมด (${filteredSortedWorks.length})`}
+                        </span>
+                      </button>
+                    );
+                  })()}
 
                   {selectedWorkIds.length > 0 && (
                     <button
@@ -3395,6 +3676,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         description: '',
                         linkUrl: 'https://pr-request-system.vercel.app',
                         imageUrl: '/src/assets/images/sai_audit_hero_1791689796943.jpg',
+                        publishDate: new Date().toISOString().split('T')[0],
                         views: '1,500',
                         badge: 'ผลงานใหม่',
                       })
@@ -3406,6 +3688,135 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </button>
                 </div>
               </div>
+
+              {/* Monthly Grouping, Sorting & Search Toolbar */}
+              {data.publishedWorks.length > 0 && (
+                <div className="p-3.5 rounded-xl bg-[#04102d] border border-cyan-500/20 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 items-center">
+                    {/* Search Input */}
+                    <div className="relative lg:col-span-4">
+                      <Search className="w-3.5 h-3.5 text-cyan-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={workSearchQuery}
+                        onChange={(e) => setWorkSearchQuery(e.target.value)}
+                        placeholder="ค้นหาชื่อคลิป ข่าว หมวดหมู่ หรือรายละเอียด..."
+                        className="w-full pl-8 pr-8 py-2 bg-[#02091b] border border-cyan-500/30 rounded-lg text-xs text-white placeholder-slate-400 outline-none focus:border-cyan-400"
+                      />
+                      {workSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setWorkSearchQuery('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
+                          title="ล้างคำค้นหา"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Month Filter Select */}
+                    <div className="flex items-center gap-2 lg:col-span-3">
+                      <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <select
+                        value={workMonthFilter}
+                        onChange={(e) => setWorkMonthFilter(e.target.value)}
+                        className="w-full px-2.5 py-2 bg-[#02091b] border border-cyan-500/30 rounded-lg text-xs text-white outline-none focus:border-cyan-400 cursor-pointer"
+                      >
+                        <option value="all">
+                          ทุกเดือน ({data.publishedWorks.length} รายการ)
+                        </option>
+                        {workMonthOptions.map((m) => (
+                          <option key={m.key} value={m.key}>
+                            {m.label} ({m.count} รายการ)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Sort Order Toggle */}
+                    <div className="lg:col-span-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playDigitalSound('blip');
+                          setWorkSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'));
+                        }}
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#02091b] hover:bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-400 text-xs text-slate-200 font-medium transition-colors cursor-pointer"
+                        title="สลับการเรียงลำดับเดือนและวันที่"
+                      >
+                        <ArrowUpDown className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span>{workSortOrder === 'newest' ? 'ล่าสุด → เก่าสุด' : 'เก่าสุด → ล่าสุด'}</span>
+                      </button>
+                    </div>
+
+                    {/* Grouping Mode Toggle */}
+                    <div className="lg:col-span-3 flex items-center bg-[#02091b] p-1 rounded-lg border border-cyan-500/25">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playDigitalSound('blip');
+                          setWorkGroupByMonth(true);
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                          workGroupByMonth
+                            ? 'bg-cyan-500 text-slate-950 shadow'
+                            : 'text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        <Calendar className="w-3 h-3" />
+                        <span>จัดกลุ่มรายเดือน</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playDigitalSound('blip');
+                          setWorkGroupByMonth(false);
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                          !workGroupByMonth
+                            ? 'bg-cyan-500 text-slate-950 shadow'
+                            : 'text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        <LayoutGrid className="w-3 h-3" />
+                        <span>แสดงรวมทั้งหมด</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Month Chips when there are multiple months */}
+                  {workMonthOptions.length > 1 && (
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                      <button
+                        type="button"
+                        onClick={() => setWorkMonthFilter('all')}
+                        className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
+                          workMonthFilter === 'all'
+                            ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200'
+                            : 'bg-[#02091b] border-slate-700/80 text-slate-400 hover:text-white hover:border-cyan-500/40'
+                        }`}
+                      >
+                        ทุกเดือน ({data.publishedWorks.length})
+                      </button>
+                      {workMonthOptions.map((m) => (
+                        <button
+                          key={m.key}
+                          type="button"
+                          onClick={() => setWorkMonthFilter(m.key)}
+                          className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors cursor-pointer ${
+                            workMonthFilter === m.key
+                              ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold'
+                              : 'bg-[#02091b] border-slate-700/80 text-slate-300 hover:text-white hover:border-cyan-500/40'
+                          }`}
+                        >
+                          {m.label} ({m.count})
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Sticky Selection Bar when items are checked */}
               {selectedWorkIds.length > 0 && (
@@ -3443,92 +3854,224 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="text-center py-12 px-4 rounded-xl border border-dashed border-cyan-500/30 text-slate-400 text-xs">
                   ยังไม่มีรายการใน Media Library สามารถกดปุ่ม "เพิ่มผลงานเผยแพร่" เพื่อเพิ่มข้อมูลใหม่ได้ทันที
                 </div>
+              ) : filteredSortedWorks.length === 0 ? (
+                <div className="text-center py-12 px-4 rounded-xl border border-dashed border-cyan-500/30 text-slate-300 text-xs space-y-2">
+                  <p>ไม่พบคลิปหรือข่าวสารที่ตรงกับเงื่อนไขการค้นหา / เดือนที่เลือก</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWorkSearchQuery('');
+                      setWorkMonthFilter('all');
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 font-semibold cursor-pointer"
+                  >
+                    แสดงทุกรายการและทุกเดือน
+                  </button>
+                </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {data.publishedWorks.map((work) => {
-                    const isSelected = selectedWorkIds.includes(work.id);
-                    return (
-                      <div
-                        key={work.id}
-                        onClick={() => toggleWorkSelection(work.id)}
-                        className={`p-3 rounded-xl border transition-all flex gap-3.5 cursor-pointer select-none ${
-                          isSelected
-                            ? 'bg-amber-500/10 border-amber-400/80 ring-1 ring-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.18)]'
-                            : 'bg-[#07173e]/60 border-cyan-500/20 hover:border-cyan-400/40'
-                        }`}
-                      >
-                        {/* Multi-select Checkbox */}
-                        <div className="flex items-start pt-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleWorkSelection(work.id);
-                            }}
-                            aria-label={isSelected ? `ยกเลิกเลือก ${work.title}` : `เลือก ${work.title}`}
-                            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${
-                              isSelected
-                                ? 'bg-amber-400 border-amber-300 text-slate-950 shadow-sm'
-                                : 'bg-[#040e28] border-cyan-500/40 text-transparent hover:border-amber-400/70'
-                            }`}
-                          >
-                            <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          </button>
-                        </div>
+                <div className="space-y-5">
+                  {(workGroupByMonth
+                    ? groupedWorksByMonth
+                    : [
+                        {
+                          monthKey: 'flat-all',
+                          monthLabel: '',
+                          items: filteredSortedWorks,
+                        },
+                      ]
+                  ).map((group) => {
+                    const isCollapsed = workGroupByMonth && Boolean(collapsedWorkMonths[group.monthKey]);
+                    const selectedInGroupCount = group.items.filter((w) =>
+                      selectedWorkIds.includes(w.id)
+                    ).length;
+                    const allInGroupSelected =
+                      group.items.length > 0 && selectedInGroupCount === group.items.length;
 
-                        <img
-                          src={work.imageUrl}
-                          alt={work.title}
-                          className="w-24 sm:w-28 h-24 object-cover rounded-lg shrink-0 border border-cyan-500/30"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null;
-                            target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
-                          }}
-                        />
-                        <div className="flex-1 min-w-0 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-center justify-between gap-2 text-[11px] text-cyan-300 mb-1">
-                              <span className="truncate">{work.category}</span>
-                              <span className="text-slate-400 shrink-0">{work.publishDate}</span>
-                            </div>
-                            <h4 className="text-xs font-semibold text-white line-clamp-1">
-                              {work.title}
-                            </h4>
-                            <p className="text-xs text-slate-300 line-clamp-2 mt-1">
-                              {work.description}
-                            </p>
-                          </div>
-                          <div className="flex items-center justify-between pt-2 border-t border-cyan-500/20">
-                            <span className="text-[10px] text-slate-400">
-                              เข้าชม {work.views} ครั้ง
-                            </span>
-                            <div className="flex items-center gap-1">
+                    return (
+                      <div key={group.monthKey} className="space-y-3">
+                        {workGroupByMonth && (
+                          <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-[#071a44] via-[#051434] to-[#040f29] border border-cyan-500/30">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCollapsedWorkMonths((prev) => ({
+                                  ...prev,
+                                  [group.monthKey]: !prev[group.monthKey],
+                                }))
+                              }
+                              className="flex items-center gap-2 text-left cursor-pointer group"
+                            >
+                              {isCollapsed ? (
+                                <ChevronRight className="w-4 h-4 text-cyan-400 group-hover:translate-x-0.5 transition-transform" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-cyan-400" />
+                              )}
+                              <Calendar className="w-4 h-4 text-amber-400" />
+                              <span className="text-xs sm:text-sm font-bold text-white">
+                                {group.monthLabel}
+                              </span>
+                              <span className="px-2 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-400/30 text-[11px] font-semibold text-cyan-300">
+                                {group.items.length} รายการ
+                              </span>
+                              {selectedInGroupCount > 0 && (
+                                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-400/40 text-[11px] font-semibold text-amber-300">
+                                  เลือกแล้ว {selectedInGroupCount}
+                                </span>
+                              )}
+                            </button>
+
+                            <div className="flex items-center gap-2">
                               <button
                                 type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingWork(work);
-                                }}
-                                className="p-1 text-slate-400 hover:text-white cursor-pointer"
-                                title="แก้ไข"
+                                onClick={() => handleToggleSelectMonthWorks(group.items)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer ${
+                                  allInGroupSelected
+                                    ? 'bg-amber-500/20 border-amber-400 text-amber-200'
+                                    : 'bg-[#030b1f] border-cyan-500/30 text-slate-300 hover:text-white hover:border-cyan-400'
+                                }`}
                               >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteWork(work.id);
-                                }}
-                                className="p-1 text-rose-400 hover:text-rose-300 cursor-pointer"
-                                title="ลบรายการนี้"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                {allInGroupSelected ? (
+                                  <CheckSquare className="w-3 h-3 text-amber-300" />
+                                ) : (
+                                  <Square className="w-3 h-3 text-cyan-400" />
+                                )}
+                                <span>
+                                  {allInGroupSelected ? 'ยกเลิกทั้งเดือนนี้' : 'เลือกทั้งเดือนนี้'}
+                                </span>
                               </button>
                             </div>
                           </div>
-                        </div>
+                        )}
+
+                        {!isCollapsed && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {group.items.map((work) => {
+                              const isSelected = selectedWorkIds.includes(work.id);
+                              const dateInfo = workDateMap.get(work.id) || parseWorkDateInfo(work);
+                              const typeMeta = getMediaTypeLabel(work.mediaType);
+                              return (
+                                <div
+                                  key={work.id}
+                                  onClick={() => {
+                                    playDigitalSound('click');
+                                    setPreviewWork(work);
+                                  }}
+                                  className={`group/card p-3 rounded-xl border transition-all flex gap-3.5 cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-amber-500/10 border-amber-400/80 ring-1 ring-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.18)]'
+                                      : 'bg-[#07173e]/60 border-cyan-500/20 hover:border-cyan-400/60 hover:bg-[#091c4a]/80'
+                                  }`}
+                                  title="คลิกเพื่อดูรายละเอียดหรือคลิปวิดีโอ"
+                                >
+                                  {/* Multi-select Checkbox (Dedicated for Bulk Delete Selection) */}
+                                  <div className="flex items-start pt-1 shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleWorkSelection(work.id);
+                                      }}
+                                      aria-label={isSelected ? `ยกเลิกเลือก ${work.title}` : `เลือก ${work.title}`}
+                                      title="เลือกเพื่อลบรายการ"
+                                      className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${
+                                        isSelected
+                                          ? 'bg-amber-400 border-amber-300 text-slate-950 shadow-sm'
+                                          : 'bg-[#040e28] border-cyan-500/40 text-transparent hover:border-amber-400/70'
+                                      }`}
+                                    >
+                                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                    </button>
+                                  </div>
+
+                                  <div className="relative w-24 sm:w-28 h-24 shrink-0 rounded-lg overflow-hidden border border-cyan-500/30 bg-slate-950">
+                                    <img
+                                      src={work.imageUrl}
+                                      alt={work.title}
+                                      loading="lazy"
+                                      className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.onerror = null;
+                                        target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
+                                      }}
+                                    />
+                                    {(work.mediaType === 'video' || Boolean(getAdminYouTubeEmbedUrl(work.videoUrl || work.linkUrl))) && (
+                                      <span className="absolute inset-0 flex items-center justify-center bg-black/35 group-hover/card:bg-black/20 transition-colors">
+                                        <span className="w-8 h-8 rounded-full bg-rose-500/90 text-white flex items-center justify-center shadow-lg">
+                                          <Play className="w-3.5 h-3.5 fill-white translate-x-0.5" />
+                                        </span>
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                    <div>
+                                      <div className="flex items-center justify-between gap-2 text-[11px] text-cyan-300 mb-1">
+                                        <span className="truncate">{work.category}</span>
+                                        <span className="text-slate-300 shrink-0 font-mono text-[10px]">
+                                          {dateInfo.formattedDate}
+                                        </span>
+                                      </div>
+                                      <h4 className="text-xs font-semibold text-white line-clamp-1 group-hover/card:text-cyan-200 transition-colors">
+                                        {work.title}
+                                      </h4>
+                                      <p className="text-xs text-slate-300 line-clamp-2 mt-1">
+                                        {work.description}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-2 border-t border-cyan-500/20 mt-1.5 gap-2">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <span className={`px-1.5 py-0.5 rounded border text-[9px] font-medium truncate ${typeMeta.badgeClass}`}>
+                                          {typeMeta.label}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 shrink-0 hidden sm:inline">
+                                          เข้าชม {work.views}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-1 shrink-0">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            playDigitalSound('click');
+                                            setPreviewWork(work);
+                                          }}
+                                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-500/15 hover:bg-cyan-500/30 border border-cyan-400/30 text-[10px] font-semibold text-cyan-200 cursor-pointer"
+                                          title="คลิกดูคลิปหรือรายละเอียดงาน"
+                                        >
+                                          <Eye className="w-3 h-3" />
+                                          <span>ดูงาน</span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditingWork(work);
+                                          }}
+                                          className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                                          title="แก้ไข"
+                                        >
+                                          <Edit2 className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteWork(work.id);
+                                          }}
+                                          className="p-1 text-rose-400 hover:text-rose-300 cursor-pointer"
+                                          title="ลบรายการนี้"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -4526,15 +5069,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </select>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-[11px] text-slate-300 mb-1 font-semibold">ป้ายกำกับ (Badge)</label>
-                    <input
-                      type="text"
-                      value={editingWork.badge || ''}
-                      onChange={(e) => setEditingWork({ ...editingWork, badge: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
-                      placeholder="เช่น 📷 ภาพนิ่งล่าสุด, 📊 Infographic"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] text-slate-300 mb-1 font-semibold">ป้ายกำกับ (Badge)</label>
+                      <input
+                        type="text"
+                        value={editingWork.badge || ''}
+                        onChange={(e) => setEditingWork({ ...editingWork, badge: e.target.value })}
+                        className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                        placeholder="เช่น 📷 ภาพนิ่งล่าสุด, 📊 Infographic"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-300 mb-1 font-semibold">วันที่เผยแพร่ (จัดกลุ่มรายเดือน)</label>
+                      <input
+                        type="date"
+                        value={editingWork.publishDate || new Date().toISOString().split('T')[0]}
+                        onChange={(e) => setEditingWork({ ...editingWork, publishDate: e.target.value })}
+                        className="w-full px-3 py-2 bg-[#030d26] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
+                      />
+                    </div>
                   </div>
                   <div className="p-3 rounded-xl bg-[#030d26]/80 border border-amber-500/25 space-y-2.5">
                     <div>
@@ -4688,6 +5242,236 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           </div>
         )}
+
+        {/* Modal: Preview Published Work / Media Library Item */}
+        {previewWork && (() => {
+          const previewDateInfo = parseWorkDateInfo(previewWork);
+          const previewTypeMeta = getMediaTypeLabel(previewWork.mediaType);
+          const videoSource = previewWork.videoUrl || previewWork.linkUrl;
+          const ytEmbedUrl = getAdminYouTubeEmbedUrl(videoSource);
+          const isDirectVideo = isAdminDirectVideoUrl(videoSource);
+          const isSelectedForDelete = selectedWorkIds.includes(previewWork.id);
+          const validExternalLink =
+            previewWork.linkUrl &&
+            previewWork.linkUrl.trim() !== '' &&
+            previewWork.linkUrl.trim() !== '#';
+          const normalizedExternalUrl = validExternalLink
+            ? previewWork.linkUrl.startsWith('http://') || previewWork.linkUrl.startsWith('https://')
+              ? previewWork.linkUrl
+              : `https://${previewWork.linkUrl}`
+            : '';
+
+          return (
+            <div
+              onClick={() => setPreviewWork(null)}
+              className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-[70] overflow-y-auto animate-fadeIn"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-3xl max-h-[92vh] bg-gradient-to-b from-[#091b48] via-[#07153b] to-[#040e28] border border-cyan-400/45 rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto ring-1 ring-cyan-500/20"
+              >
+                {/* Preview Header */}
+                <div className="px-5 py-3.5 border-b border-cyan-500/25 bg-[#05112f] flex items-center justify-between gap-3 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 min-w-0">
+                    <span className={`px-2.5 py-0.5 rounded-md border text-[11px] font-semibold ${previewTypeMeta.badgeClass}`}>
+                      {previewTypeMeta.label}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-400/30 text-[11px] font-medium text-cyan-200 truncate">
+                      {previewWork.category}
+                    </span>
+                    {previewWork.badge && (
+                      <span className="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-400/30 text-[11px] text-amber-300">
+                        {previewWork.badge}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewWork(null)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 shrink-0 cursor-pointer"
+                    title="ปิดหน้าต่าง"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Preview Body */}
+                <div className="overflow-y-auto flex-1 overscroll-contain">
+                  {/* Media Viewer Stage */}
+                  <div className="relative w-full bg-black/70 border-b border-cyan-500/20">
+                    {ytEmbedUrl ? (
+                      <div className="aspect-video w-full">
+                        <iframe
+                          src={ytEmbedUrl}
+                          title={previewWork.title}
+                          className="w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : isDirectVideo && videoSource ? (
+                      <div className="aspect-video w-full bg-black flex items-center justify-center">
+                        <video
+                          src={videoSource}
+                          poster={previewWork.imageUrl}
+                          controls
+                          className="w-full h-full max-h-[48vh]"
+                        />
+                      </div>
+                    ) : (
+                      <div className="relative w-full flex items-center justify-center bg-[#03091a] max-h-[48vh] overflow-hidden">
+                        <img
+                          src={previewWork.imageUrl}
+                          alt={previewWork.title}
+                          referrerPolicy="no-referrer"
+                          className="w-full max-h-[48vh] object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
+                          }}
+                        />
+                        {previewWork.mediaType === 'video' && normalizedExternalUrl && (
+                          <a
+                            href={normalizedExternalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white text-xs font-bold shadow-xl transition-all"
+                          >
+                            <Play className="w-3.5 h-3.5 fill-white" />
+                            <span>เปิดเล่นคลิปวิดีโอต้นฉบับ</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Full Details */}
+                  <div className="p-5 space-y-4">
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-white leading-snug">
+                        {previewWork.title}
+                      </h3>
+
+                      <div className="flex flex-wrap items-center gap-3 mt-2.5 text-xs text-slate-300">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#040e28] border border-cyan-500/20">
+                          <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                          <span>เผยแพร่: {previewDateInfo.formattedDate} ({previewDateInfo.monthLabel})</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#040e28] border border-cyan-500/20">
+                          <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>เข้าชม {previewWork.views} ครั้ง</span>
+                        </span>
+                        {previewWork.duration && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#040e28] border border-cyan-500/20">
+                            <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>ความยาว {previewWork.duration}</span>
+                          </span>
+                        )}
+                        {previewWork.creator && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#040e28] border border-cyan-500/20">
+                            <Building2 className="w-3.5 h-3.5 text-purple-400" />
+                            <span>{previewWork.creator}</span>
+                          </span>
+                        )}
+                        {previewWork.bureauGroup && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-400/30 text-amber-200">
+                            <Tag className="w-3.5 h-3.5 text-amber-400" />
+                            <span>{getBureauGroupLabel(previewWork.bureauGroup)}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-[#030d26]/90 border border-cyan-500/20 space-y-1.5">
+                      <div className="text-[11px] font-semibold text-cyan-300 flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>รายละเอียดข่าว / ข้อมูลงาน</span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-line">
+                        {previewWork.description || 'ไม่มีคำอธิบายเพิ่มเติม'}
+                      </p>
+                    </div>
+
+                    {normalizedExternalUrl && (
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-[#030d26]/70 border border-slate-700/70">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <LinkIcon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                          <span className="text-[11px] font-mono text-slate-300 truncate">
+                            {normalizedExternalUrl}
+                          </span>
+                        </div>
+                        <a
+                          href={normalizedExternalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-colors"
+                        >
+                          <span>เปิดลิงก์ต้นฉบับ</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Preview Footer Actions */}
+                <div className="px-5 py-3.5 border-t border-cyan-500/25 bg-[#040e28] flex flex-wrap items-center justify-between gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => toggleWorkSelection(previewWork.id)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors cursor-pointer ${
+                      isSelectedForDelete
+                        ? 'bg-amber-500/20 border-amber-400 text-amber-200'
+                        : 'bg-[#030d26] border-cyan-500/30 text-slate-300 hover:text-white hover:border-amber-400/60'
+                    }`}
+                  >
+                    {isSelectedForDelete ? (
+                      <CheckSquare className="w-3.5 h-3.5 text-amber-300" />
+                    ) : (
+                      <Square className="w-3.5 h-3.5 text-cyan-400" />
+                    )}
+                    <span>{isSelectedForDelete ? 'เลือกไว้ลบแล้ว' : 'เลือกเพื่อลบ'}</span>
+                  </button>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetId = previewWork.id;
+                        setPreviewWork(null);
+                        handleDeleteWork(targetId);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 text-xs font-semibold cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>ลบรายการนี้</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingWork(previewWork);
+                        setPreviewWork(null);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold cursor-pointer"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>แก้ไขข้อมูล</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewWork(null)}
+                      className="px-4 py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-white/5 cursor-pointer"
+                    >
+                      ปิด
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Modal: Edit Viral Clip */}
         {editingClip && (

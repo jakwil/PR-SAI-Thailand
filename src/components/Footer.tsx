@@ -34,11 +34,12 @@ export const Footer: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-4 text-xs">
           <a
-            href="tel:1730"
+            href="tel:022718000,2224"
+            title="ติดต่อสำนักประชาสัมพันธ์และสื่อสารองค์กร 02-271-8000 ต่อ 2224"
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-300 transition-colors"
           >
             <Phone className="w-3.5 h-3.5 text-amber-400" />
-            <span>สายด่วน สตง. 1730</span>
+            <span>02-271-8000 ต่อ 2224</span>
           </a>
 
           <a
@@ -47,7 +48,7 @@ export const Footer: React.FC = () => {
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:text-white transition-colors"
           >
-            <span>ระบบขอรับการสนับสนุนสื่อ</span>
+            <span>ระบบขอรับการสนับสนุนงาน PR</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
 
