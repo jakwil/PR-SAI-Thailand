@@ -49,7 +49,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
   timeline,
   onAskAiAboutIncident,
 }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(() => Math.max(0, timeline.length - 1));
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [shareMilestone, setShareMilestone] = useState<IncidentMilestone | null>(null);
@@ -94,6 +94,29 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
       technicalDetails: 'ระบบเซนเซอร์วัดการขยับตัว 0.00 มม.',
       colorAccent: 'orange',
     };
+
+  // On initial load (and before user interaction), keep Timeline focused & scrolled horizontally to the latest block
+  useEffect(() => {
+    if (timeline.length === 0 || hasUserInteractedRef.current) return;
+    const latestIndex = timeline.length - 1;
+    setActiveIndex(latestIndex);
+
+    const scrollToLatestBlock = () => {
+      const container = scrollContainerRef.current;
+      if (!container || hasUserInteractedRef.current) return;
+      if (container.scrollWidth > container.clientWidth) {
+        container.scrollLeft = container.scrollWidth - container.clientWidth;
+      }
+    };
+
+    scrollToLatestBlock();
+    const rafId = window.requestAnimationFrame(scrollToLatestBlock);
+    const timerId = window.setTimeout(scrollToLatestBlock, 120);
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timerId);
+    };
+  }, [timeline.length]);
 
   // Horizontally center the active timeline node inside the track ONLY after user interaction (never scroll the page vertically on load)
   useEffect(() => {
@@ -651,6 +674,17 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           {/* Scrollable Track Container (Horizontal-only scroll; vertical wheel/trackpad scrolls page smoothly) */}
           <div
             ref={scrollContainerRef}
+            onPointerDown={() => {
+              hasUserInteractedRef.current = true;
+            }}
+            onWheel={(e) => {
+              if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+                hasUserInteractedRef.current = true;
+              }
+            }}
+            onTouchStart={() => {
+              hasUserInteractedRef.current = true;
+            }}
             className="overflow-x-auto overflow-y-hidden overscroll-y-auto touch-pan-x touch-pan-y pb-4 pt-4 scrollbar-thin scrollbar-thumb-rose-500/30 scrollbar-track-slate-950/50"
           >
             <div
