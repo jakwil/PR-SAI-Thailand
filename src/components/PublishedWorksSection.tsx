@@ -325,7 +325,7 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
           {/* Scroll Track Row 1 */}
           <div
             ref={row1Ref}
-            className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scroll-smooth snap-x px-1 py-0.5 no-scrollbar cursor-grab active:cursor-grabbing touch-pan-x"
+            className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto overflow-y-hidden overscroll-y-auto scroll-smooth snap-x px-1 py-0.5 no-scrollbar cursor-grab active:cursor-grabbing touch-auto"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {displayRow1.length > 0 ? (
@@ -410,7 +410,7 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
             {/* Scroll Track Row 2: Placed right against Row 1 with gap-1 sm:gap-1.5 */}
             <div
               ref={row2Ref}
-              className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scroll-smooth snap-x px-1 py-0.5 no-scrollbar cursor-grab active:cursor-grabbing touch-pan-x"
+              className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto overflow-y-hidden overscroll-y-auto scroll-smooth snap-x px-1 py-0.5 no-scrollbar cursor-grab active:cursor-grabbing touch-auto"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {displayRow2.map((work) => {

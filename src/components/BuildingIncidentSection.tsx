@@ -55,6 +55,15 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
   const [shareMilestone, setShareMilestone] = useState<IncidentMilestone | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const hasUserInteractedRef = useRef(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollEdges = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    setCanScrollLeft(container.scrollLeft > 12);
+    setCanScrollRight(container.scrollLeft + container.clientWidth < container.scrollWidth - 12);
+  };
 
   const computeTrackingDays = () => {
     // นับตั้งแต่วันที่ 28 มี.ค. 2568 (2025-03-28) ตามเวลาไทย (UTC+7)
@@ -97,26 +106,37 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
   // On initial load (and before user interaction), keep Timeline focused & scrolled horizontally to the latest block
   useEffect(() => {
-    if (timeline.length === 0 || hasUserInteractedRef.current) return;
-    const latestIndex = timeline.length - 1;
-    setActiveIndex(latestIndex);
+    if (timeline.length === 0) return;
 
-    const scrollToLatestBlock = () => {
-      const container = scrollContainerRef.current;
-      if (!container || hasUserInteractedRef.current) return;
-      if (container.scrollWidth > container.clientWidth) {
-        container.scrollLeft = container.scrollWidth - container.clientWidth;
-      }
-    };
+    if (!hasUserInteractedRef.current) {
+      const latestIndex = timeline.length - 1;
+      setActiveIndex(latestIndex);
 
-    scrollToLatestBlock();
-    const rafId = window.requestAnimationFrame(scrollToLatestBlock);
-    const timerId = window.setTimeout(scrollToLatestBlock, 120);
-    return () => {
-      window.cancelAnimationFrame(rafId);
-      window.clearTimeout(timerId);
-    };
+      const scrollToLatestBlock = () => {
+        const container = scrollContainerRef.current;
+        if (!container || hasUserInteractedRef.current) return;
+        if (container.scrollWidth > container.clientWidth) {
+          container.scrollLeft = container.scrollWidth - container.clientWidth;
+        }
+        updateScrollEdges();
+      };
+
+      scrollToLatestBlock();
+      const rafId = window.requestAnimationFrame(scrollToLatestBlock);
+      const timerId = window.setTimeout(scrollToLatestBlock, 120);
+      return () => {
+        window.cancelAnimationFrame(rafId);
+        window.clearTimeout(timerId);
+      };
+    }
+    updateScrollEdges();
   }, [timeline.length]);
+
+  useEffect(() => {
+    const onResize = () => updateScrollEdges();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // Horizontally center the active timeline node inside the track ONLY after user interaction (never scroll the page vertically on load)
   useEffect(() => {
@@ -159,6 +179,37 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
     setActiveIndex(idx);
     if (openModal) {
       setIsCardModalOpen(true);
+    }
+  };
+
+  const handleScrollTimelineTrack = (direction: 'left' | 'right') => {
+    hasUserInteractedRef.current = true;
+    playDigitalSound('click');
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const step = Math.max(360, Math.round(container.clientWidth * 0.65));
+    container.scrollBy({
+      left: direction === 'left' ? -step : step,
+      behavior: 'smooth',
+    });
+  };
+
+  const handleJumpToEdge = (edge: 'start' | 'latest') => {
+    hasUserInteractedRef.current = true;
+    playDigitalSound('radar');
+    const container = scrollContainerRef.current;
+    if (edge === 'start') {
+      setActiveIndex(0);
+      container?.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      const latestIdx = Math.max(0, timeline.length - 1);
+      setActiveIndex(latestIdx);
+      if (container) {
+        container.scrollTo({
+          left: Math.max(0, container.scrollWidth - container.clientWidth),
+          behavior: 'smooth',
+        });
+      }
     }
   };
 
@@ -313,6 +364,24 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
       return yearMatch[0];
     }
     return `PHASE 0${idx + 1}`;
+  };
+
+  // Format Day/Month and Year cleanly so full event dates stand out boldly inside each Chevron block
+  const formatChevronDateParts = (item: IncidentMilestone, idx: number) => {
+    const cleanDate = (item.date || '').replace(/^ณ\s+/, '').trim();
+    const matchWithYear = cleanDate.match(/^(.*?)\s+(25\d{2}|20\d{2})$/);
+    if (matchWithYear) {
+      const dayMonthRaw = matchWithYear[1].replace(/[()]/g, '').trim();
+      return {
+        dayMonth: dayMonthRaw || cleanDate,
+        year: matchWithYear[2],
+      };
+    }
+    const yearOnly = getBlockYearLabel(item, idx);
+    return {
+      dayMonth: cleanDate || yearOnly,
+      year: '',
+    };
   };
 
   return (
@@ -649,31 +718,118 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
         </div>
 
         {/* Console Header Bar */}
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-rose-500/25">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-400/40 shadow-[0_0_12px_rgba(244,63,94,0.35)]">
-              <Compass className="w-4 h-4 text-rose-400 animate-spin-slow" />
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="block text-sm sm:text-base font-bold text-white tracking-wide">
-                  Timeline เหตุการณ์อาคาร สตง. แห่งใหม่ ทรุดตัวจากเหตุแผ่นดินไหว
-                </span>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 font-mono font-bold shrink-0">
-                  {timeline.length} MILESTONES
-                </span>
+        <div className="space-y-3 pb-4 mb-3 border-b border-rose-500/25">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-400/40 shadow-[0_0_12px_rgba(244,63,94,0.35)]">
+                <Compass className="w-4 h-4 text-rose-400 animate-spin-slow" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="block text-sm sm:text-base font-bold text-white tracking-wide">
+                    Timeline เหตุการณ์อาคาร สตง. แห่งใหม่ ทรุดตัวจากเหตุแผ่นดินไหว
+                  </span>
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 font-mono font-bold shrink-0">
+                    {timeline.length} MILESTONES
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* Desktop Quick Scroll Navigation Buttons */}
+            <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleJumpToEdge('start')}
+                className="px-2.5 py-1.5 rounded-lg bg-[#091229] hover:bg-slate-800 border border-slate-600/70 hover:border-amber-400/60 text-[11px] font-semibold text-slate-200 hover:text-amber-300 transition-colors cursor-pointer"
+                title="เลื่อนไปยังจุดเริ่มต้นเหตุการณ์"
+              >
+                « ช่วงเริ่มต้น
+              </button>
+              <button
+                type="button"
+                onClick={() => handleScrollTimelineTrack('left')}
+                disabled={!canScrollLeft}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 disabled:opacity-40 disabled:cursor-not-allowed border border-rose-400/50 text-[11px] font-bold text-rose-200 transition-colors cursor-pointer"
+                title="เลื่อนดูช่วงเหตุการณ์ก่อนหน้า"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>เลื่อนดูย้อนหลัง</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleScrollTimelineTrack('right')}
+                disabled={!canScrollRight}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#091229] hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-600/70 text-[11px] font-semibold text-slate-200 transition-colors cursor-pointer"
+                title="เลื่อนไปช่วงถัดไป"
+              >
+                <span>ถัดไป</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleJumpToEdge('latest')}
+                className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/30 border border-emerald-400/50 text-[11px] font-bold text-emerald-300 transition-colors cursor-pointer"
+                title="เลื่อนกลับมาที่ช่วงเหตุการณ์ล่าสุด"
+              >
+                ล่าสุด »
+              </button>
+            </div>
+          </div>
+
+          {/* Clear User Prompt to Scroll Left/Right for Other Timeline Events */}
+          <div className="hidden sm:flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500/15 via-rose-500/15 to-cyan-500/10 border border-amber-400/40 text-xs">
+            <div className="flex items-center gap-2 text-amber-200 font-semibold">
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[11px] font-bold shrink-0">
+                <ChevronLeft className="w-3.5 h-3.5 animate-pulse" />
+                <ChevronRight className="w-3.5 h-3.5" />
+              </span>
+              <span>
+                แสดงเหตุการณ์ล่าสุดอยู่ด้านขวาสุด — กรุณาเลื่อนแถบ Timeline ไปทางซ้าย (หรือกดปุ่ม &ldquo;เลื่อนดูย้อนหลัง&rdquo;) เพื่อดูเหตุการณ์ในช่วงวันเดือนปีอื่นครบทั้ง {timeline.length} ช่วง
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-300 shrink-0 hidden xl:inline">
+              คลิกที่บล็อกวันที่เพื่อเปิดอ่านฉบับเต็ม
+            </span>
           </div>
         </div>
 
         {/* -----------------------------------------------------------------------
             HORIZONTAL 3D INTERACTIVE TIMELINE RIBBON (Desktop & Tablet View)
             ----------------------------------------------------------------------- */}
-        <div className="hidden sm:block relative pb-2 pt-2">
-          {/* Scrollable Track Container (Horizontal-only scroll; vertical wheel/trackpad scrolls page smoothly) */}
+        <div className="hidden sm:block relative py-2">
+          {/* Floating Left Arrow Button — positioned just slightly above the Chevron blocks */}
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => handleScrollTimelineTrack('left')}
+              className="absolute left-2 bottom-[calc(50%+42px)] z-40 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#07112b]/95 hover:bg-rose-500 text-white border border-rose-400/70 shadow-[0_0_20px_rgba(244,63,94,0.45)] backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              title="เลื่อนซ้ายเพื่อดูเหตุการณ์ช่วงก่อนหน้า"
+              aria-label="เลื่อนซ้ายเพื่อดูเหตุการณ์ช่วงก่อนหน้า"
+            >
+              <ChevronLeft className="w-4 h-4 stroke-[2.75]" />
+              <span className="text-[11px] font-bold pr-1 hidden md:inline">ดูย้อนหลัง</span>
+            </button>
+          )}
+
+          {/* Floating Right Arrow Button — positioned just slightly above the Chevron blocks */}
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={() => handleScrollTimelineTrack('right')}
+              className="absolute right-2 bottom-[calc(50%+42px)] z-40 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#07112b]/95 hover:bg-emerald-500 text-white border border-emerald-400/70 shadow-[0_0_20px_rgba(16,185,129,0.4)] backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              title="เลื่อนขวาเพื่อดูเหตุการณ์ถัดไป"
+              aria-label="เลื่อนขวาเพื่อดูเหตุการณ์ถัดไป"
+            >
+              <span className="text-[11px] font-bold pl-1 hidden md:inline">ถัดไป</span>
+              <ChevronRight className="w-4 h-4 stroke-[2.75]" />
+            </button>
+          )}
+
+          {/* Scrollable Track Container (Horizontal scroll; vertical finger/wheel swipes scroll page smoothly) */}
           <div
             ref={scrollContainerRef}
+            onScroll={updateScrollEdges}
             onPointerDown={() => {
               hasUserInteractedRef.current = true;
             }}
@@ -685,11 +841,11 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
             onTouchStart={() => {
               hasUserInteractedRef.current = true;
             }}
-            className="overflow-x-auto overflow-y-hidden overscroll-y-auto touch-pan-x touch-pan-y pb-4 pt-4 scrollbar-thin scrollbar-thumb-rose-500/30 scrollbar-track-slate-950/50"
+            className="overflow-x-auto overflow-y-hidden overscroll-y-auto touch-auto py-3 scrollbar-thin scrollbar-thumb-rose-500/40 scrollbar-track-slate-950/60"
           >
             <div
-              className="relative flex items-center justify-start min-w-max px-8 py-12"
-              style={{ minHeight: '460px' }}
+              className="relative flex items-center justify-start min-w-max px-12 py-14"
+              style={{ minHeight: '510px' }}
             >
               {/* START TAG at the far left */}
               <div className="flex items-center shrink-0 mr-2 z-10">
@@ -705,6 +861,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                   const isActive = idx === activeIndex;
                   const theme = getBlockColorTheme(item.colorAccent, idx);
                   const yearLabel = getBlockYearLabel(item, idx);
+                  const dateParts = formatChevronDateParts(item, idx);
                   const isTopBranch = idx % 2 !== 0; // Alternating Top/Bottom branch like Visme
                   const isFirst = idx === 0;
                   const isLast = idx === timeline.length - 1;
@@ -724,24 +881,24 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                       key={item.id}
                       data-node-index={idx}
                       className="relative flex flex-col items-center justify-center shrink-0 z-10 select-none group"
-                      style={{ width: '180px' }}
+                      style={{ width: '215px' }}
                     >
                       {/* =========================================================
                           TOP BRANCH (If isTopBranch === true)
-                          Vertical Leader Line pointing UP + Icon + Date + Concise Text
+                          Vertical Leader Line pointing UP + Icon + Large Date + Concise Text
                           ========================================================= */}
                       {isTopBranch ? (
                         <div
                           onClick={() => handleSelectNode(idx, true)}
-                          className={`absolute bottom-[calc(50%+28px)] flex flex-col items-center text-center cursor-pointer transition-all duration-300 group-hover:-translate-y-2.5 ${
-                            isActive ? 'scale-105' : 'opacity-85 hover:opacity-100'
+                          className={`absolute bottom-[calc(50%+34px)] flex flex-col items-center text-center cursor-pointer transition-all duration-300 group-hover:-translate-y-2.5 ${
+                            isActive ? 'scale-105' : 'opacity-90 hover:opacity-100'
                           }`}
-                          style={{ width: '160px' }}
+                          style={{ width: '196px' }}
                           title={`คลิกเปิดการ์ด: ${item.title}`}
                         >
                           {/* Circular Icon Hub */}
                           <div
-                            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 mb-2 border-2 shadow-lg ${
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 mb-2 border-2 shadow-lg ${
                               isActive
                                 ? `${theme.bg} text-slate-950 border-white ring-4 ring-white/30 scale-110 ${theme.glow}`
                                 : 'bg-[#0a1024] text-white border-slate-600/80 group-hover:border-white group-hover:scale-105'
@@ -750,10 +907,15 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                             {renderMilestoneIcon(item.icon, 'w-5 h-5')}
                           </div>
 
-                          {/* Concise Month/Date Tag */}
-                          <span className={`text-[11px] font-bold tracking-tight mb-0.5 ${theme.text}`}>
-                            {item.date}
-                          </span>
+                          {/* Prominent Large Date Badge */}
+                          <div
+                            className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#050b1d]/95 border ${theme.border} shadow-md mb-1.5`}
+                          >
+                            <Calendar className={`w-3.5 h-3.5 shrink-0 ${theme.text}`} />
+                            <span className={`text-sm sm:text-[15px] font-extrabold tracking-tight leading-none ${theme.text}`}>
+                              {item.date}
+                            </span>
+                          </div>
 
                           {/* Concise Title (1-2 lines) */}
                           <h4
@@ -776,7 +938,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
                           {/* Vertical Connector Line from block to top content */}
                           <div
-                            className="w-[2px] h-7 transition-colors duration-300 mt-2"
+                            className="w-[2px] h-6 transition-colors duration-300 mt-2"
                             style={{
                               backgroundColor: isActive ? theme.lineColor : 'rgba(148, 163, 184, 0.4)',
                               boxShadow: isActive ? `0 0 10px ${theme.lineColor}` : 'none',
@@ -787,12 +949,12 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
                       {/* =========================================================
                           CENTER CONNECTED 3D CHEVRON BLOCK
-                          (The interlocking ribbon milestone piece)
+                          (Displays large, legible Day/Month + Year inside block)
                           ========================================================= */}
                       <button
                         type="button"
                         onClick={() => handleSelectNode(idx, true)}
-                        className={`relative w-full h-14 ${chevronClass} ${theme.bg} flex items-center justify-center px-4 transition-all duration-300 cursor-pointer shadow-lg active:scale-95 group-hover:brightness-110 ${
+                        className={`relative w-full h-16 ${chevronClass} ${theme.bg} flex flex-col items-center justify-center px-5 transition-all duration-300 cursor-pointer shadow-lg active:scale-95 group-hover:brightness-110 ${
                           isActive
                             ? `ring-2 ring-white/80 scale-105 z-30 ${theme.glow}`
                             : 'opacity-95 hover:opacity-100 z-10'
@@ -802,38 +964,43 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                             ? `0 12px 25px -4px ${theme.lineColor}88, inset 0 2px 0 rgba(255,255,255,0.6)`
                             : '0 6px 15px -3px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.4)',
                         }}
-                        title={`คลิกเปิดการ์ดข้อมูล ${yearLabel}: ${item.title}`}
+                        title={`คลิกเปิดการ์ดข้อมูล ${item.date || yearLabel}: ${item.title}`}
                       >
-                        {/* Embossed Year / Milestone Text */}
-                        <span className="text-sm sm:text-base font-extrabold text-white tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-mono">
-                          {yearLabel}
+                        {/* Embossed Large Day & Month + Year */}
+                        <span className="max-w-full truncate text-[15px] sm:text-base font-black text-white tracking-tight leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                          {dateParts.dayMonth}
                         </span>
+                        {dateParts.year && (
+                          <span className="mt-0.5 px-2.5 py-0.5 rounded-full bg-black/25 text-[11px] sm:text-xs font-extrabold text-white/95 tracking-widest font-mono leading-none">
+                            {dateParts.year}
+                          </span>
+                        )}
 
                         {/* Top Gloss Edge Highlight */}
                         <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/40 pointer-events-none" />
 
                         {/* Active Selection Beacon Dot */}
                         {isActive && (
-                          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_#fff]" />
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_#fff]" />
                         )}
                       </button>
 
                       {/* =========================================================
                           BOTTOM BRANCH (If isTopBranch === false)
-                          Vertical Leader Line pointing DOWN + Icon + Date + Concise Text
+                          Vertical Leader Line pointing DOWN + Icon + Large Date + Concise Text
                           ========================================================= */}
                       {!isTopBranch ? (
                         <div
                           onClick={() => handleSelectNode(idx, true)}
-                          className={`absolute top-[calc(50%+28px)] flex flex-col items-center text-center cursor-pointer transition-all duration-300 group-hover:translate-y-2.5 ${
-                            isActive ? 'scale-105' : 'opacity-85 hover:opacity-100'
+                          className={`absolute top-[calc(50%+34px)] flex flex-col items-center text-center cursor-pointer transition-all duration-300 group-hover:translate-y-2.5 ${
+                            isActive ? 'scale-105' : 'opacity-90 hover:opacity-100'
                           }`}
-                          style={{ width: '160px' }}
+                          style={{ width: '196px' }}
                           title={`คลิกเปิดการ์ด: ${item.title}`}
                         >
                           {/* Vertical Connector Line from block to bottom content */}
                           <div
-                            className="w-[2px] h-7 transition-colors duration-300 mb-2"
+                            className="w-[2px] h-6 transition-colors duration-300 mb-2"
                             style={{
                               backgroundColor: isActive ? theme.lineColor : 'rgba(148, 163, 184, 0.4)',
                               boxShadow: isActive ? `0 0 10px ${theme.lineColor}` : 'none',
@@ -842,7 +1009,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
                           {/* Circular Icon Hub */}
                           <div
-                            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 mb-2 border-2 shadow-lg ${
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 mb-2 border-2 shadow-lg ${
                               isActive
                                 ? `${theme.bg} text-slate-950 border-white ring-4 ring-white/30 scale-110 ${theme.glow}`
                                 : 'bg-[#0a1024] text-white border-slate-600/80 group-hover:border-white group-hover:scale-105'
@@ -851,10 +1018,15 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                             {renderMilestoneIcon(item.icon, 'w-5 h-5')}
                           </div>
 
-                          {/* Concise Month/Date Tag */}
-                          <span className={`text-[11px] font-bold tracking-tight mb-0.5 ${theme.text}`}>
-                            {item.date}
-                          </span>
+                          {/* Prominent Large Date Badge */}
+                          <div
+                            className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#050b1d]/95 border ${theme.border} shadow-md mb-1.5`}
+                          >
+                            <Calendar className={`w-3.5 h-3.5 shrink-0 ${theme.text}`} />
+                            <span className={`text-sm sm:text-[15px] font-extrabold tracking-tight leading-none ${theme.text}`}>
+                              {item.date}
+                            </span>
+                          </div>
 
                           {/* Concise Title (1-2 lines) */}
                           <h4
@@ -891,12 +1063,26 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               </div>
             </div>
           </div>
+
+          {/* Bottom Scroll Guide Note */}
+          <div className="mt-2 flex items-center justify-center gap-2 text-[11px] text-slate-300">
+            <ChevronLeft className="w-3.5 h-3.5 text-rose-400" />
+            <span>
+              ใช้แถบเลื่อนด้านบน หรือกดปุ่ม <strong className="text-rose-300">ดูย้อนหลัง / ถัดไป</strong> เพื่อดู Timeline ในช่วงอื่นทั้งหมด
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 text-emerald-400" />
+          </div>
         </div>
 
         {/* -----------------------------------------------------------------------
             VERTICAL CONNECTED TIMELINE (Smartphone View เฉพาะมุมมองสมาร์ทโฟน)
             ----------------------------------------------------------------------- */}
         <div className="block sm:hidden relative pb-1 pt-1">
+          <div className="mb-3 px-3 py-2 rounded-xl bg-amber-500/15 border border-amber-400/40 text-[11px] font-semibold text-amber-200 flex items-center justify-between gap-2">
+            <span>เลื่อนลงเพื่อดูเหตุการณ์ครบทั้ง {timeline.length} ช่วง</span>
+            <span className="text-[10px] text-amber-300 shrink-0">แตะการ์ดเพื่ออ่านเต็ม</span>
+          </div>
+
           <div className="relative pl-1 pr-1">
             {/* Glowing Vertical Continuous Ribbon Laser Line */}
             <div className="absolute left-[24px] top-4 bottom-4 w-[2.5px] bg-gradient-to-b from-orange-500 via-rose-500 to-emerald-400 rounded-full shadow-[0_0_12px_rgba(244,63,94,0.7)]" />
@@ -943,16 +1129,14 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                           : `bg-[#0f172a]/90 hover:bg-[#152038]/95 border-slate-700/60 hover:border-slate-500`
                       }`}
                     >
-                      {/* Top Bar: Year/Milestone Chevron Badge + Date + Status */}
+                      {/* Top Bar: Prominent Large Date Badge + Year + Status */}
                       <div className="flex items-center justify-between gap-1.5 flex-wrap mb-2">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className={`px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold font-mono tracking-wider text-white shadow-sm ${theme.bg}`}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-sm font-extrabold text-white shadow-sm ${theme.bg}`}
                           >
-                            {yearLabel}
-                          </span>
-                          <span className={`text-[11px] font-bold ${theme.text}`}>
-                            {item.date}
+                            <Calendar className="w-3.5 h-3.5 shrink-0" />
+                            <span>{item.date || yearLabel}</span>
                           </span>
                         </div>
 

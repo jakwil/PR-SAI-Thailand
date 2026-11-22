@@ -38,7 +38,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   searchData,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const [scanSuccess, setScanSuccess] = useState(false);
@@ -245,8 +244,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setSearchModalOpen(true);
               }}
               className="p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer flex items-center justify-center group"
-              title="ค้นหาข้อมูล (Ctrl + K)"
-              aria-label="ค้นหาข้อมูล"
+              title="ค้นหาด่วนทั่วทั้งเว็บไซต์ (Ctrl + K)"
+              aria-label="ค้นหาด่วนทั่วทั้งเว็บไซต์"
             >
               <Search className="w-[18px] h-[18px] text-slate-300 group-hover:text-amber-300 transition-colors" />
             </button>
@@ -360,21 +359,21 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Spacer to preserve document flow height for fixed navbar */}
       <div className="h-12 sm:h-[54px] w-full shrink-0 pointer-events-none" aria-hidden="true" />
 
-      {/* Apple-style Minimalist Quick Search Dropdown / Overlay */}
+      {/* Sitewide Instant Search Modal */}
       {searchModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center pt-14 sm:pt-16 px-3 sm:px-4 bg-black/75 backdrop-blur-md animate-fadeIn select-none"
+          className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-16 px-3 sm:px-4 bg-black/75 backdrop-blur-md animate-fadeIn select-none"
           onClick={() => setSearchModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-xl bg-gradient-to-b from-[#0a1838] to-[#040e28] border border-cyan-400/40 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(6,182,212,0.3)] p-3 sm:p-4 overflow-hidden animate-slide-in-down"
+            className="relative w-full max-w-3xl bg-gradient-to-b from-[#0a1838] to-[#040e28] border border-cyan-400/45 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(6,182,212,0.3)] p-3 sm:p-5 animate-slide-in-down"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header with Search Title & Close button */}
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-cyan-500/20">
-              <div className="flex items-center gap-2 text-cyan-300 text-xs font-semibold">
-                <Search className="w-3.5 h-3.5 text-cyan-400" />
-                <span>ค้นหาด่วน ข้อมูลประชาสัมพันธ์ สตง.</span>
+            <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-cyan-500/20">
+              <div className="flex items-center gap-2 text-cyan-300 text-xs sm:text-sm font-semibold">
+                <Search className="w-4 h-4 text-cyan-400" />
+                <span>ค้นหาด่วนทั่วทั้งเว็บไซต์ PR - SAI Thailand</span>
               </div>
               <button
                 type="button"
@@ -385,7 +384,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <QuickSearchBar data={searchData} />
+            <QuickSearchBar
+              data={searchData}
+              onClose={() => setSearchModalOpen(false)}
+              onOpenBureauStructure={onOpenBureauStructure}
+              autoFocus={true}
+            />
           </div>
         </div>
       )}
@@ -529,7 +533,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => {
                 playDigitalSound('blip');
                 setMobileMenuOpen(false);
-                setMobileSearchOpen(true);
+                setSearchModalOpen(true);
               }}
               className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 rounded-lg transition-all"
             >

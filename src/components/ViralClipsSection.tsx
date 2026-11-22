@@ -82,7 +82,7 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
 
         <div
           ref={scrollRef}
-          className="flex items-stretch gap-2.5 sm:gap-4 lg:gap-4 overflow-x-auto overscroll-x-contain scroll-smooth snap-x snap-mandatory py-1 px-1 sm:px-2 no-scrollbar [&::-webkit-scrollbar]:hidden touch-pan-x"
+          className="flex items-stretch gap-2.5 sm:gap-4 lg:gap-4 overflow-x-auto overflow-y-hidden overscroll-x-contain overscroll-y-auto scroll-smooth snap-x snap-mandatory py-1 px-1 sm:px-2 no-scrollbar [&::-webkit-scrollbar]:hidden touch-auto"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
         >
           {clips.map((clip) => (
