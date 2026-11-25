@@ -43,6 +43,7 @@ import {
 import { AppData, GroupWorkItem } from './types';
 import { ShieldCheck, Network, ChevronRight } from 'lucide-react';
 import { recordVisitorVisit } from './utils/analytics';
+import { useSiteTheme } from './contexts/ThemeContext';
 
 const ADMIN_VERIFIED_SESSION_KEY = 'sai_admin_verified_email';
 
@@ -683,6 +684,7 @@ const initialData: AppData = {
 };
 
 export default function App() {
+  const { isClean } = useSiteTheme();
   const [data, setData] = useState<AppData>(initialData);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
@@ -951,25 +953,33 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#020717] text-slate-100 selection:bg-amber-500/30 selection:text-amber-200 overflow-x-clip">
-      {/* Royal Luxury Ambient Light Orbs (Zero-Cost Radial Gradients for Smooth 60fps Scroll) */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0 overflow-hidden transform-gpu"
-        style={{
-          contain: 'strict',
-          backgroundImage: [
-            'radial-gradient(650px 550px at 32% 6%, rgba(245, 158, 11, 0.12), transparent 72%)',
-            'radial-gradient(620px 520px at 5% 32%, rgba(217, 119, 6, 0.1), transparent 72%)',
-            'radial-gradient(540px 480px at 94% 40%, rgba(29, 78, 216, 0.15), transparent 72%)',
-            'radial-gradient(680px 540px at 42% 58%, rgba(67, 56, 202, 0.14), transparent 72%)',
-            'radial-gradient(580px 480px at 92% 76%, rgba(245, 158, 11, 0.1), transparent 72%)',
-            'radial-gradient(680px 500px at 14% 94%, rgba(30, 64, 175, 0.14), transparent 72%)',
-          ].join(', '),
-        }}
-        aria-hidden="true"
-      />
+    <div
+      className={`relative min-h-screen overflow-x-clip transition-colors duration-300 ${
+        isClean
+          ? 'bg-[#f8fafc] text-slate-900 selection:bg-sky-200 selection:text-slate-900'
+          : 'bg-[#020717] text-slate-100 selection:bg-amber-500/30 selection:text-amber-200'
+      }`}
+    >
+      {/* Royal Luxury Ambient Light Orbs (Only in Royal Navy Dark Mode) */}
+      {!isClean && (
+        <div
+          className="fixed inset-0 pointer-events-none z-0 overflow-hidden transform-gpu"
+          style={{
+            contain: 'strict',
+            backgroundImage: [
+              'radial-gradient(650px 550px at 32% 6%, rgba(245, 158, 11, 0.12), transparent 72%)',
+              'radial-gradient(620px 520px at 5% 32%, rgba(217, 119, 6, 0.1), transparent 72%)',
+              'radial-gradient(540px 480px at 94% 40%, rgba(29, 78, 216, 0.15), transparent 72%)',
+              'radial-gradient(680px 540px at 42% 58%, rgba(67, 56, 202, 0.14), transparent 72%)',
+              'radial-gradient(580px 480px at 92% 76%, rgba(245, 158, 11, 0.1), transparent 72%)',
+              'radial-gradient(680px 500px at 14% 94%, rgba(30, 64, 175, 0.14), transparent 72%)',
+            ].join(', '),
+          }}
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Royal Luxury Non-3D Background (หรู เรียบ สง่างาม ไม่ต้อง 3D) */}
+      {/* Ambient Architectural Background */}
       <ThreeCanvas />
 
       {/* Main Content Layer */}
@@ -987,13 +997,19 @@ export default function App() {
 
         {/* Successful Biometric + Google Admin Login Toast Notification */}
         {loginToast && (
-          <div className="fixed top-20 right-5 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#06153d] border border-cyan-500/50 text-cyan-300 text-xs shadow-2xl shadow-cyan-500/20 animate-fadeIn">
-            <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+          <div
+            className={`fixed top-20 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl border text-sm shadow-2xl animate-fadeIn ${
+              isClean
+                ? 'bg-white border-sky-300 text-slate-900 shadow-slate-300/60'
+                : 'bg-[#06153d] border-cyan-500/50 text-cyan-300 shadow-cyan-500/20'
+            }`}
+          >
+            <ShieldCheck className={`w-5 h-5 shrink-0 ${isClean ? 'text-sky-600' : 'text-cyan-400'}`} />
             <div>
-              <span className="font-semibold block text-white">
+              <span className={`font-bold block ${isClean ? 'text-slate-900' : 'text-white'}`}>
                 ยืนยันตัวตนผู้ดูแลระบบสำเร็จ
               </span>
-              <span className="text-[11px] text-cyan-400 font-mono">
+              <span className={`text-xs font-mono ${isClean ? 'text-sky-700' : 'text-cyan-400'}`}>
                 เข้าสู่ระบบ: {adminEmail || 'ผู้ดูแลระบบ สตง.'}
               </span>
             </div>
@@ -1025,16 +1041,28 @@ export default function App() {
 
           {/* Quick End CTA Strip: รู้จัก 4 กลุ่มงานของเรา */}
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-            <div className="rounded-2xl bg-gradient-to-r from-[#071946]/95 via-[#0a2159]/95 to-[#061539]/95 border border-amber-400/35 px-5 py-4 sm:px-7 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_12px_36px_rgba(2,10,31,0.7)]">
+            <div
+              className={`rounded-2xl border px-5 py-4 sm:px-7 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
+                isClean
+                  ? 'bg-gradient-to-r from-sky-50 via-white to-amber-50/70 border-slate-200 shadow-sm'
+                  : 'bg-gradient-to-r from-[#071946]/95 via-[#0a2159]/95 to-[#061539]/95 border-amber-400/35 shadow-[0_12px_36px_rgba(2,10,31,0.7)]'
+              }`}
+            >
               <div className="flex items-start sm:items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/40 flex items-center justify-center shrink-0 text-amber-300">
+                <div
+                  className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${
+                    isClean
+                      ? 'bg-amber-100 border-amber-300 text-amber-700'
+                      : 'bg-amber-400/15 border-amber-400/40 text-amber-300'
+                  }`}
+                >
                   <Network className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-white">
+                  <h3 className={`text-base sm:text-lg font-extrabold ${isClean ? 'text-slate-900' : 'text-white'}`}>
                     รู้จัก 4 กลุ่มงานของเรา · สำนักประชาสัมพันธ์และสื่อสารองค์กร
                   </h3>
-                  <p className="text-xs text-slate-300 mt-0.5">
+                  <p className={`text-xs sm:text-sm font-medium mt-0.5 ${isClean ? 'text-slate-700' : 'text-slate-300'}`}>
                     ดูแผนผังโครงสร้างภายใน บทบาทภารกิจหลัก และผลงานเชื่อมโยงของแต่ละกลุ่มงานแบบเต็มจอ
                   </p>
                 </div>
@@ -1042,7 +1070,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={handleOpenBureauStructure}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 transition-all cursor-pointer shrink-0"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 text-sm font-extrabold shadow-lg shadow-amber-500/20 transition-all cursor-pointer shrink-0"
               >
                 <span>เปิดดูโครงสร้างและภารกิจ</span>
                 <ChevronRight className="w-4 h-4" />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MarqueeTickerSettings } from '../types';
 import { BeaconRippleDot } from './BeaconRippleDot';
+import { useSiteTheme } from '../contexts/ThemeContext';
 
 interface MarqueeTickerProps {
   settings?: MarqueeTickerSettings;
@@ -11,6 +12,7 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
   settings,
   className = '',
 }) => {
+  const { isClean } = useSiteTheme();
   const [isHovered, setIsHovered] = useState(false);
   const [isInViewport, setIsInViewport] = useState(true);
   const tickerWrapperRef = useRef<HTMLDivElement>(null);
@@ -60,26 +62,50 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
 
   return (
     <div ref={tickerWrapperRef} className={`w-full ${className}`}>
-      {/* Full-Bleed Edge-to-Edge Outer Frame Container (กรอบชิดซ้ายและขวาเต็มจอ) */}
+      {/* Full-Bleed Edge-to-Edge Outer Frame Container */}
       <div
-        className="relative w-full rounded-none bg-gradient-to-r from-[#061539]/98 via-[#081a44]/98 to-[#051130]/98 border-y border-x-0 border-amber-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.6),0_0_20px_rgba(245,158,11,0.22)] overflow-hidden py-1.5 sm:py-2 px-0 flex items-center group/ticker"
+        className={`relative w-full rounded-none border-y border-x-0 overflow-hidden py-2 sm:py-2.5 px-0 flex items-center group/ticker transition-colors ${
+          isClean
+            ? 'bg-gradient-to-r from-sky-50 via-white to-amber-50/80 border-slate-200 shadow-sm'
+            : 'bg-gradient-to-r from-[#061539]/98 via-[#081a44]/98 to-[#051130]/98 border-amber-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.6),0_0_20px_rgba(245,158,11,0.22)]'
+        }`}
         onMouseEnter={() => pauseOnHover && setIsHovered(true)}
         onMouseLeave={() => pauseOnHover && setIsHovered(false)}
       >
-        {/* Holographic Top & Bottom Laser Accent Lines */}
-        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent pointer-events-none" />
+        {/* Top & Bottom Accent Lines */}
+        <div
+          className={`absolute top-0 left-0 right-0 h-[1.5px] pointer-events-none ${
+            isClean
+              ? 'bg-gradient-to-r from-transparent via-sky-500/60 to-transparent'
+              : 'bg-gradient-to-r from-transparent via-amber-400/80 to-transparent'
+          }`}
+        />
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent pointer-events-none" />
 
-        {/* Optional Prefix Badge (if configured) */}
+        {/* Optional Prefix Badge */}
         {settings?.prefixLabel && (
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 ml-3 sm:ml-4 rounded-full bg-amber-500/20 border border-amber-400/60 text-amber-300 text-[11px] font-bold shrink-0 mr-3 z-20">
+          <div
+            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-0.5 ml-3 sm:ml-4 rounded-full border text-xs font-bold shrink-0 mr-3 z-20 ${
+              isClean
+                ? 'bg-amber-100 border-amber-300 text-amber-800'
+                : 'bg-amber-500/20 border-amber-400/60 text-amber-300'
+            }`}
+          >
             <span>{settings.prefixLabel}</span>
           </div>
         )}
 
-        {/* Edge Gradient Fades for Smooth Enter/Exit */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#061539] to-transparent pointer-events-none z-10" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#051130] to-transparent pointer-events-none z-10" />
+        {/* Edge Gradient Fades */}
+        <div
+          className={`absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r to-transparent pointer-events-none z-10 ${
+            isClean ? 'from-sky-50' : 'from-[#061539]'
+          }`}
+        />
+        <div
+          className={`absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l to-transparent pointer-events-none z-10 ${
+            isClean ? 'from-amber-50/80' : 'from-[#051130]'
+          }`}
+        />
 
         {/* Scrolling Marquee Track */}
         <div className="w-full overflow-hidden flex items-center">
@@ -92,20 +118,18 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
             }}
           >
             {loopedMessages.map((item, idx) => {
-              const itemColor = item.textColor || '#f59e0b';
-              const dotColor = item.dotColor || itemColor;
+              const rawColor = item.textColor || '#f59e0b';
+              const dotColor = item.dotColor || rawColor;
+              const cleanTextColor = isClean ? '#0f172a' : rawColor;
 
               const content = (
                 <div className="inline-flex items-center gap-2.5 sm:gap-3 shrink-0 py-0.5">
-                  {/* Blinking Expanding Ripple Wave Beacon Dot (เหมือนคลิปวิดีโอ) */}
                   <BeaconRippleDot color={dotColor} size="md" />
-
-                  {/* Message Text with Customizable Color & Hover Glow */}
                   <span
-                    className="font-bold text-xs sm:text-[13.5px] tracking-wide transition-all"
+                    className="font-bold text-sm sm:text-base tracking-wide transition-all"
                     style={{
-                      color: itemColor,
-                      textShadow: `0 0 10px ${itemColor}40`,
+                      color: cleanTextColor,
+                      textShadow: isClean ? 'none' : `0 0 10px ${rawColor}40`,
                     }}
                   >
                     {item.text}

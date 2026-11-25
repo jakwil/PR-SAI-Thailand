@@ -4,6 +4,27 @@
   html {
     scroll-behavior: smooth;
     color-scheme: dark;
+    font-size: 16.5px;
+  }
+
+  @media (min-width: 640px) {
+    html {
+      font-size: 17.5px;
+    }
+  }
+
+  html.font-large {
+    font-size: 18px;
+  }
+
+  @media (min-width: 640px) {
+    html.font-large {
+      font-size: 19.5px;
+    }
+  }
+
+  html.theme-clean {
+    color-scheme: light;
   }
 
   body {
@@ -11,6 +32,12 @@
     color: #e2e8f0;
     overflow-x: clip;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html.theme-clean body {
+    background-color: #f8fafc;
+    color: #0f172a;
   }
 }
 
@@ -32,6 +59,19 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #d4af37;
+}
+
+html.theme-clean ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+html.theme-clean ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border: 1px solid #94a3b8;
+}
+
+html.theme-clean ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 /* Royal Luxury Gold & Navy Glow Borders */

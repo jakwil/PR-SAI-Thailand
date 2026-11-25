@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Play, Eye, Clock, X, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ViralClip } from '../types';
 import { playDigitalSound } from '../utils/audioEffects';
+import { useSiteTheme } from '../contexts/ThemeContext';
 
 interface ViralClipsSectionProps {
   clips: ViralClip[];
@@ -9,6 +10,7 @@ interface ViralClipsSectionProps {
 }
 
 export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onPlayingChange }) => {
+  const { isClean } = useSiteTheme();
   const [activeClipModal, setActiveClipModal] = useState<ViralClip | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -46,38 +48,48 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
 
   return (
     <div id="viral-clips" className="relative pt-0 pb-1 scroll-mt-20">
-      {/* Dedicated Ambient Glow Behind Viral Clips (Zero-blur CSS radial gradient) */}
-      <div
-        className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
-        aria-hidden="true"
-        style={{
-          background:
-            'radial-gradient(650px 320px at 80% 45%, rgba(245, 158, 11, 0.11), rgba(225, 29, 72, 0.08) 45%, rgba(37, 99, 235, 0.06) 65%, transparent 78%)',
-        }}
-      />
+      {/* Dedicated Ambient Glow Behind Viral Clips */}
+      {!isClean && (
+        <div
+          className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
+          aria-hidden="true"
+          style={{
+            background:
+              'radial-gradient(650px 320px at 80% 45%, rgba(245, 158, 11, 0.11), rgba(225, 29, 72, 0.08) 45%, rgba(37, 99, 235, 0.06) 65%, transparent 78%)',
+          }}
+        />
+      )}
 
-      {/* Horizontal Scroll Track: เลื่อนซ้ายขวาได้สะดวก */}
+      {/* Horizontal Scroll Track */}
       <div className="relative group/track">
         {/* Floating Left Carousel Scroll Arrow */}
         <button
           type="button"
           onClick={() => handleScroll('left')}
-          className="absolute -left-1.5 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-9 sm:h-9 rounded-full bg-[#040e2b]/90 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 hover:text-white transition-all active:scale-90 shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-md flex items-center justify-center cursor-pointer"
+          className={`absolute -left-1.5 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-9 sm:h-9 rounded-full border transition-all active:scale-90 backdrop-blur-md flex items-center justify-center cursor-pointer ${
+            isClean
+              ? 'bg-white/95 hover:bg-sky-50 border-slate-300 text-slate-700 hover:text-sky-700 shadow-md'
+              : 'bg-[#040e2b]/90 hover:bg-amber-500/30 border-amber-400/50 text-amber-300 hover:text-white shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
+          }`}
           aria-label="เลื่อนซ้าย"
           title="เลื่อนซ้าย"
         >
-          <ChevronLeft className="w-3.5 h-3.5 sm:w-5 sm:h-5 md:w-4 md:h-4 stroke-[2.5]" />
+          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 stroke-[2.5]" />
         </button>
 
         {/* Floating Right Carousel Scroll Arrow */}
         <button
           type="button"
           onClick={() => handleScroll('right')}
-          className="absolute -right-1.5 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-9 sm:h-9 rounded-full bg-[#040e2b]/90 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 hover:text-white transition-all active:scale-90 shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-md flex items-center justify-center cursor-pointer"
+          className={`absolute -right-1.5 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-9 sm:h-9 rounded-full border transition-all active:scale-90 backdrop-blur-md flex items-center justify-center cursor-pointer ${
+            isClean
+              ? 'bg-white/95 hover:bg-sky-50 border-slate-300 text-slate-700 hover:text-sky-700 shadow-md'
+              : 'bg-[#040e2b]/90 hover:bg-amber-500/30 border-amber-400/50 text-amber-300 hover:text-white shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
+          }`}
           aria-label="เลื่อนขวา"
           title="เลื่อนขวา"
         >
-          <ChevronRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 md:w-4 md:h-4 stroke-[2.5]" />
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 stroke-[2.5]" />
         </button>
 
         <div
@@ -89,7 +101,11 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
             <div
               key={clip.id}
               onClick={() => handleOpenClip(clip)}
-              className="group cursor-pointer rounded-xl sm:rounded-2xl bg-[#081a44]/96 border border-amber-400/30 hover:border-amber-400/70 transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.5)] sm:shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.25)] ring-1 ring-white/5 flex flex-col shrink-0 w-[130px] sm:w-[290px] md:w-[256px] xl:w-[280px] 2xl:w-[304px] snap-start overflow-hidden hover:scale-[1.01] active:scale-[0.98] transform-gpu"
+              className={`group cursor-pointer rounded-xl sm:rounded-2xl border transition-all duration-300 flex flex-col shrink-0 w-[140px] sm:w-[290px] md:w-[256px] xl:w-[280px] 2xl:w-[304px] snap-start overflow-hidden hover:scale-[1.01] active:scale-[0.98] transform-gpu ${
+                isClean
+                  ? 'bg-white border-slate-200 hover:border-sky-400 shadow-sm hover:shadow-md'
+                  : 'bg-[#081a44]/96 border-amber-400/30 hover:border-amber-400/70 shadow-[0_4px_16px_rgba(0,0,0,0.5)] sm:shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.25)] ring-1 ring-white/5'
+              }`}
               title={`กดที่ภาพเพื่อชมคลิป: ${clip.title}`}
             >
               {/* ภาพเต็มของคลิป (Full Edge-to-Edge Image with Centered Play Button) */}
@@ -128,9 +144,15 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
                 </div>
               </div>
 
-              {/* ด้านล่างมีแค่ชื่อคลิปแบบตัวหนาเท่านั้น */}
-              <div className="p-1.5 sm:p-3 md:p-2.5 flex-1 flex items-start">
-                <h3 className="text-[10px] sm:text-sm md:text-[13px] xl:text-sm font-bold text-white group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug">
+              {/* Title below clip */}
+              <div className="p-2 sm:p-3 flex-1 flex items-start">
+                <h3
+                  className={`text-xs sm:text-sm font-bold transition-colors line-clamp-2 leading-snug ${
+                    isClean
+                      ? 'text-slate-900 group-hover:text-sky-700'
+                      : 'text-white group-hover:text-amber-300'
+                  }`}
+                >
                   {clip.title}
                 </h3>
               </div>

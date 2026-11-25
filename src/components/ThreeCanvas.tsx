@@ -1,11 +1,48 @@
 import React from 'react';
+import { useSiteTheme } from '../contexts/ThemeContext';
 
 /**
- * RoyalBackground Component (Theme หรู Royal สีน้ำเงิน-ทอง)
- * แทนที่พื้นหลัง 3D เดิมด้วยพื้นหลังเรียบหรู สง่างาม ไร้ 3D (Non-3D Luxury Royal Navy & Gold)
- * ผสานลวดลายเรขาคณิต Royal Guilloché ลายทองบางเบา และแสงเรืองรองนุ่มนวลแบบราชการชั้นสูง
+ * RoyalBackground / CleanDaylightBackground Component
+ * รองรับทั้งโทน Royal Navy Dark และโทน Clean Light (สว่าง สะอาดตา)
  */
 export const ThreeCanvas: React.FC = () => {
+  const { isClean } = useSiteTheme();
+
+  if (isClean) {
+    return (
+      <div
+        className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none transform-gpu"
+        style={{ contain: 'strict' }}
+        aria-hidden="true"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-[#ffffff] via-[#f8fafc] to-[#f1f5f9]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: [
+              'radial-gradient(700px 480px at 20% 8%, rgba(14, 165, 233, 0.06), transparent 72%)',
+              'radial-gradient(620px 440px at 85% 28%, rgba(245, 158, 11, 0.05), transparent 72%)',
+              'radial-gradient(650px 480px at 50% 85%, rgba(59, 130, 246, 0.05), transparent 72%)',
+            ].join(', '),
+          }}
+        />
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.03] pointer-events-none"
+          xmlns="http://www.w3.org/2000/svg"
+          width="100%"
+          height="100%"
+        >
+          <defs>
+            <pattern id="clean-grid-lattice" width="48" height="48" patternUnits="userSpaceOnUse">
+              <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#0f172a" strokeWidth="0.6" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#clean-grid-lattice)" />
+        </svg>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none transform-gpu"
@@ -89,3 +126,4 @@ export const ThreeCanvas: React.FC = () => {
     </div>
   );
 };
+

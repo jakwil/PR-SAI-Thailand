@@ -5,12 +5,14 @@ import { ShareModal } from './ShareModal';
 import { SubscribeNewsModal } from './SubscribeNewsModal';
 import { saveNewsSubscriber } from '../firebase';
 import { playDigitalSound } from '../utils/audioEffects';
+import { useSiteTheme } from '../contexts/ThemeContext';
 
 interface HeroCarouselProps {
   stories: HeroStory[];
 }
 
 export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
+  const { isClean } = useSiteTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isInViewport, setIsInViewport] = useState(true);
@@ -109,10 +111,22 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Outer Holographic Container - ขยายด้านข้างเต็มความกว้าง (w-full) ด้านข้างไม่มีขอบ มีขอบเฉพาะบน-ล่าง (border-y) */}
-      <div className="relative rounded-none overflow-hidden bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26] border-y border-amber-400/40 border-x-0 shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_30px_rgba(245,158,11,0.2)]">
-        {/* Holographic Top Royal Gold Laser Accent Line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+      {/* Outer Container */}
+      <div
+        className={`relative rounded-none overflow-hidden border-y border-x-0 transition-colors ${
+          isClean
+            ? 'bg-white border-slate-200 shadow-[0_8px_28px_rgba(15,23,42,0.08)]'
+            : 'bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26] border-amber-400/40 shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_30px_rgba(245,158,11,0.2)]'
+        }`}
+      >
+        {/* Top Accent Line */}
+        <div
+          className={`absolute top-0 left-0 right-0 h-[2px] ${
+            isClean
+              ? 'bg-gradient-to-r from-sky-500/60 via-amber-500/60 to-sky-500/60'
+              : 'bg-gradient-to-r from-transparent via-amber-400 to-transparent'
+          }`}
+        />
 
         {/* Main Carousel Display (Grid 12-cols) - ขยายภาพไปทางขวา 40% (lg:col-span-9) ข้อความชิดด้านบน - สูงขึ้น 15% */}
         <div className="grid grid-cols-1 lg:grid-cols-12 lg:h-[426px] xl:h-[455px] 2xl:h-[490px] items-stretch">
@@ -156,9 +170,17 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
                       }}
                     />
 
-                    {/* Royal Navy & Warm Gold Scrim */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#030d26] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-[#030d26]/85 pointer-events-none" />
-                    <div className="absolute inset-0 bg-amber-950/15 mix-blend-color-dodge pointer-events-none" />
+                    {/* Image Scrim */}
+                    <div
+                      className={`absolute inset-0 pointer-events-none ${
+                        isClean
+                          ? 'bg-gradient-to-t from-slate-900/35 via-transparent to-transparent lg:bg-none'
+                          : 'bg-gradient-to-t from-[#030d26] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-[#030d26]/85'
+                      }`}
+                    />
+                    {!isClean && (
+                      <div className="absolute inset-0 bg-amber-950/15 mix-blend-color-dodge pointer-events-none" />
+                    )}
                   </a>
                 </div>
               );
@@ -239,10 +261,17 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
             </div>
           </div>
 
-          {/* Right Column: News Content with Dissolve Transition (Clean Royal Navy Background) */}
-          <div className="lg:col-span-3 p-3.5 sm:p-4 md:max-lg:p-3 md:max-lg:py-2.5 lg:p-6 flex flex-col justify-between text-left space-y-2 md:max-lg:space-y-1 relative z-10 h-full overflow-hidden lg:bg-gradient-to-b lg:from-[#081942] lg:via-[#061333] lg:to-[#030b21] lg:border-l lg:border-amber-400/25">
-            {/* Subtle Clean Navy Depth Wash on Desktop */}
-            <div className="hidden lg:block absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.14)_0%,transparent_70%)] pointer-events-none" />
+          {/* Right Column: News Content */}
+          <div
+            className={`lg:col-span-3 p-4 sm:p-5 md:max-lg:p-4 lg:p-6 flex flex-col justify-between text-left space-y-3 relative z-10 h-full overflow-hidden ${
+              isClean
+                ? 'bg-white border-t lg:border-t-0 lg:border-l border-slate-200'
+                : 'lg:bg-gradient-to-b lg:from-[#081942] lg:via-[#061333] lg:to-[#030b21] lg:border-l lg:border-amber-400/25'
+            }`}
+          >
+            {!isClean && (
+              <div className="hidden lg:block absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.14)_0%,transparent_70%)] pointer-events-none" />
+            )}
 
             <div className="relative z-10 w-full">
               {validStories.map((story, idx) => {
@@ -263,7 +292,13 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
                       className="block group/title focus:outline-none"
                       title={`คลิกเพื่ออ่านรายละเอียด: ${story.title}`}
                     >
-                      <h2 className="text-sm sm:text-base md:text-base md:max-lg:text-sm lg:text-lg xl:text-xl font-bold text-white leading-snug md:max-lg:leading-snug group-hover/title:text-amber-300 transition-colors line-clamp-3 md:max-lg:line-clamp-2 lg:line-clamp-5">
+                      <h2
+                        className={`text-base sm:text-lg lg:text-xl font-extrabold leading-snug transition-colors line-clamp-3 md:max-lg:line-clamp-3 lg:line-clamp-5 ${
+                          isClean
+                            ? 'text-slate-900 group-hover/title:text-sky-700'
+                            : 'text-white group-hover/title:text-amber-300'
+                        }`}
+                      >
                         {story.title}
                       </h2>
                     </a>
@@ -273,30 +308,41 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
             </div>
 
             {/* Follow News Action Button in Content Box */}
-            <div className="relative z-10 pt-2 border-t border-amber-400/25 flex items-center justify-between gap-2">
+            <div
+              className={`relative z-10 pt-2.5 border-t flex items-center justify-between gap-2 ${
+                isClean ? 'border-slate-200' : 'border-amber-400/25'
+              }`}
+            >
               <button
                 type="button"
                 onClick={() => {
                   playDigitalSound('select');
                   setSubscribeStory(current);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 to-yellow-500/15 hover:from-amber-500/30 hover:to-yellow-500/25 border border-amber-400/50 text-amber-300 hover:text-white text-xs font-semibold transition-all active:scale-95 shadow-sm cursor-pointer"
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border text-xs sm:text-sm font-bold transition-all active:scale-95 shadow-sm cursor-pointer ${
+                  isClean
+                    ? 'bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-800'
+                    : 'bg-gradient-to-r from-amber-500/20 to-yellow-500/15 hover:from-amber-500/30 hover:to-yellow-500/25 border-amber-400/50 text-amber-300 hover:text-white'
+                }`}
                 title="กรอกอีเมลเพื่อติดตามข่าวสารเรื่องนี้"
               >
-                <Bell className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                <Bell className={`w-3.5 h-3.5 animate-pulse ${isClean ? 'text-amber-600' : 'text-amber-400'}`} />
                 <span>ติดตามข่าวเรื่องนี้</span>
               </button>
 
-              <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+              <span className={`text-xs font-mono hidden sm:inline font-medium ${isClean ? 'text-slate-600' : 'text-slate-300'}`}>
                 {current.category}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar: Step Selectors (ไม่ต้องมีแท่ง Progress ตามคำขอ) */}
-        <div className="bg-[#03091e]/95 border-t border-amber-500/20 px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-center sm:justify-end">
-          {/* Step indicators without numbers */}
+        {/* Bottom Bar: Step Selectors */}
+        <div
+          className={`px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-center sm:justify-end border-t ${
+            isClean ? 'bg-slate-50 border-slate-200' : 'bg-[#03091e]/95 border-amber-500/20'
+          }`}
+        >
           <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 max-w-full">
             {validStories.map((s, idx) => {
               const isActive = idx === currentIndex;
@@ -309,7 +355,11 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ stories }) => {
                   }}
                   className={`h-1.5 rounded-full transition-all shrink-0 cursor-pointer ${
                     isActive
-                      ? 'w-7 bg-gradient-to-r from-amber-400 to-yellow-400 shadow-[0_0_8px_rgba(245,158,11,0.7)]'
+                      ? isClean
+                        ? 'w-7 bg-sky-600 shadow-sm'
+                        : 'w-7 bg-gradient-to-r from-amber-400 to-yellow-400 shadow-[0_0_8px_rgba(245,158,11,0.7)]'
+                      : isClean
+                      ? 'w-2 bg-slate-300 hover:bg-sky-400'
                       : 'w-2 bg-slate-700/80 hover:bg-amber-400/60'
                   }`}
                   aria-label={`ไปยังข่าวที่ ${idx + 1}`}

@@ -13,11 +13,15 @@ import {
   Radio,
   Search,
   BarChart3,
-  Network
+  Network,
+  Sun,
+  Moon,
+  Type
 } from 'lucide-react';
 import { AppData } from '../types';
 import { QuickSearchBar } from './QuickSearchBar';
 import { playDigitalSound } from '../utils/audioEffects';
+import { useSiteTheme } from '../contexts/ThemeContext';
 
 interface NavbarProps {
   isAdminLoggedIn: boolean;
@@ -34,6 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBureauStructure,
   searchData,
 }) => {
+  const { isClean, toggleSiteTheme, isLargeFont, toggleFontScale } = useSiteTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
@@ -119,14 +124,26 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      {/* Clean Royal Navy Fixed Header (อยู่ตลอดไม่หาย ไม่ว่าจะเลื่อนขึ้นหรือเลื่อนลง) */}
-      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-gradient-to-r from-[#040e28]/95 via-[#07163d]/95 to-[#040e28]/95 backdrop-blur-xl border-b border-cyan-500/25 shadow-[0_4px_24px_rgba(0,0,0,0.75)] select-none overflow-hidden">
+      {/* Fixed Header (รองรับทั้งโทน Royal Navy และโทนสีคลีน) */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 w-full backdrop-blur-xl select-none overflow-hidden transition-colors duration-300 ${
+          isClean
+            ? 'bg-white/95 border-b border-slate-200 shadow-sm'
+            : 'bg-gradient-to-r from-[#040e28]/95 via-[#07163d]/95 to-[#040e28]/95 border-b border-cyan-500/25 shadow-[0_4px_24px_rgba(0,0,0,0.75)]'
+        }`}
+      >
         {/* Subtle Top Luminous Accent Line */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent pointer-events-none" />
+        <div
+          className={`absolute top-0 left-0 right-0 h-[1.5px] pointer-events-none ${
+            isClean
+              ? 'bg-gradient-to-r from-sky-500/60 via-amber-500/60 to-sky-500/60'
+              : 'bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent'
+          }`}
+        />
 
-        {/* Header Content Container - Slightly Enlarged (+10%) Slim Navbar */}
-        <div className="relative w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto h-12 sm:h-[54px] flex items-center justify-between gap-2 sm:gap-4">
-          {/* Zone 1: Brand Logo & Title (+10% Enlarged) */}
+        {/* Header Content Container */}
+        <div className="relative w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto h-13 sm:h-[58px] flex items-center justify-between gap-2 sm:gap-4">
+          {/* Zone 1: Brand Logo & Title */}
           <a
             href="#home"
             onClick={(e) => {
@@ -142,39 +159,61 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="กลับสู่หน้าแรก (Home)"
             className="flex items-center gap-2.5 whitespace-nowrap shrink-0 group focus:outline-none rounded-lg p-0.5 cursor-pointer transition-opacity hover:opacity-90"
           >
-            {/* Compact Logo (+10%) */}
+            {/* Compact Logo */}
             <div className="relative shrink-0 flex items-center justify-center">
               <img
                 src="https://i.postimg.cc/90TgPftw/Untitled-design-2026-10-13T095211-499.png"
                 alt="โลโก้สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง."
                 referrerPolicy="no-referrer"
-                className="relative z-10 h-[27px] sm:h-[31px] w-auto object-contain transition-transform duration-200 group-hover:scale-105 shrink-0 drop-shadow-[0_1px_6px_rgba(245,158,11,0.3)]"
+                className="relative z-10 h-[28px] sm:h-[32px] w-auto object-contain transition-transform duration-200 group-hover:scale-105 shrink-0 drop-shadow-[0_1px_6px_rgba(245,158,11,0.3)]"
                 onError={(e) => {
                   (e.target as HTMLElement).style.display = 'none';
                 }}
               />
             </div>
 
-            {/* Brand Typography: PR - SAI Thailand + สำนักประชาสัมพันธ์และสื่อสารองค์กร */}
+            {/* Brand Typography */}
             <div className="flex items-center">
               <div className="flex flex-col justify-center leading-none">
-                <span className="text-[13px] sm:text-[15px] font-bold tracking-tight leading-tight text-white group-hover:text-amber-300 transition-colors">
-                  <span className="bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
-                    PR - SAI Thailand
-                  </span>
+                <span
+                  className={`text-sm sm:text-base font-extrabold tracking-tight leading-tight transition-colors ${
+                    isClean
+                      ? 'text-slate-900 group-hover:text-sky-700'
+                      : 'text-white group-hover:text-amber-300'
+                  }`}
+                >
+                  {isClean ? (
+                    'PR - SAI Thailand'
+                  ) : (
+                    <span className="bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
+                      PR - SAI Thailand
+                    </span>
+                  )}
                 </span>
-                <span className="text-[9px] sm:text-[10.5px] font-medium tracking-wide text-amber-300/90 group-hover:text-amber-200 transition-colors leading-tight mt-[1px]">
+                <span
+                  className={`text-[10px] sm:text-xs font-semibold tracking-wide leading-tight mt-[1px] transition-colors ${
+                    isClean
+                      ? 'text-sky-700 group-hover:text-sky-900'
+                      : 'text-amber-300/90 group-hover:text-amber-200'
+                  }`}
+                >
                   สำนักประชาสัมพันธ์และสื่อสารองค์กร
                 </span>
               </div>
             </div>
           </a>
 
-          {/* Zone 2: Navigation Links (Desktop +10%) */}
-          <nav className="hidden lg:flex items-center gap-4 xl:gap-5 text-[13px] xl:text-[14px] font-medium text-slate-300">
+          {/* Zone 2: Navigation Links (Larger & Clearer) */}
+          <nav
+            className={`hidden lg:flex items-center gap-4 xl:gap-5 text-sm font-semibold ${
+              isClean ? 'text-slate-700' : 'text-slate-200'
+            }`}
+          >
             <a
               href="#home"
-              className="hover:text-white transition-colors whitespace-nowrap shrink-0 py-1"
+              className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
+                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+              }`}
             >
               หน้าแรก
             </a>
@@ -184,34 +223,48 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 onOpenBureauStructure();
               }}
-              className="hover:text-amber-300 transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5 text-amber-200/95 font-medium cursor-pointer"
+              className={`transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5 font-semibold cursor-pointer ${
+                isClean
+                  ? 'text-amber-700 hover:text-amber-900'
+                  : 'text-amber-200 hover:text-amber-300'
+              }`}
               title="เปิดดูโครงสร้าง 4 กลุ่มงาน ภารกิจ และผลงานสำนักประชาสัมพันธ์ฯ (เต็มจอ)"
             >
-              <Network className="w-3.5 h-3.5 text-amber-400" />
+              <Network className={`w-4 h-4 ${isClean ? 'text-amber-600' : 'text-amber-400'}`} />
               <span>โครงสร้างและภารกิจ</span>
             </button>
             <a
               href="#viral-clips"
-              className="hover:text-white transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5"
+              className={`transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5 ${
+                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+              }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-amber-200 font-semibold">ข่าว & คลิปไวรัล</span>
+              <span className={`w-2 h-2 rounded-full animate-pulse ${isClean ? 'bg-amber-500' : 'bg-amber-400'}`} />
+              <span className={isClean ? 'text-slate-900 font-bold' : 'text-amber-200 font-bold'}>
+                ข่าว & คลิปไวรัล
+              </span>
             </a>
             <a
               href="#incident-timeline"
-              className="hover:text-white transition-colors whitespace-nowrap shrink-0 py-1"
+              className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
+                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+              }`}
             >
               สถานการณ์อาคาร สตง.
             </a>
             <a
               href="#published-works"
-              className="hover:text-white transition-colors whitespace-nowrap shrink-0 py-1"
+              className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
+                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+              }`}
             >
               คลังสื่อดิจิทัล
             </a>
             <a
               href="#public-interest"
-              className="hover:text-white transition-colors whitespace-nowrap shrink-0 py-1"
+              className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
+                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+              }`}
             >
               ข้อมูล e-Audit
             </a>
@@ -222,17 +275,70 @@ export const Navbar: React.FC<NavbarProps> = ({
                   playDigitalSound('select');
                   onOpenAdminPanel();
                 }}
-                className="hover:text-amber-300 transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1 text-amber-300/90 font-medium"
+                className={`transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1 font-semibold cursor-pointer ${
+                  isClean ? 'text-sky-700 hover:text-sky-900' : 'text-amber-300 hover:text-amber-200'
+                }`}
                 title="ดูศูนย์วิเคราะห์สถิติ Real-time (เฉพาะผู้ดูแลระบบ)"
               >
-                <BarChart3 className="w-4 h-4 text-amber-400" />
+                <BarChart3 className={`w-4 h-4 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
                 <span>แดชบอร์ดสถิติ</span>
               </button>
             )}
           </nav>
 
-          {/* Zone 3: Minimalist Actions (+10%) */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 relative">
+          {/* Zone 3: Theme Switcher, Text Size, Search, PR CTA, Biometric */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
+            {/* Website Color Theme Selector: Clean Light vs Royal Navy */}
+            <button
+              type="button"
+              onClick={() => {
+                playDigitalSound('switch');
+                toggleSiteTheme();
+              }}
+              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-bold border transition-all active:scale-95 cursor-pointer whitespace-nowrap ${
+                isClean
+                  ? 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900 shadow-sm'
+                  : 'bg-white/95 hover:bg-white text-slate-900 border-white/80 shadow-sm'
+              }`}
+              title={isClean ? 'เปลี่ยนกลับเป็นโทน Royal Navy (เข้ม)' : 'เปลี่ยนเป็นโทนสีคลีน (สว่าง สบายตา)'}
+              aria-label="สลับโทนสีเว็บไซต์"
+            >
+              {isClean ? (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                  <span className="hidden xs:inline">โทนเข้ม</span>
+                </>
+              ) : (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span className="hidden xs:inline">โทนคลีน</span>
+                </>
+              )}
+            </button>
+
+            {/* Font Size Toggle (ใหญ่พิเศษ / ปกติ) */}
+            <button
+              type="button"
+              onClick={() => {
+                playDigitalSound('blip');
+                toggleFontScale();
+              }}
+              className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-full text-xs font-extrabold border transition-all active:scale-95 cursor-pointer whitespace-nowrap ${
+                isLargeFont
+                  ? isClean
+                    ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                    : 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm'
+                  : isClean
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+                  : 'bg-white/10 hover:bg-white/20 text-slate-200 border-white/20'
+              }`}
+              title={isLargeFont ? 'สลับเป็นตัวอักษรขนาดมาตรฐานชัด' : 'ขยายตัวอักษรให้ใหญ่พิเศษ'}
+              aria-label="ปรับขนาดตัวอักษร"
+            >
+              <Type className="w-3.5 h-3.5 shrink-0" />
+              <span>{isLargeFont ? 'ก++' : 'ก+'}</span>
+            </button>
+
             {/* Minimalist Search Icon Button */}
             <button
               type="button"
@@ -240,19 +346,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('blip');
                 setSearchModalOpen(true);
               }}
-              className="p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer flex items-center justify-center group"
+              className={`p-1.5 sm:p-2 rounded-full transition-colors cursor-pointer flex items-center justify-center group ${
+                isClean
+                  ? 'text-slate-700 hover:text-sky-700 hover:bg-slate-100'
+                  : 'text-slate-200 hover:text-white hover:bg-white/10'
+              }`}
               title="ค้นหาด่วนทั่วทั้งเว็บไซต์ (Ctrl + K)"
               aria-label="ค้นหาด่วนทั่วทั้งเว็บไซต์"
             >
-              <Search className="w-[18px] h-[18px] text-slate-300 group-hover:text-amber-300 transition-colors" />
+              <Search className="w-[18px] h-[18px] transition-colors" />
             </button>
 
-            {/* PR Request Portal CTA - Slim Apple Pill Button (+10%) */}
+            {/* PR Request Portal CTA */}
             <a
               href="https://pr-request-system.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-bold text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all whitespace-nowrap shrink-0"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all whitespace-nowrap shrink-0"
               title="ขอรับการสนับสนุนงาน PR สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง."
             >
               <span>ขอรับการสนับสนุนงาน PR</span>
@@ -344,7 +454,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('switch');
                 setMobileMenuOpen(!mobileMenuOpen);
               }}
-              className="lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              className={`lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+                isClean
+                  ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
               aria-label="Toggle navigation"
               title={mobileMenuOpen ? 'ปิดเมนู' : 'เปิดเมนู'}
             >
@@ -354,7 +468,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </header>
       {/* Spacer to preserve document flow height for fixed navbar */}
-      <div className="h-12 sm:h-[54px] w-full shrink-0 pointer-events-none" aria-hidden="true" />
+      <div className="h-13 sm:h-[58px] w-full shrink-0 pointer-events-none" aria-hidden="true" />
 
       {/* Sitewide Instant Search Modal */}
       {searchModalOpen && (
@@ -399,44 +513,46 @@ export const Navbar: React.FC<NavbarProps> = ({
         />
       )}
 
-      {/* Compact Right-Aligned Drawer */}
+      {/* Compact Right-Aligned Drawer (ไม่มีปุ่มขอรับการสนับสนุนและกระชับขอบบนพอดี) */}
       {mobileMenuOpen && (
-        <div className="fixed top-[50px] sm:top-[56px] right-2 sm:right-3 md:right-4 z-50 w-[245px] sm:w-[260px] md:w-[275px] bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26]/98 backdrop-blur-2xl border-2 border-amber-400/60 rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.3)] p-3 space-y-2 lg:hidden animate-slide-in-right overflow-hidden select-none">
-          {/* Royal Gold Grid Texture */}
-          <div className="absolute inset-0 bg-digital-grid opacity-20 pointer-events-none" />
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_8px_rgba(245,158,11,0.8)] pointer-events-none" />
+        <div
+          className={`fixed top-[54px] sm:top-[60px] right-2 sm:right-3 md:right-4 z-50 w-[235px] sm:w-[250px] backdrop-blur-2xl rounded-2xl p-2.5 lg:hidden animate-slide-in-right overflow-hidden select-none ${
+            isClean
+              ? 'bg-white/98 border border-slate-200 shadow-[0_16px_40px_rgba(15,23,42,0.16)]'
+              : 'bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26]/98 border-2 border-amber-400/60 shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.3)]'
+          }`}
+        >
+          {/* Floating Compact Close Button (ไม่กินพื้นที่แถวบน) */}
+          <button
+            onClick={() => {
+              playDigitalSound('blip');
+              setMobileMenuOpen(false);
+            }}
+            className={`absolute top-2 right-2 z-20 p-1 rounded-md transition-colors cursor-pointer ${
+              isClean
+                ? 'text-slate-400 hover:text-slate-900 hover:bg-slate-100'
+                : 'text-slate-400 hover:text-white hover:bg-white/10'
+            }`}
+            aria-label="ปิดเมนู"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
 
-          {/* Tech Viewport Corner Brackets */}
-          <div className="absolute top-1.5 left-1.5 w-2 h-2 border-t-2 border-l-2 border-amber-400/80 pointer-events-none" />
-          <div className="absolute top-1.5 right-1.5 w-2 h-2 border-t-2 border-r-2 border-amber-400/80 pointer-events-none" />
-          <div className="absolute bottom-1.5 left-1.5 w-2 h-2 border-b-2 border-l-2 border-amber-400/80 pointer-events-none" />
-          <div className="absolute bottom-1.5 right-1.5 w-2 h-2 border-b-2 border-r-2 border-amber-400/80 pointer-events-none" />
-
-          {/* Drawer Close Button */}
-          <div className="flex items-center justify-end relative z-10">
-            <button
-              onClick={() => {
-                playDigitalSound('blip');
-                setMobileMenuOpen(false);
-              }}
-              className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              aria-label="ปิดเมนู"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Navigation Links with Icons & Royal Hover Effects (Complete access to all data) */}
-          <nav className="space-y-1 relative z-10 text-[12.5px]">
+          {/* Navigation Links */}
+          <nav className="space-y-1 relative z-10 text-sm pr-5">
             <a
               href="#home"
               onClick={() => {
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
+              className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg transition-all ${
+                isClean
+                  ? 'text-slate-800 hover:text-sky-700 hover:bg-sky-50'
+                  : 'text-slate-100 hover:text-amber-300 hover:bg-amber-500/15'
+              }`}
             >
-              <Home className="w-4 h-4 text-amber-400 shrink-0" />
+              <Home className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
               <span>หน้าแรก</span>
             </a>
 
@@ -447,9 +563,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setMobileMenuOpen(false);
                 onOpenBureauStructure();
               }}
-              className="w-full flex items-center gap-2.5 px-2.5 py-2 font-medium text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all text-left cursor-pointer"
+              className={`w-full flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg border transition-all text-left cursor-pointer ${
+                isClean
+                  ? 'text-amber-800 bg-amber-50/70 hover:bg-amber-100 border-amber-200'
+                  : 'text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 border-amber-500/30'
+              }`}
             >
-              <Network className="w-4 h-4 text-amber-400 shrink-0" />
+              <Network className={`w-4 h-4 shrink-0 ${isClean ? 'text-amber-600' : 'text-amber-400'}`} />
               <span>โครงสร้างและภารกิจ</span>
             </button>
 
@@ -459,9 +579,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-amber-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
+              className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg transition-all ${
+                isClean
+                  ? 'text-slate-800 hover:text-sky-700 hover:bg-sky-50'
+                  : 'text-amber-200 hover:text-amber-300 hover:bg-amber-500/15'
+              }`}
             >
-              <Radio className="w-4 h-4 text-amber-400 shrink-0" />
+              <Radio className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
               <span>ข่าว & คลิปไวรัล สตง.</span>
             </a>
 
@@ -471,9 +595,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-amber-300 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all"
+              className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg border transition-all ${
+                isClean
+                  ? 'text-rose-700 bg-rose-50/70 hover:bg-rose-100 border-rose-200'
+                  : 'text-amber-300 hover:bg-amber-500/20 border-amber-500/30'
+              }`}
             >
-              <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+              <Clock className={`w-4 h-4 shrink-0 ${isClean ? 'text-rose-600' : 'text-amber-400'}`} />
               <span>สถานการณ์อาคาร สตง.</span>
             </a>
 
@@ -483,9 +611,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
+              className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg transition-all ${
+                isClean
+                  ? 'text-slate-800 hover:text-sky-700 hover:bg-sky-50'
+                  : 'text-slate-100 hover:text-amber-300 hover:bg-amber-500/15'
+              }`}
             >
-              <Film className="w-4 h-4 text-amber-400 shrink-0" />
+              <Film className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
               <span>คลังสื่อดิจิทัล</span>
             </a>
 
@@ -495,9 +627,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playDigitalSound('select');
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2.5 px-2.5 py-2 font-medium text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 rounded-lg border border-transparent hover:border-amber-500/30 transition-all"
+              className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg transition-all ${
+                isClean
+                  ? 'text-slate-800 hover:text-sky-700 hover:bg-sky-50'
+                  : 'text-slate-100 hover:text-amber-300 hover:bg-amber-500/15'
+              }`}
             >
-              <HelpCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              <HelpCircle className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
               <span>ประเด็นเด่นที่น่าสนใจ (e-Audit)</span>
             </a>
 
@@ -509,27 +645,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   onOpenAdminPanel();
                 }}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 font-medium text-amber-300 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-all text-left"
+                className={`w-full flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg border transition-all text-left cursor-pointer ${
+                  isClean
+                    ? 'text-sky-800 bg-sky-50 border-sky-200'
+                    : 'text-amber-300 hover:bg-amber-500/20 border-amber-500/30'
+                }`}
               >
-                <BarChart3 className="w-4 h-4 text-amber-400 shrink-0" />
+                <BarChart3 className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
                 <span>แดชบอร์ดสถิติ (Admin)</span>
               </button>
             )}
           </nav>
-
-          {/* Request Media Portal Button */}
-          <div className="pt-2 border-t border-cyan-500/20 relative z-10">
-            <a
-              href="https://pr-request-system.vercel.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between px-3 py-2 text-[12.5px] font-bold text-slate-950 bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-500 hover:from-yellow-300 hover:to-yellow-400 rounded-lg shadow-md shadow-yellow-500/20 active:scale-95 transition-all"
-            >
-              <span className="truncate">ขอรับการสนับสนุนงาน PR</span>
-              <ExternalLink className="w-3.5 h-3.5 shrink-0 ml-1" />
-            </a>
-          </div>
         </div>
       )}
     </>

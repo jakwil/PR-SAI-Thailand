@@ -26,6 +26,7 @@ import { PublishedWork } from '../types';
 import { ShareModal } from './ShareModal';
 import { playDigitalSound } from '../utils/audioEffects';
 import { recordShareEvent } from '../utils/analytics';
+import { useSiteTheme } from '../contexts/ThemeContext';
 
 interface PublishedWorksSectionProps {
   works: PublishedWork[];
@@ -84,6 +85,7 @@ const RESOLUTION_STYLES: Record<string, ResolutionConfig> = {
 };
 
 export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ works }) => {
+  const { isClean } = useSiteTheme();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModalWork, setActiveModalWork] = useState<PublishedWork | null>(null);
   const [shareItem, setShareItem] = useState<PublishedWork | null>(null);
@@ -223,69 +225,90 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
   return (
     <section
       id="published-works"
-      className="relative pt-10 sm:pt-14 pb-14 sm:pb-20 mt-8 sm:mt-14 mb-10 sm:mb-16 w-full bg-gradient-to-b from-[#061433] via-[#040e26] to-[#020718] border-y border-cyan-500/25 shadow-[0_20px_70px_rgba(0,0,0,0.85)] overflow-hidden text-slate-100 scroll-mt-24"
+      className={`relative pt-10 sm:pt-14 pb-14 sm:pb-20 mt-8 sm:mt-14 mb-10 sm:mb-16 w-full border-y overflow-hidden scroll-mt-24 transition-colors duration-300 ${
+        isClean
+          ? 'bg-gradient-to-b from-slate-50 via-white to-slate-100 border-slate-200 shadow-sm text-slate-900'
+          : 'bg-gradient-to-b from-[#061433] via-[#040e26] to-[#020718] border-cyan-500/25 shadow-[0_20px_70px_rgba(0,0,0,0.85)] text-slate-100'
+      }`}
     >
-      {/* Refined Luxury Luminous Top Accent Line */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/80 via-amber-400/70 to-transparent shadow-[0_0_15px_rgba(56,189,248,0.4)] z-10" />
+      {/* Top Accent Line */}
+      <div
+        className={`absolute top-0 left-0 right-0 h-[2px] z-10 ${
+          isClean
+            ? 'bg-gradient-to-r from-transparent via-sky-500/70 via-amber-400/70 to-transparent'
+            : 'bg-gradient-to-r from-transparent via-cyan-400/80 via-amber-400/70 to-transparent shadow-[0_0_15px_rgba(56,189,248,0.4)]'
+        }`}
+      />
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent pointer-events-none" />
 
-      {/* SUBTLE DIGITAL MEDIA ARCHIVE BACKGROUND (Harmonious with the rest of the site, subtle distinction) */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
-        {/* Subtle Fine Micro-Grid */}
-        <div className="absolute inset-0 bg-digital-grid opacity-15" />
+      {/* SUBTLE DIGITAL MEDIA ARCHIVE BACKGROUND */}
+      {!isClean && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+          <div className="absolute inset-0 bg-digital-grid opacity-15" />
 
-        {/* Elegant Minimalist Media Geometric Lattice */}
-        <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="refinedMediaPattern" width="60" height="60" patternUnits="userSpaceOnUse">
-              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#38bdf8" strokeWidth="0.5" strokeOpacity="0.4" />
-              <circle cx="60" cy="0" r="1" fill="#38bdf8" fillOpacity="0.5" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#refinedMediaPattern)" />
-        </svg>
+          <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="refinedMediaPattern" width="60" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#38bdf8" strokeWidth="0.5" strokeOpacity="0.4" />
+                <circle cx="60" cy="0" r="1" fill="#38bdf8" fillOpacity="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#refinedMediaPattern)" />
+          </svg>
 
-        {/* Soft Ambient Glows: Midnight Cyan, Royal Sapphire & Warm Amber (Zero-blur CSS radial gradients) */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(600px 350px at 32% 8%, rgba(8, 145, 178, 0.12), transparent 72%), radial-gradient(650px 360px at 72% 52%, rgba(29, 78, 216, 0.14), transparent 74%), radial-gradient(550px 320px at 36% 92%, rgba(67, 56, 202, 0.10), transparent 72%), radial-gradient(400px 260px at 90% 35%, rgba(245, 158, 11, 0.08), transparent 70%)',
-          }}
-        />
-      </div>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(600px 350px at 32% 8%, rgba(8, 145, 178, 0.12), transparent 72%), radial-gradient(650px 360px at 72% 52%, rgba(29, 78, 216, 0.14), transparent 74%), radial-gradient(550px 320px at 36% 92%, rgba(67, 56, 202, 0.10), transparent 72%), radial-gradient(400px 260px at 90% 35%, rgba(245, 158, 11, 0.08), transparent 70%)',
+            }}
+          />
+        </div>
+      )}
 
       {/* Header & Comprehensive Search Container */}
       <div className="relative w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 mx-auto mb-4 sm:mb-6">
         {/* Top Header & Search Bar Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-5 pb-3 border-b border-cyan-500/25">
+        <div
+          className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-5 pb-3 border-b ${
+            isClean ? 'border-slate-200' : 'border-cyan-500/25'
+          }`}
+        >
           <div className="w-full sm:w-auto overflow-hidden">
             <h2
-              className="text-[14px] min-[360px]:text-[15px] min-[400px]:text-base min-[480px]:text-lg sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight whitespace-nowrap truncate drop-shadow-sm"
+              className={`text-base min-[360px]:text-lg sm:text-2xl lg:text-3xl font-extrabold tracking-tight whitespace-nowrap truncate drop-shadow-sm ${
+                isClean ? 'text-slate-900' : 'text-white'
+              }`}
               title="คลังสื่อดิจิทัล สำนักประชาสัมพันธ์และสื่อสารองค์กร"
             >
               คลังสื่อดิจิทัล สำนักประชาสัมพันธ์และสื่อสารองค์กร
             </h2>
           </div>
 
-          {/* COMPREHENSIVE SEARCH BAR (เน้นการ Search ที่สมบูรณ์เป็นหลัก) */}
+          {/* COMPREHENSIVE SEARCH BAR */}
           <div className="w-full sm:w-auto flex items-center">
             <div className="relative w-full sm:w-[320px] lg:w-[380px]">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Search className="w-4 h-4 text-cyan-400" />
+                <Search className={`w-4 h-4 ${isClean ? 'text-sky-600' : 'text-cyan-400'}`} />
               </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ค้นหาคลิป สารคดี อินโฟกราฟิก หรือหัวข้อข่าว..."
-                className="w-full pl-10 pr-9 py-2 rounded-xl bg-[#061430]/90 border border-cyan-500/35 focus:border-cyan-300 focus:outline-none text-xs sm:text-sm text-white placeholder-slate-400 shadow-inner transition-all focus:ring-4 focus:ring-cyan-500/20"
+                className={`w-full pl-10 pr-9 py-2.5 rounded-xl border focus:outline-none text-sm shadow-inner transition-all focus:ring-4 ${
+                  isClean
+                    ? 'bg-white border-slate-300 focus:border-sky-500 text-slate-900 placeholder-slate-500 focus:ring-sky-500/15'
+                    : 'bg-[#061430]/90 border-cyan-500/35 focus:border-cyan-300 text-white placeholder-slate-400 focus:ring-cyan-500/20'
+                }`}
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  className={`absolute inset-y-0 right-0 pr-3 flex items-center transition-colors cursor-pointer ${
+                    isClean ? 'text-slate-500 hover:text-slate-900' : 'text-slate-400 hover:text-white'
+                  }`}
                   title="ล้างข้อความค้นหา"
                 >
                   <X className="w-4 h-4" />
@@ -304,7 +327,11 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
           <button
             type="button"
             onClick={() => handleScrollRow(row1Ref, 'left')}
-            className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#05112c]/95 hover:bg-cyan-500/30 text-cyan-300 hover:text-white border border-cyan-400/40 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row1:opacity-100"
+            className={`absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full border shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row1:opacity-100 ${
+              isClean
+                ? 'bg-white/95 hover:bg-sky-600 text-slate-700 hover:text-white border-slate-300'
+                : 'bg-[#05112c]/95 hover:bg-cyan-500/30 text-cyan-300 hover:text-white border-cyan-400/40'
+            }`}
             title="เลื่อนซ้ายแถวที่ 1"
             aria-label="เลื่อนซ้ายแถวที่ 1"
           >
@@ -315,7 +342,11 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
           <button
             type="button"
             onClick={() => handleScrollRow(row1Ref, 'right')}
-            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#05112c]/95 hover:bg-cyan-500/30 text-cyan-300 hover:text-white border border-cyan-400/40 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row1:opacity-100"
+            className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full border shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row1:opacity-100 ${
+              isClean
+                ? 'bg-white/95 hover:bg-sky-600 text-slate-700 hover:text-white border-slate-300'
+                : 'bg-[#05112c]/95 hover:bg-cyan-500/30 text-cyan-300 hover:text-white border-cyan-400/40'
+            }`}
             title="เลื่อนขวาแถวที่ 1"
             aria-label="เลื่อนขวาแถวที่ 1"
           >
@@ -335,7 +366,9 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                   <div
                     key={`r1-${work.id}`}
                     onClick={() => handleOpenCard(work)}
-                    className={`group relative shrink-0 snap-start rounded-lg sm:rounded-xl overflow-hidden cursor-pointer bg-slate-950 border border-slate-800 shadow-sm hover:shadow-xl hover:border-cyan-400 hover:ring-2 hover:ring-cyan-400/80 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:z-10 ${resConfig.containerClass}`}
+                    className={`group relative shrink-0 snap-start rounded-lg sm:rounded-xl overflow-hidden cursor-pointer bg-slate-950 border shadow-sm hover:shadow-xl hover:border-cyan-400 hover:ring-2 hover:ring-cyan-400/80 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:z-10 ${
+                      isClean ? 'border-slate-200' : 'border-slate-800'
+                    } ${resConfig.containerClass}`}
                     title={`คลิกเปิดลิงก์ดาวน์โหลด: ${work.title}`}
                   >
                     {/* Clip Image / Video Preview */}
@@ -355,14 +388,14 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                       />
 
                       {/* Subtle Resolution Tag at top right */}
-                      <span className={`absolute top-1 sm:top-2 right-1 sm:right-2 z-20 px-1 sm:px-1.5 py-0.5 rounded text-[7.5px] sm:text-[9px] font-bold shadow-sm ${resConfig.badgeColor}`}>
+                      <span className={`absolute top-1 sm:top-2 right-1 sm:right-2 z-20 px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-bold shadow-sm ${resConfig.badgeColor}`}>
                         {resConfig.badge}
                       </span>
 
                       {/* Card Text: Clip Title + Direct External Link indicator */}
                       <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-transparent pt-4 sm:pt-8 pb-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 pointer-events-none transform-gpu">
                         <div className="flex items-end justify-between gap-1">
-                          <h3 className="text-[10px] sm:text-[13px] font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-amber-300 transition-colors flex-1">
+                          <h3 className="text-[11px] sm:text-sm font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-amber-300 transition-colors flex-1">
                             {work.title}
                           </h3>
                           <div className="shrink-0 p-1 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -375,21 +408,25 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                 );
               })
             ) : (
-              <div className="py-8 px-4 text-center text-slate-400 text-sm w-full">
+              <div className={`py-8 px-4 text-center text-sm w-full ${isClean ? 'text-slate-600' : 'text-slate-400'}`}>
                 ไม่พบสื่อที่ตรงกับคำค้นหา
               </div>
             )}
           </div>
         </div>
 
-        {/* ROW 2: Vertical Wall Array (แถวล่างชิดแถวบนให้ดูเป็นแผงเดียวต่อเนื่อง) */}
+        {/* ROW 2: Vertical Wall Array */}
         {displayRow2.length > 0 && (
           <div className="relative group/row2">
             {/* Floating Left Arrow for Row 2 */}
             <button
               type="button"
               onClick={() => handleScrollRow(row2Ref, 'left')}
-              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#05112c]/95 hover:bg-rose-500/30 text-rose-300 hover:text-white border border-rose-400/40 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row2:opacity-100"
+              className={`absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full border shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row2:opacity-100 ${
+                isClean
+                  ? 'bg-white/95 hover:bg-rose-600 text-slate-700 hover:text-white border-slate-300'
+                  : 'bg-[#05112c]/95 hover:bg-rose-500/30 text-rose-300 hover:text-white border-rose-400/40'
+              }`}
               title="เลื่อนซ้ายแถวที่ 2"
               aria-label="เลื่อนซ้ายแถวที่ 2"
             >
@@ -400,14 +437,18 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
             <button
               type="button"
               onClick={() => handleScrollRow(row2Ref, 'right')}
-              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full bg-[#05112c]/95 hover:bg-rose-500/30 text-rose-300 hover:text-white border border-rose-400/40 shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row2:opacity-100"
+              className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2.5 rounded-full border shadow-xl backdrop-blur-md transition-all active:scale-90 cursor-pointer opacity-80 sm:opacity-0 group-hover/row2:opacity-100 ${
+                isClean
+                  ? 'bg-white/95 hover:bg-rose-600 text-slate-700 hover:text-white border-slate-300'
+                  : 'bg-[#05112c]/95 hover:bg-rose-500/30 text-rose-300 hover:text-white border-rose-400/40'
+              }`}
               title="เลื่อนขวาแถวที่ 2"
               aria-label="เลื่อนขวาแถวที่ 2"
             >
               <ChevronRight className="w-5 h-5 stroke-[2.5]" />
             </button>
 
-            {/* Scroll Track Row 2: Placed right against Row 1 with gap-1 sm:gap-1.5 */}
+            {/* Scroll Track Row 2 */}
             <div
               ref={row2Ref}
               className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto overflow-y-hidden overscroll-y-auto scroll-smooth snap-x px-1 py-0.5 no-scrollbar cursor-grab active:cursor-grabbing touch-auto"
@@ -418,7 +459,9 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                   <div
                     key={`r2-${work.id}`}
                     onClick={() => handleOpenCard(work)}
-                    className="group relative shrink-0 snap-start rounded-md sm:rounded-xl overflow-hidden cursor-pointer bg-slate-950 border border-slate-800 shadow-sm hover:shadow-xl hover:border-rose-500 hover:ring-2 hover:ring-rose-400/80 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:z-10 w-[88px] sm:w-[170px] h-[153px] sm:h-[300px]"
+                    className={`group relative shrink-0 snap-start rounded-md sm:rounded-xl overflow-hidden cursor-pointer bg-slate-950 border shadow-sm hover:shadow-xl hover:border-rose-500 hover:ring-2 hover:ring-rose-400/80 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:z-10 w-[88px] sm:w-[170px] h-[153px] sm:h-[300px] ${
+                      isClean ? 'border-slate-200' : 'border-slate-800'
+                    }`}
                     title={`คลิกเปิดลิงก์ดาวน์โหลด: ${work.title}`}
                   >
                     <div className="relative w-full h-full overflow-hidden bg-slate-950 transform-gpu">
@@ -437,14 +480,14 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
                       />
 
                       {/* Resolution Tag at top right */}
-                      <span className="absolute top-1 sm:top-2 right-1 sm:right-2 z-20 px-1 sm:px-1.5 py-0.5 rounded text-[7.5px] sm:text-[9px] font-bold shadow-sm bg-rose-500/95 text-white">
+                      <span className="absolute top-1 sm:top-2 right-1 sm:right-2 z-20 px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-bold shadow-sm bg-rose-500/95 text-white">
                         {work.badge || '📱 9:16 Reel'}
                       </span>
 
                       {/* Card Text: Clip Title + Direct External Link indicator */}
                       <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-transparent pt-4 sm:pt-8 pb-1.5 sm:pb-2.5 px-1.5 sm:px-2.5 pointer-events-none transform-gpu">
                         <div className="flex items-end justify-between gap-1">
-                          <h3 className="text-[10px] sm:text-[13px] font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-rose-300 transition-colors flex-1">
+                          <h3 className="text-[11px] sm:text-sm font-bold text-white drop-shadow line-clamp-2 leading-tight sm:leading-snug group-hover:text-rose-300 transition-colors flex-1">
                             {work.title}
                           </h3>
                           <div className="shrink-0 p-0.5 sm:p-1 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -487,26 +530,46 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
           onClick={handleCloseModal}
         >
           <div
-            className="relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl bg-[#080d1d] border border-amber-400/40 shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden ring-1 ring-white/10"
+            className={`relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden ${
+              isClean
+                ? 'bg-white border-slate-200 text-slate-900'
+                : 'bg-[#080d1d] border-amber-400/40 ring-1 ring-white/10'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Top Bar */}
-            <div className="px-4 py-3 bg-[#050916] border-b border-amber-500/20 flex items-center justify-between gap-3">
+            <div
+              className={`px-4 py-3 border-b flex items-center justify-between gap-3 ${
+                isClean ? 'bg-slate-50 border-slate-200' : 'bg-[#050916] border-amber-500/20'
+              }`}
+            >
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-0.5 rounded text-xs font-bold ${getResolutionConfig(activeModalWork).badgeColor}`}>
                   {getResolutionConfig(activeModalWork).badge}
                 </span>
-                <span className="text-xs font-medium text-amber-300 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-400/30">
+                <span
+                  className={`text-xs font-semibold px-2 py-0.5 rounded border ${
+                    isClean
+                      ? 'text-amber-800 bg-amber-50 border-amber-300'
+                      : 'text-amber-300 bg-amber-500/10 border-amber-400/30'
+                  }`}
+                >
                   {activeModalWork.category}
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-slate-400 hidden sm:inline">กด ESC หรือคลิกเพื่อปิด</span>
+                <span className={`text-xs hidden sm:inline ${isClean ? 'text-slate-500' : 'text-slate-400'}`}>
+                  กด ESC หรือคลิกเพื่อปิด
+                </span>
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                    isClean
+                      ? 'text-slate-500 hover:text-slate-900 hover:bg-slate-200'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
                   title="ปิดหน้าต่าง"
                 >
                   <X className="w-5 h-5" />
@@ -579,43 +642,51 @@ export const PublishedWorksSection: React.FC<PublishedWorksSectionProps> = ({ wo
               )}
             </div>
 
-            {/* Comprehensive Information Details (ข้อมูลที่ครบถ้วน) */}
+            {/* Comprehensive Information Details */}
             <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
               <div>
-                <h3 className="text-base sm:text-lg lg:text-xl font-bold text-white leading-snug">
+                <h3 className={`text-lg sm:text-xl font-extrabold leading-snug ${isClean ? 'text-slate-900' : 'text-white'}`}>
                   {activeModalWork.title}
                 </h3>
 
                 {/* Metadata Row */}
-                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-slate-300 mt-2.5 pb-3 border-b border-slate-800">
+                <div
+                  className={`flex flex-wrap items-center gap-3 sm:gap-4 text-xs mt-2.5 pb-3 border-b ${
+                    isClean ? 'text-slate-600 border-slate-200' : 'text-slate-300 border-slate-800'
+                  }`}
+                >
                   <span className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    <Calendar className={`w-3.5 h-3.5 ${isClean ? 'text-amber-600' : 'text-amber-400'}`} />
                     <span>เผยแพร่: {activeModalWork.publishDate}</span>
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                    <Eye className={`w-3.5 h-3.5 ${isClean ? 'text-sky-600' : 'text-cyan-400'}`} />
                     <span>ยอดรับชม {activeModalWork.views} ครั้ง</span>
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <Building2 className={`w-3.5 h-3.5 ${isClean ? 'text-emerald-600' : 'text-emerald-400'}`} />
                     <span>{activeModalWork.creator || 'สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง.'}</span>
                   </span>
                 </div>
               </div>
 
               {/* Full Description / Fact Sheet */}
-              <div className="bg-[#050e26]/80 p-4 rounded-xl border border-slate-800 space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-300">
-                  <Info className="w-4 h-4 text-amber-400" />
+              <div
+                className={`p-4 rounded-xl border space-y-2 ${
+                  isClean ? 'bg-slate-50 border-slate-200' : 'bg-[#050e26]/80 border-slate-800'
+                }`}
+              >
+                <div className={`flex items-center gap-1.5 text-sm font-bold ${isClean ? 'text-amber-700' : 'text-amber-300'}`}>
+                  <Info className={`w-4 h-4 ${isClean ? 'text-amber-600' : 'text-amber-400'}`} />
                   <span>สาระสำคัญและรายละเอียดของสื่อประชาสัมพันธ์</span>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                <p className={`text-sm leading-relaxed ${isClean ? 'text-slate-700' : 'text-slate-200'}`}>
                   {activeModalWork.description}
                 </p>
               </div>
 
-              {/* Share & Actions Toolbar (แชร์ได้) */}
-              <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-800">
+              {/* Share & Actions Toolbar */}
+              <div className={`pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t ${isClean ? 'border-slate-200' : 'border-slate-800'}`}>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-semibold text-slate-300 mr-1 flex items-center gap-1">
                     <Share2 className="w-3.5 h-3.5 text-amber-400" />
