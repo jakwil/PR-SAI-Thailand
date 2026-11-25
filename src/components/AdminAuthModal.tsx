@@ -17,6 +17,7 @@ import {
   auth,
   ADMIN_EMAILS,
   isAuthorizedAdminEmail,
+  isPasscodeExemptAdminEmail,
   signInAdminWithGoogle,
   signOutAdmin
 } from '../firebase';
@@ -97,6 +98,12 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
 
     try {
       const user = await signInAdminWithGoogle(hintEmail);
+      const signedInEmail = user.email?.trim().toLowerCase() || '';
+      if (isPasscodeExemptAdminEmail(signedInEmail)) {
+        playDigitalSound('confirm');
+        onAuthSuccess(signedInEmail);
+        return;
+      }
       setGoogleUser(user);
       setPasscode('');
       playDigitalSound('confirm');
@@ -170,7 +177,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
                 เข้าสู่ระบบผู้ดูแลหลัก (Full Admin)
               </h3>
               <p className="text-[11px] text-slate-400">
-                ยืนยันตัวตนด้วย Google Account + Passcode
+                เลือก Google Account เพื่อยืนยันสิทธิ์ผู้ดูแลระบบ
               </p>
             </div>
           </div>
@@ -236,30 +243,38 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
                   </p>
 
                   <div className="space-y-2">
-                    {ADMIN_EMAILS.map((email, idx) => (
-                      <button
-                        key={email}
-                        type="button"
-                        disabled={isSigningInGoogle}
-                        onClick={() => handleSelectGoogleAccount(email)}
-                        className="w-full p-3 rounded-xl bg-[#030d26] hover:bg-blue-900/40 border border-cyan-500/30 hover:border-amber-400/60 transition-all flex items-center justify-between gap-3 text-left group cursor-pointer disabled:opacity-50"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-white text-slate-900 flex items-center justify-center shrink-0 shadow-sm font-bold text-sm">
-                            G
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors truncate">
-                              {email}
+                    {ADMIN_EMAILS.map((email, idx) => {
+                      const noPasscode = isPasscodeExemptAdminEmail(email);
+                      return (
+                        <button
+                          key={email}
+                          type="button"
+                          disabled={isSigningInGoogle}
+                          onClick={() => handleSelectGoogleAccount(email)}
+                          className="w-full p-3 rounded-xl bg-[#030d26] hover:bg-blue-900/40 border border-cyan-500/30 hover:border-amber-400/60 transition-all flex items-center justify-between gap-3 text-left group cursor-pointer disabled:opacity-50"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 rounded-full bg-white text-slate-900 flex items-center justify-center shrink-0 shadow-sm font-bold text-sm">
+                              G
                             </div>
-                            <div className="text-[10px] text-slate-400">
-                              บัญชีผู้ดูแลระบบ #{idx + 1} · Google Sign-In
+                            <div className="min-w-0">
+                              <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors truncate">
+                                {email}
+                              </div>
+                              <div className="text-[10px] text-slate-400 flex items-center gap-1.5 flex-wrap">
+                                <span>บัญชีผู้ดูแลระบบ #{idx + 1} · Google Sign-In</span>
+                                {noPasscode && (
+                                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-semibold">
+                                    ไม่ต้องใช้ Passcode
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-cyan-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                      </button>
-                    ))}
+                          <ArrowRight className="w-4 h-4 text-cyan-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                        </button>
+                      );
+                    })}
                   </div>
 
                   <button
@@ -315,50 +330,80 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
                     </button>
                   </div>
 
-                  <div>
-                    <label className="block text-xs text-slate-300 font-semibold mb-1.5">
-                      กรอก Passcode ประจำบัญชีนี้
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Lock className="w-4 h-4 text-cyan-400" />
+                  {isPasscodeExemptAdminEmail(googleUser.email) ? (
+                    <div className="space-y-3">
+                      <p className="text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">
+                        บัญชีนี้ได้รับอนุญาตให้เข้าใช้งานระบบ Admin ด้วย Google Account โดยไม่ต้องกรอก Passcode
+                      </p>
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={onClose}
+                          className="px-4 py-2 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-white/5 cursor-pointer"
+                        >
+                          ยกเลิก
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playDigitalSound('confirm');
+                            onAuthSuccess(googleUser.email!.trim().toLowerCase());
+                          }}
+                          className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 text-xs font-bold shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>เข้าสู่ระบบ Admin ทันที</span>
+                        </button>
                       </div>
-                      <input
-                        type={showPasscode ? 'text' : 'password'}
-                        value={passcode}
-                        onChange={(e) => setPasscode(e.target.value)}
-                        autoFocus
-                        placeholder="ระบุ Passcode..."
-                        className="w-full pl-9 pr-10 py-2.5 bg-[#030d26] border border-cyan-500/35 focus:border-amber-400 rounded-xl text-sm text-white outline-none font-mono"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPasscode(!showPasscode)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white cursor-pointer"
-                        title={showPasscode ? 'ซ่อน Passcode' : 'แสดง Passcode'}
-                      >
-                        {showPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
                     </div>
-                  </div>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="block text-xs text-slate-300 font-semibold mb-1.5">
+                          กรอก Passcode ประจำบัญชีนี้
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Lock className="w-4 h-4 text-cyan-400" />
+                          </div>
+                          <input
+                            type={showPasscode ? 'text' : 'password'}
+                            value={passcode}
+                            onChange={(e) => setPasscode(e.target.value)}
+                            autoFocus
+                            placeholder="ระบุ Passcode..."
+                            className="w-full pl-9 pr-10 py-2.5 bg-[#030d26] border border-cyan-500/35 focus:border-amber-400 rounded-xl text-sm text-white outline-none font-mono"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPasscode(!showPasscode)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white cursor-pointer"
+                            title={showPasscode ? 'ซ่อน Passcode' : 'แสดง Passcode'}
+                          >
+                            {showPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="px-4 py-2 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-white/5 cursor-pointer"
-                    >
-                      ยกเลิก
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isVerifyingPasscode}
-                      className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 text-xs font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
-                    >
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>{isVerifyingPasscode ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ Admin'}</span>
-                    </button>
-                  </div>
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={onClose}
+                          className="px-4 py-2 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-white/5 cursor-pointer"
+                        >
+                          ยกเลิก
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isVerifyingPasscode}
+                          className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 text-xs font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>{isVerifyingPasscode ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ Admin'}</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </form>
               )}
           </>

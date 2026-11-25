@@ -27,6 +27,7 @@ import {
   auth,
   onAuthStateChanged,
   isAuthorizedAdminEmail,
+  isPasscodeExemptAdminEmail,
   signOutAdmin,
   subscribeToAppData,
   subscribeToAdminData,
@@ -808,14 +809,7 @@ export default function App() {
 
   // Watch Firebase Google Authentication state & Admin session verification
   useEffect(() => {
-    let unsubAdminData: (() => void) | null = null;
-
     const unsubAuth = onAuthStateChanged(auth, (user) => {
-      if (unsubAdminData) {
-        unsubAdminData();
-        unsubAdminData = null;
-      }
-
       const email = user?.email?.trim().toLowerCase() || '';
       const verifiedEmail =
         typeof window !== 'undefined' ? window.sessionStorage.getItem(ADMIN_VERIFIED_SESSION_KEY) : null;
@@ -825,10 +819,6 @@ export default function App() {
         seedFirestoreIfEmpty(initialData);
 
         if (verifiedEmail === email) {
-          // Subscribe to restricted admin collections ONLY when verified as Full Admin
-          unsubAdminData = subscribeToAdminData((partial) => {
-            setData((prev) => ({ ...prev, ...partial }));
-          });
           setIsAdminLoggedIn(true);
           setAdminEmail(email);
         } else {
@@ -845,9 +835,22 @@ export default function App() {
 
     return () => {
       unsubAuth();
-      if (unsubAdminData) unsubAdminData();
     };
   }, []);
+
+  // Subscribe to restricted admin collections immediately whenever Admin session is active
+  useEffect(() => {
+    if (!isAdminLoggedIn || !adminEmail || !isAuthorizedAdminEmail(adminEmail)) return;
+    const currentEmail = auth.currentUser?.email?.trim().toLowerCase() || '';
+    if (currentEmail !== adminEmail) return;
+
+    const unsubAdminData = subscribeToAdminData((partial) => {
+      setData((prev) => ({ ...prev, ...partial }));
+    });
+    return () => {
+      unsubAdminData();
+    };
+  }, [isAdminLoggedIn, adminEmail]);
 
   const handleUpdateData = async (
     newData: AppData,
@@ -886,7 +889,14 @@ export default function App() {
     const verifiedEmail =
       typeof window !== 'undefined' ? window.sessionStorage.getItem(ADMIN_VERIFIED_SESSION_KEY) : null;
 
-    if (currentEmail && isAuthorizedAdminEmail(currentEmail) && verifiedEmail === currentEmail) {
+    if (
+      currentEmail &&
+      isAuthorizedAdminEmail(currentEmail) &&
+      (verifiedEmail === currentEmail || isPasscodeExemptAdminEmail(currentEmail))
+    ) {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(ADMIN_VERIFIED_SESSION_KEY, currentEmail);
+      }
       setIsAdminLoggedIn(true);
       setAdminEmail(currentEmail);
       setAdminInitialTab('summaries');
@@ -896,7 +906,7 @@ export default function App() {
       return;
     }
 
-    // Open Admin Google + Passcode Authentication Modal
+    // Open Admin Google Account Authentication Modal
     setIsAuthModalOpen(true);
   };
 

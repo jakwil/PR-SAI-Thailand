@@ -45,10 +45,20 @@ export const ADMIN_EMAILS = [
   'auditpicture.webapp@gmail.com',
 ] as const;
 
+export const PASSCODE_EXEMPT_ADMIN_EMAILS = [
+  'auditpicture.webapp@gmail.com',
+] as const;
+
 export function isAuthorizedAdminEmail(email?: string | null): boolean {
   if (!email) return false;
   const normalized = email.trim().toLowerCase();
   return (ADMIN_EMAILS as readonly string[]).includes(normalized);
+}
+
+export function isPasscodeExemptAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  const normalized = email.trim().toLowerCase();
+  return (PASSCODE_EXEMPT_ADMIN_EMAILS as readonly string[]).includes(normalized);
 }
 
 export async function signInAdminWithGoogle(hintEmail?: string): Promise<User> {
