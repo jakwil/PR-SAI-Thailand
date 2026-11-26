@@ -1,81 +1,27 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   X,
   Network,
-  CheckCircle2,
-  ExternalLink,
-  Calendar,
   ArrowLeft,
+  ArrowRight,
   Layers,
-  Settings2,
   ChevronRight,
-  ChevronLeft,
   Megaphone,
   Compass,
   Clapperboard,
   FolderKanban,
-  Camera,
-  Film,
-  BarChart3,
-  FileText,
-  Sparkles,
-  Filter,
-  Images,
   UserCheck,
-  KeyRound,
-  Plus,
-  Edit2,
-  Save,
-  Upload,
-  AlertTriangle,
-  RefreshCw,
-  LogOut,
-  ArrowRight,
-  Eye,
-  EyeOff,
   Home,
+  Crown,
 } from 'lucide-react';
-import {
-  AppData,
-  BureauGroupId,
-  GroupWorkItem,
-  HeroStory,
-  PublishedWork,
-  ViralClip,
-} from '../types';
+import { AppData, BureauGroupId, GroupWorkItem } from '../types';
 import {
   BUREAU_EXECUTIVE_TITLE,
   BUREAU_GROUPS,
-  BUREAU_GROUPS_WITH_WORKS,
   BUREAU_SUBTITLE,
   BUREAU_TITLE,
-  defaultGroupWorks,
-  getBureauGroupById,
 } from '../data/bureauStructure';
-import { saveSingleItemToFirestore } from '../firebase';
 import { playDigitalSound } from '../utils/audioEffects';
-
-const CONTRIBUTOR_SESSION_KEY = 'sai_group_contributor_passcode';
-const CONTRIBUTOR_PASSCODE_SHA256 =
-  'a885cce8a1d8c7da01ba3a4b67be41d98961c6498a2f1ff3681f64367927101f';
-
-async function verifyContributorPasscode(input: string): Promise<boolean> {
-  const trimmed = input.trim();
-  if (!trimmed) return false;
-  if (typeof window !== 'undefined' && window.crypto?.subtle) {
-    const bytes = new TextEncoder().encode(trimmed);
-    const hashBuffer = await window.crypto.subtle.digest('SHA-256', bytes);
-    const digest = Array.from(new Uint8Array(hashBuffer))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-    return digest === CONTRIBUTOR_PASSCODE_SHA256;
-  }
-  const codes = [97, 117, 100, 105, 116, 112, 105, 99, 116, 117, 114, 101];
-  return (
-    trimmed.length === codes.length &&
-    codes.every((code, idx) => trimmed.charCodeAt(idx) === code)
-  );
-}
 
 interface BureauStructureModalProps {
   isOpen: boolean;
@@ -86,140 +32,116 @@ interface BureauStructureModalProps {
   onGroupWorkSaved?: (savedItem: GroupWorkItem) => void;
 }
 
-interface UnifiedGroupWork {
-  id: string;
-  groupId: BureauGroupId;
-  missionIndexes?: number[];
-  title: string;
-  description: string;
-  imageUrl: string;
-  galleryImages?: string[];
-  date: string;
-  linkUrl?: string;
-  badge?: string;
-  mediaType?: 'photo' | 'infographic' | 'video' | 'report';
-  source: 'groupWork' | 'mediaLibrary' | 'heroStory' | 'viralClip';
+interface RoyalGroupTheme {
+  label: string;
+  cardIdleBg: string;
+  cardActiveBg: string;
+  cardActiveBorder: string;
+  panelBg: string;
+  panelBorder: string;
+  summaryBg: string;
+  missionCardBg: string;
+  missionCardBorder: string;
+  badgeBg: string;
+  iconBg: string;
+  numberBadgeBg: string;
+  headingAccent: string;
+  dotColor: string;
+  ambientGlow: string;
 }
 
-const ACCENT_STYLES: Record<
-  'amber' | 'cyan' | 'emerald' | 'indigo',
-  {
-    activeBorder: string;
-    activeBg: string;
-    idleCardBg: string;
-    panelBg: string;
-    innerCardBg: string;
-    missionHover: string;
-    workCardBg: string;
-    tabTrackBg: string;
-    activeTabBg: string;
-    activePillBg: string;
-    headingText: string;
-    iconTint: string;
-    badgeBg: string;
-    badgeText: string;
-    iconBg: string;
-    dot: string;
-    ring: string;
-    ambientGlow: string;
-    lightboxBg: string;
-  }
-> = {
+const ROYAL_GROUP_THEMES: Record<'amber' | 'cyan' | 'emerald' | 'indigo', RoyalGroupTheme> = {
   amber: {
-    activeBorder: 'border-amber-400 shadow-[0_0_28px_rgba(245,158,11,0.28)]',
-    activeBg: 'bg-gradient-to-br from-[#33240c]/95 via-[#1c1814]/96 to-[#10121c]/98',
-    idleCardBg:
-      'bg-gradient-to-br from-[#1f1709]/85 via-[#14131c]/90 to-[#0c101b]/95 border-amber-500/25 hover:border-amber-400/55 hover:from-[#291e0b]/90',
+    label: 'Warm Champagne Gold',
+    cardIdleBg:
+      'bg-gradient-to-br from-[#fffdf7] via-[#fdf5df] to-[#f8e9c1] border-[#d4af37]/50 hover:border-[#b8860b] hover:shadow-[0_10px_28px_rgba(184,134,11,0.16)]',
+    cardActiveBg:
+      'bg-gradient-to-br from-[#fff9eb] via-[#faecc4] to-[#f3dc98]',
+    cardActiveBorder:
+      'border-2 border-[#b8860b] ring-2 ring-[#d4af37]/45 shadow-[0_16px_36px_rgba(184,134,11,0.22)]',
     panelBg:
-      'bg-gradient-to-br from-[#231908]/95 via-[#15141e]/96 to-[#0c101a]/98 border-amber-400/35',
-    innerCardBg: 'bg-[#16120c]/85 border-amber-400/20',
-    missionHover: 'hover:border-amber-400/50 hover:bg-[#231b0e]/90',
-    workCardBg: 'bg-[#15120d]/92 border-amber-400/20 hover:border-amber-400/60',
-    tabTrackBg: 'bg-[#130f09]/95 border-amber-400/25',
-    activeTabBg: 'bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-bold shadow',
-    activePillBg: 'bg-amber-400 text-slate-950 border-amber-300',
-    headingText: 'text-amber-300',
-    iconTint: 'text-amber-400',
-    badgeBg: 'bg-amber-400/20 border-amber-400/40',
-    badgeText: 'text-amber-300',
-    iconBg: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
-    dot: 'bg-amber-400',
-    ring: 'ring-amber-400/40',
+      'bg-gradient-to-br from-[#fffdf7] via-[#fcf3db] to-[#f6e6bb]',
+    panelBorder:
+      'border-2 border-[#d4af37]/75 shadow-[0_20px_50px_rgba(161,118,22,0.16)]',
+    summaryBg: 'bg-white/85 border-[#d4af37]/45',
+    missionCardBg: 'bg-white/92 hover:bg-white',
+    missionCardBorder: 'border-[#d4af37]/45 hover:border-[#b8860b]',
+    badgeBg: 'bg-gradient-to-r from-[#b8860b] to-[#d4af37] text-white border-[#a17408]',
+    iconBg: 'bg-gradient-to-br from-[#fef3c7] to-[#fde68a] text-[#8a5d00] border-[#d4af37]/65',
+    numberBadgeBg: 'bg-gradient-to-br from-[#c99b26] to-[#9a6f07] text-white border-[#e5c158]',
+    headingAccent: 'text-[#855800]',
+    dotColor: 'bg-[#b8860b]',
     ambientGlow:
-      'radial-gradient(750px 450px at 50% 8%, rgba(245, 158, 11, 0.16), transparent 70%), radial-gradient(600px 450px at 85% 80%, rgba(217, 119, 6, 0.11), transparent 70%)',
-    lightboxBg: 'from-[#261b09] via-[#15141e] to-[#0a0c14] border-amber-400/50',
+      'radial-gradient(820px 520px at 18% 12%, rgba(212, 175, 55, 0.16), transparent 70%), radial-gradient(760px 500px at 88% 85%, rgba(245, 196, 81, 0.14), transparent 70%)',
   },
   cyan: {
-    activeBorder: 'border-cyan-400 shadow-[0_0_28px_rgba(34,211,238,0.28)]',
-    activeBg: 'bg-gradient-to-br from-[#092f46]/95 via-[#091f36]/96 to-[#061326]/98',
-    idleCardBg:
-      'bg-gradient-to-br from-[#072030]/85 via-[#081729]/90 to-[#06101f]/95 border-cyan-500/25 hover:border-cyan-400/55 hover:from-[#09293d]/90',
+    label: 'Royal Porcelain Sapphire',
+    cardIdleBg:
+      'bg-gradient-to-br from-[#f8fbff] via-[#eaf3fe] to-[#d9e9fc] border-[#d4af37]/50 hover:border-[#1d4ed8]/70 hover:shadow-[0_10px_28px_rgba(29,78,216,0.14)]',
+    cardActiveBg:
+      'bg-gradient-to-br from-[#f2f8ff] via-[#dfeeff] to-[#cbe2fd]',
+    cardActiveBorder:
+      'border-2 border-[#b8860b] ring-2 ring-[#2563eb]/35 shadow-[0_16px_36px_rgba(29,78,216,0.18)]',
     panelBg:
-      'bg-gradient-to-br from-[#08263a]/95 via-[#081b2f]/96 to-[#051120]/98 border-cyan-400/35',
-    innerCardBg: 'bg-[#061a29]/85 border-cyan-400/20',
-    missionHover: 'hover:border-cyan-400/50 hover:bg-[#092438]/90',
-    workCardBg: 'bg-[#061826]/92 border-cyan-400/20 hover:border-cyan-400/60',
-    tabTrackBg: 'bg-[#041422]/95 border-cyan-400/25',
-    activeTabBg: 'bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 font-bold shadow',
-    activePillBg: 'bg-cyan-400 text-slate-950 border-cyan-300',
-    headingText: 'text-cyan-300',
-    iconTint: 'text-cyan-400',
-    badgeBg: 'bg-cyan-400/20 border-cyan-400/40',
-    badgeText: 'text-cyan-300',
-    iconBg: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
-    dot: 'bg-cyan-400',
-    ring: 'ring-cyan-400/40',
+      'bg-gradient-to-br from-[#f7fbff] via-[#e7f1fe] to-[#d5e7fc]',
+    panelBorder:
+      'border-2 border-[#d4af37]/75 shadow-[0_20px_50px_rgba(30,64,175,0.14)]',
+    summaryBg: 'bg-white/88 border-[#d4af37]/45',
+    missionCardBg: 'bg-white/94 hover:bg-white',
+    missionCardBorder: 'border-[#d4af37]/45 hover:border-[#1d4ed8]/60',
+    badgeBg: 'bg-gradient-to-r from-[#1e40af] to-[#2563eb] text-white border-[#1d4ed8]',
+    iconBg: 'bg-gradient-to-br from-[#dbeafe] to-[#bfdbfe] text-[#1e3a8a] border-[#d4af37]/65',
+    numberBadgeBg: 'bg-gradient-to-br from-[#1d4ed8] to-[#1e3a8a] text-white border-[#93c5fd]',
+    headingAccent: 'text-[#1e3a8a]',
+    dotColor: 'bg-[#1d4ed8]',
     ambientGlow:
-      'radial-gradient(750px 450px at 50% 8%, rgba(6, 182, 212, 0.16), transparent 70%), radial-gradient(600px 450px at 85% 80%, rgba(14, 165, 233, 0.12), transparent 70%)',
-    lightboxBg: 'from-[#09293d] via-[#071a2d] to-[#040e1a] border-cyan-400/50',
+      'radial-gradient(820px 520px at 18% 12%, rgba(59, 130, 246, 0.12), transparent 70%), radial-gradient(760px 500px at 88% 85%, rgba(212, 175, 55, 0.14), transparent 70%)',
   },
   emerald: {
-    activeBorder: 'border-emerald-400 shadow-[0_0_28px_rgba(52,211,153,0.28)]',
-    activeBg: 'bg-gradient-to-br from-[#093227]/95 via-[#09211d]/96 to-[#061416]/98',
-    idleCardBg:
-      'bg-gradient-to-br from-[#07211b]/85 via-[#081818]/90 to-[#061014]/95 border-emerald-500/25 hover:border-emerald-400/55 hover:from-[#092b23]/90',
+    label: 'Royal Celadon Jade',
+    cardIdleBg:
+      'bg-gradient-to-br from-[#f6fdf9] via-[#e4f8ee] to-[#cff0e0] border-[#d4af37]/50 hover:border-[#047857]/70 hover:shadow-[0_10px_28px_rgba(4,120,87,0.14)]',
+    cardActiveBg:
+      'bg-gradient-to-br from-[#effcf5] via-[#daf5e7] to-[#c2ecd7]',
+    cardActiveBorder:
+      'border-2 border-[#b8860b] ring-2 ring-[#059669]/35 shadow-[0_16px_36px_rgba(4,120,87,0.18)]',
     panelBg:
-      'bg-gradient-to-br from-[#072720]/95 via-[#081c1a]/96 to-[#051214]/98 border-emerald-400/35',
-    innerCardBg: 'bg-[#061b17]/85 border-emerald-400/20',
-    missionHover: 'hover:border-emerald-400/50 hover:bg-[#092620]/90',
-    workCardBg: 'bg-[#061915]/92 border-emerald-400/20 hover:border-emerald-400/60',
-    tabTrackBg: 'bg-[#041512]/95 border-emerald-400/25',
-    activeTabBg: 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-bold shadow',
-    activePillBg: 'bg-emerald-400 text-slate-950 border-emerald-300',
-    headingText: 'text-emerald-300',
-    iconTint: 'text-emerald-400',
-    badgeBg: 'bg-emerald-400/20 border-emerald-400/40',
-    badgeText: 'text-emerald-300',
-    iconBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
-    dot: 'bg-emerald-400',
-    ring: 'ring-emerald-400/40',
+      'bg-gradient-to-br from-[#f5fcf8] via-[#e1f7ec] to-[#cbeedf]',
+    panelBorder:
+      'border-2 border-[#d4af37]/75 shadow-[0_20px_50px_rgba(6,95,70,0.14)]',
+    summaryBg: 'bg-white/88 border-[#d4af37]/45',
+    missionCardBg: 'bg-white/94 hover:bg-white',
+    missionCardBorder: 'border-[#d4af37]/45 hover:border-[#047857]/60',
+    badgeBg: 'bg-gradient-to-r from-[#065f46] to-[#059669] text-white border-[#047857]',
+    iconBg: 'bg-gradient-to-br from-[#d1fae5] to-[#a7f3d0] text-[#064e3b] border-[#d4af37]/65',
+    numberBadgeBg: 'bg-gradient-to-br from-[#059669] to-[#065f46] text-white border-[#6ee7b7]',
+    headingAccent: 'text-[#065f46]',
+    dotColor: 'bg-[#059669]',
     ambientGlow:
-      'radial-gradient(750px 450px at 50% 8%, rgba(16, 185, 129, 0.16), transparent 70%), radial-gradient(600px 450px at 85% 80%, rgba(20, 184, 166, 0.11), transparent 70%)',
-    lightboxBg: 'from-[#082b23] via-[#071c19] to-[#040f10] border-emerald-400/50',
+      'radial-gradient(820px 520px at 18% 12%, rgba(16, 185, 129, 0.12), transparent 70%), radial-gradient(760px 500px at 88% 85%, rgba(212, 175, 55, 0.14), transparent 70%)',
   },
   indigo: {
-    activeBorder: 'border-indigo-400 shadow-[0_0_28px_rgba(129,140,248,0.28)]',
-    activeBg: 'bg-gradient-to-br from-[#281d52]/95 via-[#191538]/96 to-[#0e0f22]/98',
-    idleCardBg:
-      'bg-gradient-to-br from-[#191336]/85 via-[#121126]/90 to-[#0a0c1b]/95 border-indigo-400/25 hover:border-indigo-400/55 hover:from-[#211946]/90',
+    label: 'Royal Pearl Amethyst',
+    cardIdleBg:
+      'bg-gradient-to-br from-[#faf8ff] via-[#efeaff] to-[#e1d7fd] border-[#d4af37]/50 hover:border-[#5b21b6]/70 hover:shadow-[0_10px_28px_rgba(91,33,182,0.14)]',
+    cardActiveBg:
+      'bg-gradient-to-br from-[#f6f2ff] via-[#e9e0fe] to-[#d9cbfb]',
+    cardActiveBorder:
+      'border-2 border-[#b8860b] ring-2 ring-[#7c3aed]/35 shadow-[0_16px_36px_rgba(91,33,182,0.18)]',
     panelBg:
-      'bg-gradient-to-br from-[#1d153e]/95 via-[#14122b]/96 to-[#0b0d1d]/98 border-indigo-400/35',
-    innerCardBg: 'bg-[#14102b]/85 border-indigo-400/20',
-    missionHover: 'hover:border-indigo-400/50 hover:bg-[#1e173d]/90',
-    workCardBg: 'bg-[#131026]/92 border-indigo-400/20 hover:border-indigo-400/60',
-    tabTrackBg: 'bg-[#100d21]/95 border-indigo-400/25',
-    activeTabBg: 'bg-gradient-to-r from-indigo-400 to-violet-400 text-slate-950 font-bold shadow',
-    activePillBg: 'bg-indigo-400 text-slate-950 border-indigo-300',
-    headingText: 'text-indigo-300',
-    iconTint: 'text-indigo-400',
-    badgeBg: 'bg-indigo-400/20 border-indigo-400/40',
-    badgeText: 'text-indigo-300',
-    iconBg: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/40',
-    dot: 'bg-indigo-400',
-    ring: 'ring-indigo-400/40',
+      'bg-gradient-to-br from-[#f9f7ff] via-[#ede6fe] to-[#ded4fc]',
+    panelBorder:
+      'border-2 border-[#d4af37]/75 shadow-[0_20px_50px_rgba(76,29,149,0.14)]',
+    summaryBg: 'bg-white/88 border-[#d4af37]/45',
+    missionCardBg: 'bg-white/94 hover:bg-white',
+    missionCardBorder: 'border-[#d4af37]/45 hover:border-[#5b21b6]/60',
+    badgeBg: 'bg-gradient-to-r from-[#4c1d95] to-[#6d28d9] text-white border-[#5b21b6]',
+    iconBg: 'bg-gradient-to-br from-[#ede9fe] to-[#ddd6fe] text-[#4c1d95] border-[#d4af37]/65',
+    numberBadgeBg: 'bg-gradient-to-br from-[#6d28d9] to-[#4c1d95] text-white border-[#c4b5fd]',
+    headingAccent: 'text-[#4c1d95]',
+    dotColor: 'bg-[#6d28d9]',
     ambientGlow:
-      'radial-gradient(750px 450px at 50% 8%, rgba(129, 140, 248, 0.17), transparent 70%), radial-gradient(600px 450px at 85% 80%, rgba(167, 139, 250, 0.12), transparent 70%)',
-    lightboxBg: 'from-[#211845] via-[#15122e] to-[#0a0b1a] border-indigo-400/50',
+      'radial-gradient(820px 520px at 18% 12%, rgba(124, 58, 237, 0.11), transparent 70%), radial-gradient(760px 500px at 88% 85%, rgba(212, 175, 55, 0.14), transparent 70%)',
   },
 };
 
@@ -236,96 +158,15 @@ function renderGroupIcon(groupId: BureauGroupId, className = 'w-5 h-5') {
   }
 }
 
-function getMediaTypeMeta(mediaType?: string) {
-  switch (mediaType) {
-    case 'video':
-      return { label: 'วิดีโอ / ถ่ายทอดสด', icon: <Film className="w-3 h-3" /> };
-    case 'infographic':
-      return { label: 'อินโฟกราฟิก', icon: <BarChart3 className="w-3 h-3" /> };
-    case 'report':
-      return { label: 'รายงาน / เอกสาร', icon: <FileText className="w-3 h-3" /> };
-    default:
-      return { label: 'ภาพกิจกรรม', icon: <Camera className="w-3 h-3" /> };
-  }
-}
-
-function getSourceLabel(source: UnifiedGroupWork['source']) {
-  switch (source) {
-    case 'mediaLibrary':
-      return 'Media Library';
-    case 'heroStory':
-      return 'ข่าวเด่น Highlight';
-    case 'viralClip':
-      return 'คลิปไวรัล';
-    default:
-      return null;
-  }
-}
-
-const createBlankDraft = (groupId: BureauGroupId): Partial<GroupWorkItem> => ({
-  groupId: groupId === 'group-general-admin' ? 'group-media-relations' : groupId,
-  missionIndexes: [],
-  galleryImages: [],
-  title: '',
-  description: '',
-  imageUrl: '/src/assets/images/sai_press_photo_1791791796122.jpg',
-  workDate: new Date().toISOString().split('T')[0],
-  linkUrl: '',
-  badge: '',
-  mediaType: 'photo',
-});
-
 export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
   isOpen,
   onClose,
-  data,
-  isAdminLoggedIn = false,
-  onOpenAdminGroupWorks,
-  onGroupWorkSaved,
 }) => {
   const [selectedGroupId, setSelectedGroupId] = useState<BureauGroupId>('group-media-relations');
-  const [selectedMissionIndex, setSelectedMissionIndex] = useState<number | null>(null);
-  const [selectedWork, setSelectedWork] = useState<UnifiedGroupWork | null>(null);
-  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
-
-  // Right-panel tab state (works view vs standalone passcode-only contributor submission)
-  const [rightTab, setRightTab] = useState<'works' | 'submit'>('works');
-  const [passcodeInput, setPasscodeInput] = useState('');
-  const [showPasscode, setShowPasscode] = useState(false);
-  const [isContributorUnlocked, setIsContributorUnlocked] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.sessionStorage.getItem(CONTRIBUTOR_SESSION_KEY) === 'verified';
-  });
-  const [isVerifyingPasscode, setIsVerifyingPasscode] = useState(false);
-  const [contributorError, setContributorError] = useState<string | null>(null);
-  const [contributorNotice, setContributorNotice] = useState<string | null>(null);
-
-  // Draft add/edit state inside 'ส่งผลงานกลุ่มงาน' tab
-  const [editingDraft, setEditingDraft] = useState<Partial<GroupWorkItem>>(() =>
-    createBlankDraft('group-media-relations')
-  );
-  const [galleryUrlInput, setGalleryUrlInput] = useState('');
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
-  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
-  const [isSavingWork, setIsSavingWork] = useState(false);
-
   const detailPanelRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const submitFormRef = useRef<HTMLFormElement | null>(null);
-  const coverInputRef = useRef<HTMLInputElement | null>(null);
-  const galleryInputRef = useRef<HTMLInputElement | null>(null);
 
-  const lightboxPhotos = useMemo(() => {
-    if (!selectedWork) return [];
-    const list = [selectedWork.imageUrl, ...(selectedWork.galleryImages || [])].filter(Boolean);
-    return Array.from(new Set(list));
-  }, [selectedWork]);
-
-  useEffect(() => {
-    setActivePhotoIndex(0);
-  }, [selectedWork?.id]);
-
-  // Lock body scroll & support Esc / Arrow keys
+  // Lock body scroll & support Escape key
   useEffect(() => {
     if (!isOpen) return;
     const prevOverflow = document.body.style.overflow;
@@ -333,17 +174,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (selectedWork) {
-          setSelectedWork(null);
-        } else {
-          onClose();
-        }
-      } else if (selectedWork && lightboxPhotos.length > 1) {
-        if (e.key === 'ArrowRight') {
-          setActivePhotoIndex((prev) => (prev + 1) % lightboxPhotos.length);
-        } else if (e.key === 'ArrowLeft') {
-          setActivePhotoIndex((prev) => (prev - 1 + lightboxPhotos.length) % lightboxPhotos.length);
-        }
+        onClose();
       }
     };
 
@@ -352,200 +183,23 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
       document.body.style.overflow = prevOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, selectedWork, lightboxPhotos.length, onClose]);
-
-  // Reset detail lightbox on close
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedWork(null);
-      setSelectedMissionIndex(null);
-      setContributorError(null);
-      setContributorNotice(null);
-    }
-  }, [isOpen]);
-
-  // Combine GroupWorks + PublishedWorks + HeroStories + ViralClips tagged with bureauGroup
-  const worksByGroup = useMemo(() => {
-    const map: Record<BureauGroupId, UnifiedGroupWork[]> = {
-      'group-media-relations': [],
-      'group-corp-strategy': [],
-      'group-media-production': [],
-      'group-general-admin': [],
-    };
-
-    const rawGroupWorks: GroupWorkItem[] =
-      data.groupWorks !== undefined ? data.groupWorks : defaultGroupWorks;
-
-    const seenIds = new Set<string>();
-
-    for (const gw of rawGroupWorks) {
-      if (!map[gw.groupId] || gw.groupId === 'group-general-admin') continue;
-      seenIds.add(gw.id);
-      map[gw.groupId].push({
-        id: gw.id,
-        groupId: gw.groupId,
-        missionIndexes: gw.missionIndexes,
-        title: gw.title,
-        description: gw.description,
-        imageUrl: gw.imageUrl,
-        galleryImages: gw.galleryImages,
-        date: gw.workDate,
-        linkUrl: gw.linkUrl,
-        badge: gw.badge,
-        mediaType: gw.mediaType || 'photo',
-        source: 'groupWork',
-      });
-    }
-
-    for (const pw of data.publishedWorks || ([] as PublishedWork[])) {
-      if (
-        !pw.bureauGroup ||
-        pw.bureauGroup === 'group-general-admin' ||
-        !map[pw.bureauGroup] ||
-        seenIds.has(pw.id)
-      ) {
-        continue;
-      }
-      seenIds.add(pw.id);
-      map[pw.bureauGroup].push({
-        id: pw.id,
-        groupId: pw.bureauGroup,
-        missionIndexes: pw.missionIndexes,
-        title: pw.title,
-        description: pw.description,
-        imageUrl: pw.imageUrl,
-        date: pw.publishDate,
-        linkUrl: pw.linkUrl,
-        badge: pw.badge || pw.category,
-        mediaType: pw.mediaType || 'photo',
-        source: 'mediaLibrary',
-      });
-    }
-
-    for (const hs of data.heroStories || ([] as HeroStory[])) {
-      if (
-        !hs.bureauGroup ||
-        hs.bureauGroup === 'group-general-admin' ||
-        !map[hs.bureauGroup] ||
-        seenIds.has(hs.id)
-      ) {
-        continue;
-      }
-      seenIds.add(hs.id);
-      map[hs.bureauGroup].push({
-        id: hs.id,
-        groupId: hs.bureauGroup,
-        missionIndexes: hs.missionIndexes,
-        title: hs.title,
-        description: hs.subtitle,
-        imageUrl: hs.imageUrl,
-        date: hs.date,
-        linkUrl: hs.linkUrl,
-        badge: hs.badge || hs.category,
-        mediaType: hs.mediaType || 'photo',
-        source: 'heroStory',
-      });
-    }
-
-    for (const vc of data.viralClips || ([] as ViralClip[])) {
-      if (
-        !vc.bureauGroup ||
-        vc.bureauGroup === 'group-general-admin' ||
-        !map[vc.bureauGroup] ||
-        seenIds.has(vc.id)
-      ) {
-        continue;
-      }
-      seenIds.add(vc.id);
-      map[vc.bureauGroup].push({
-        id: vc.id,
-        groupId: vc.bureauGroup,
-        missionIndexes: vc.missionIndexes,
-        title: vc.title,
-        description: vc.highlight || `จัดทำโดย ${vc.creator} (${vc.duration})`,
-        imageUrl: vc.thumbnail,
-        date: vc.duration ? `ความยาว ${vc.duration}` : 'คลิปวิดีโอ',
-        linkUrl: vc.linkUrl,
-        badge: vc.creator,
-        mediaType: 'video',
-        source: 'viralClip',
-      });
-    }
-
-    (Object.keys(map) as BureauGroupId[]).forEach((gId) => {
-      map[gId].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-    });
-
-    return map;
-  }, [data.groupWorks, data.publishedWorks, data.heroStories, data.viralClips]);
-
-  const totalLinkedWorks = useMemo(() => {
-    return Object.values(worksByGroup).reduce((sum, list) => sum + list.length, 0);
-  }, [worksByGroup]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const rawGroupWorks: GroupWorkItem[] =
-    data.groupWorks !== undefined ? data.groupWorks : defaultGroupWorks;
-
-  const activeGroup = BUREAU_GROUPS.find((g) => g.id === selectedGroupId) || BUREAU_GROUPS[0];
-  const activeAccent = ACCENT_STYLES[activeGroup.accentColor];
-  const activeGroupShowsWorks = activeGroup.showWorks !== false;
-  const allGroupWorks = activeGroupShowsWorks ? worksByGroup[activeGroup.id] || [] : [];
-  const displayedWorks =
-    selectedMissionIndex !== null
-      ? allGroupWorks.filter((w) => w.missionIndexes?.includes(selectedMissionIndex))
-      : allGroupWorks;
-
-  const editableWorksForActiveGroup = activeGroupShowsWorks
-    ? rawGroupWorks
-        .filter((w) => w.groupId === activeGroup.id)
-        .sort((a, b) => (b.workDate || '').localeCompare(a.workDate || ''))
-    : [];
-
-  const compressImageToDataUrl = (file: File, maxWidth = 1024, quality = 0.76): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const src = ev.target?.result as string;
-        if (!src) return reject(new Error('ไม่สามารถอ่านไฟล์ภาพได้'));
-        const img = new Image();
-        img.onload = () => {
-          let w = img.width;
-          let h = img.height;
-          if (w > maxWidth) {
-            h = Math.round((h * maxWidth) / w);
-            w = maxWidth;
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return resolve(src);
-          ctx.drawImage(img, 0, 0, w, h);
-          const compressed = canvas.toDataURL('image/jpeg', quality);
-          resolve(compressed.length < src.length ? compressed : src);
-        };
-        img.onerror = () => resolve(src);
-        img.src = src;
-      };
-      reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
-      reader.readAsDataURL(file);
-    });
-  };
+  const activeIndex = Math.max(
+    0,
+    BUREAU_GROUPS.findIndex((g) => g.id === selectedGroupId)
+  );
+  const activeGroup = BUREAU_GROUPS[activeIndex] || BUREAU_GROUPS[0];
+  const activeTheme = ROYAL_GROUP_THEMES[activeGroup.accentColor];
+  const prevGroup =
+    BUREAU_GROUPS[(activeIndex - 1 + BUREAU_GROUPS.length) % BUREAU_GROUPS.length];
+  const nextGroup = BUREAU_GROUPS[(activeIndex + 1) % BUREAU_GROUPS.length];
 
   const handleSelectGroup = (groupId: BureauGroupId) => {
     playDigitalSound('select');
     setSelectedGroupId(groupId);
-    setSelectedMissionIndex(null);
-    setContributorError(null);
-    setContributorNotice(null);
-    setGalleryUrlInput('');
-    if (groupId === 'group-general-admin') {
-      setRightTab('works');
-    } else {
-      setEditingDraft(createBlankDraft(groupId));
-    }
     if (typeof window !== 'undefined' && window.innerWidth < 1024 && detailPanelRef.current) {
       setTimeout(() => {
         detailPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -553,294 +207,88 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
     }
   };
 
-  const handleToggleMissionFilter = (missionNumber: number) => {
-    if (!activeGroupShowsWorks) return;
-    playDigitalSound('blip');
-    setSelectedMissionIndex((prev) => (prev === missionNumber ? null : missionNumber));
-  };
-
-  const handleWorkLinkClick = (url?: string) => {
-    if (!url) return;
-    if (url.startsWith('#')) {
-      setSelectedWork(null);
-      onClose();
-      setTimeout(() => {
-        const target = document.querySelector(url);
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 150);
-    } else {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
-  };
-
-  const handleContributorPasscodeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setContributorError(null);
-    setContributorNotice(null);
-
-    const typed = passcodeInput.trim();
-    if (!typed) {
-      setContributorError('กรุณากรอก Passcode เพื่อเข้าส่งผลงานกลุ่มงาน');
-      playDigitalSound('blip');
-      return;
-    }
-
-    setIsVerifyingPasscode(true);
-    playDigitalSound('select');
-
-    try {
-      const isValid = await verifyContributorPasscode(typed);
-      if (!isValid) {
-        setContributorError('Passcode ไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง');
-        playDigitalSound('blip');
-        return;
-      }
-
-      if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem(CONTRIBUTOR_SESSION_KEY, 'verified');
-      }
-      setIsContributorUnlocked(true);
-      setPasscodeInput('');
-      setEditingDraft(createBlankDraft(activeGroup.id));
-      setContributorNotice('ยืนยัน Passcode สำเร็จ — เข้าสู่โหมดเพิ่มและแก้ไขผลงานกลุ่มงานเรียบร้อยแล้ว');
-      playDigitalSound('confirm');
-    } catch {
-      setContributorError('ไม่สามารถตรวจสอบ Passcode ได้ กรุณาลองใหม่อีกครั้ง');
-      playDigitalSound('blip');
-    } finally {
-      setIsVerifyingPasscode(false);
-    }
-  };
-
-  const handleContributorLogout = () => {
-    playDigitalSound('blip');
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.removeItem(CONTRIBUTOR_SESSION_KEY);
-    }
-    setIsContributorUnlocked(false);
-    setPasscodeInput('');
-    setShowPasscode(false);
-    setContributorError(null);
-    setContributorNotice(null);
-    setEditingDraft(createBlankDraft(activeGroup.id));
-  };
-
-  const handleUploadDraftCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsUploadingCover(true);
-    setContributorError(null);
-    try {
-      const dataUrl = await compressImageToDataUrl(file, 1024, 0.76);
-      if (dataUrl.length > 680000) {
-        setContributorError('ขนาดไฟล์ภาพปกใหญ่เกินขีดจำกัด กรุณาเลือกภาพที่ขนาดเล็กลงหรือวางลิงก์ภาพ URL แทน');
-        return;
-      }
-      setEditingDraft((prev) => ({ ...prev, imageUrl: dataUrl }));
-      playDigitalSound('confirm');
-    } catch {
-      setContributorError('ไม่สามารถอ่านไฟล์ภาพปกได้ กรุณาลองใหม่อีกครั้ง');
-    } finally {
-      setIsUploadingCover(false);
-      e.target.value = '';
-    }
-  };
-
-  const handleUploadDraftGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-    const currentGallery = editingDraft.galleryImages || [];
-    const remainingSlots = Math.max(0, 5 - currentGallery.length);
-    if (remainingSlots === 0) {
-      setContributorError('ภาพประกอบเพิ่มเติมรองรับสูงสุด 5 ภาพต่อ 1 ผลงาน');
-      e.target.value = '';
-      return;
-    }
-
-    setIsUploadingGallery(true);
-    setContributorError(null);
-    try {
-      const toProcess = files.slice(0, remainingSlots);
-      const uploaded: string[] = [];
-      for (const file of toProcess) {
-        const dataUrl = await compressImageToDataUrl(file, 850, 0.68);
-        uploaded.push(dataUrl);
-      }
-      setEditingDraft((prev) => ({
-        ...prev,
-        galleryImages: [...(prev.galleryImages || []), ...uploaded].slice(0, 5),
-      }));
-      playDigitalSound('confirm');
-    } catch {
-      setContributorError('ไม่สามารถอัปโหลดภาพประกอบได้ กรุณาลองใหม่อีกครั้ง');
-    } finally {
-      setIsUploadingGallery(false);
-      e.target.value = '';
-    }
-  };
-
-  const handleSaveContributorWork = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setContributorError(null);
-    setContributorNotice(null);
-
-    const title = (editingDraft.title || '').trim();
-    const description = (editingDraft.description || '').trim();
-    const imageUrl = (editingDraft.imageUrl || '').trim();
-    const workDate = (editingDraft.workDate || new Date().toISOString().split('T')[0]).trim();
-    const groupId = editingDraft.groupId || activeGroup.id;
-
-    if (!title || !description || !imageUrl || groupId === 'group-general-admin') {
-      setContributorError('กรุณากรอกชื่อผลงาน รายละเอียด และภาพปกให้ครบถ้วน');
-      playDigitalSound('blip');
-      return;
-    }
-
-    if (imageUrl.length > 700000) {
-      setContributorError('ภาพปกมีขนาดใหญ่เกิน 700KB กรุณาเปลี่ยนภาพใหม่หรือวางลิงก์ URL แทน');
-      playDigitalSound('blip');
-      return;
-    }
-
-    const cleanMissions = Array.from(
-      new Set((editingDraft.missionIndexes || []).filter((n) => Number.isInteger(n) && n >= 1))
-    )
-      .sort((a, b) => a - b)
-      .slice(0, 10);
-
-    const cleanGallery = (editingDraft.galleryImages || [])
-      .map((u) => u.trim())
-      .filter(Boolean)
-      .slice(0, 5);
-
-    const isEdit = Boolean(editingDraft.id);
-    const existing = editingDraft.id
-      ? rawGroupWorks.find((w) => w.id === editingDraft.id)
-      : undefined;
-
-    const itemToSave: GroupWorkItem = existing
-      ? {
-          ...existing,
-          groupId,
-          missionIndexes: cleanMissions.length > 0 ? cleanMissions : undefined,
-          title: title.slice(0, 300),
-          description: description.slice(0, 2000),
-          imageUrl,
-          galleryImages: cleanGallery.length > 0 ? cleanGallery : undefined,
-          workDate: workDate.slice(0, 50),
-          linkUrl: editingDraft.linkUrl?.trim() ? editingDraft.linkUrl.trim().slice(0, 1000) : undefined,
-          badge: editingDraft.badge?.trim() ? editingDraft.badge.trim().slice(0, 100) : undefined,
-          mediaType: editingDraft.mediaType || 'photo',
-          updatedAt: new Date().toISOString(),
-        }
-      : {
-          id: `gw-${Date.now()}`,
-          groupId,
-          missionIndexes: cleanMissions.length > 0 ? cleanMissions : undefined,
-          title: title.slice(0, 300),
-          description: description.slice(0, 2000),
-          imageUrl,
-          galleryImages: cleanGallery.length > 0 ? cleanGallery : undefined,
-          workDate: workDate.slice(0, 50),
-          linkUrl: editingDraft.linkUrl?.trim() ? editingDraft.linkUrl.trim().slice(0, 1000) : undefined,
-          badge: editingDraft.badge?.trim() ? editingDraft.badge.trim().slice(0, 100) : undefined,
-          mediaType: editingDraft.mediaType || 'photo',
-          updatedAt: new Date().toISOString(),
-        };
-
-    const approxSize = JSON.stringify(itemToSave).length;
-    if (approxSize > 950000) {
-      setContributorError(
-        'ขนาดข้อมูลและภาพรวมกันเกินขีดจำกัด 1MB ของฐานข้อมูล กรุณาลดจำนวนภาพที่อัปโหลดจากเครื่องหรือใช้ลิงก์ URL แทน'
-      );
-      playDigitalSound('blip');
-      return;
-    }
-
-    setIsSavingWork(true);
-    playDigitalSound('select');
-    try {
-      await saveSingleItemToFirestore('groupWorks', itemToSave, {
-        contributorPasscodeVerified: isContributorUnlocked,
-      });
-      onGroupWorkSaved?.(itemToSave);
-      setEditingDraft(createBlankDraft(activeGroup.id));
-      setGalleryUrlInput('');
-      setContributorNotice(
-        isEdit
-          ? `แก้ไขผลงาน "${itemToSave.title}" เรียบร้อยแล้ว`
-          : `เพิ่มผลงาน "${itemToSave.title}" เข้าสู่ระบบเรียบร้อยแล้ว`
-      );
-      playDigitalSound('confirm');
-    } catch (err: any) {
-      console.error('Save group work error:', err);
-      setContributorError(
-        err?.message || 'ไม่สามารถบันทึกผลงานได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง'
-      );
-      playDigitalSound('blip');
-    } finally {
-      setIsSavingWork(false);
-    }
-  };
-
-  const activeLightboxPhoto =
-    lightboxPhotos[activePhotoIndex] || selectedWork?.imageUrl || '/assets/images/sai_audit_hero_1791689796943.jpg';
-
   return (
     <div
-      className="fixed inset-0 z-[75] flex flex-col bg-[#020818] text-slate-100 animate-fadeIn overflow-hidden"
+      className="fixed inset-0 z-[75] flex flex-col bg-[#faf7f0] text-slate-900 animate-fadeIn overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-label="โครงสร้างและภารกิจสำนักประชาสัมพันธ์และสื่อสารองค์กร"
     >
-      {/* Subtle Ambient Background Gradient synced with Active Group Theme */}
+      {/* Pearl White Marble Texture Backdrop (ขาวมุก หินอ่อน เรียบหรู Royal) */}
       <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-80 transition-all duration-500"
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
-          backgroundImage: activeAccent.ambientGlow,
+          backgroundColor: '#faf7f0',
+          backgroundImage: [
+            activeTheme.ambientGlow,
+            'radial-gradient(900px 620px at 78% 18%, rgba(255, 255, 255, 0.92), transparent 70%)',
+            'radial-gradient(750px 520px at 14% 78%, rgba(240, 232, 214, 0.55), transparent 72%)',
+            'linear-gradient(125deg, rgba(255,255,255,0.7) 0%, rgba(244,239,229,0.5) 36%, rgba(255,255,255,0.85) 68%, rgba(238,231,216,0.55) 100%)',
+          ].join(', '),
         }}
         aria-hidden="true"
       />
 
-      {/* Top Sticky Executive Bar */}
-      <header className="relative z-20 shrink-0 bg-[#040f2c]/95 backdrop-blur-xl border-b border-amber-400/30 shadow-[0_6px_30px_rgba(0,0,0,0.65)]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/25 to-amber-600/15 border border-amber-400/50 flex items-center justify-center shrink-0 shadow-[0_0_16px_rgba(245,158,11,0.25)]">
-              <Network className="w-5 h-5 text-amber-300" />
+      {/* Subtle Translucent Marble Veining SVG Overlay */}
+      <svg
+        className="pointer-events-none fixed inset-0 w-full h-full z-0 opacity-[0.22]"
+        preserveAspectRatio="none"
+        viewBox="0 0 1440 900"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M-60 210 C 210 160, 380 310, 680 230 C 960 155, 1180 280, 1510 190"
+          stroke="#d6c59c"
+          strokeWidth="1.8"
+          strokeOpacity="0.65"
+        />
+        <path
+          d="M-40 540 C 260 610, 520 430, 860 520 C 1120 590, 1290 470, 1500 550"
+          stroke="#d8ccb2"
+          strokeWidth="1.5"
+          strokeOpacity="0.55"
+        />
+        <path
+          d="M220 -20 C 310 240, 440 420, 380 920"
+          stroke="#e2d6bc"
+          strokeWidth="1.4"
+          strokeOpacity="0.5"
+        />
+        <path
+          d="M1140 -20 C 1030 280, 1210 560, 1080 920"
+          stroke="#d4c295"
+          strokeWidth="1.5"
+          strokeOpacity="0.5"
+        />
+      </svg>
+
+      {/* Top Royal Gold Accent Hairline */}
+      <div className="relative z-30 h-1 w-full bg-gradient-to-r from-[#a67c00] via-[#f1d57e] to-[#a67c00] shrink-0" />
+
+      {/* Top Sticky Royal Pearl Header Bar */}
+      <header className="relative z-20 shrink-0 bg-white/92 backdrop-blur-xl border-b-2 border-[#d4af37]/50 shadow-[0_6px_28px_rgba(161,118,22,0.10)]">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#fff6d6] to-[#f4dc94] border-2 border-[#d4af37]/75 flex items-center justify-center shrink-0 shadow-[0_4px_14px_rgba(184,134,11,0.18)]">
+              <Network className="w-5 h-5 text-[#8a5d00]" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm sm:text-base lg:text-lg font-bold text-white truncate">
+              <h2 className="text-base sm:text-xl font-extrabold text-slate-900 truncate tracking-tight">
                 โครงสร้างและภารกิจภายใน{BUREAU_TITLE}
               </h2>
-              <p className="text-[11px] sm:text-xs text-amber-300/90 truncate">
-                {BUREAU_SUBTITLE} · 4 กลุ่มงานหลัก · {totalLinkedWorks} ผลงานเชื่อมโยง
+              <p className="text-xs sm:text-sm font-semibold text-[#8a5d00] truncate">
+                {BUREAU_SUBTITLE} · 4 กลุ่มงานหลัก
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {isAdminLoggedIn && onOpenAdminGroupWorks && (
-              <button
-                type="button"
-                onClick={() => {
-                  playDigitalSound('select');
-                  onClose();
-                  onOpenAdminGroupWorks();
-                }}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-200 text-xs font-semibold transition-all cursor-pointer"
-              >
-                <Settings2 className="w-3.5 h-3.5" />
-                <span>จัดการใน Admin</span>
-              </button>
-            )}
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => {
                 playDigitalSound('select');
-                setSelectedWork(null);
                 onClose();
                 if (typeof window !== 'undefined') {
                   setTimeout(() => {
@@ -848,7 +296,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                   }, 80);
                 }
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400/15 hover:bg-amber-400 text-amber-200 hover:text-slate-950 border border-amber-400/50 text-xs font-bold transition-all cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#e7c55c] to-[#c5961b] hover:from-[#e0be53] hover:to-[#d4af37] text-slate-950 border border-[#b8860b] text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-sm"
               title="กลับสู่หน้าหลัก (Home)"
             >
               <Home className="w-4 h-4" />
@@ -860,7 +308,7 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
                 playDigitalSound('blip');
                 onClose();
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/25 border border-slate-600/60 hover:border-rose-400/60 text-slate-200 hover:text-white text-xs font-semibold transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-amber-50 border border-[#d4af37]/60 text-slate-800 hover:text-slate-950 text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm"
               title="ปิดหน้าต่างเต็มจอ (Esc)"
             >
               <X className="w-4 h-4" />
@@ -875,98 +323,97 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
         ref={scrollContainerRef}
         className="relative z-10 flex-1 overflow-y-auto overscroll-contain"
       >
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-7">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-9 space-y-8">
           {/* Interactive Org Chart Tree Header */}
           <section aria-label="แผนผังโครงสร้างสำนักประชาสัมพันธ์และสื่อสารองค์กร">
-            {/* Root Bureau & Executive Position Node (Position Title Only - No Names) */}
+            {/* Root Bureau & Executive Position Node */}
             <div className="flex flex-col items-center">
-              <div className="relative px-6 py-4 rounded-2xl bg-gradient-to-r from-[#091c4a] via-[#0d2661] to-[#091c4a] border border-amber-400/60 shadow-[0_8px_32px_rgba(245,158,11,0.2)] text-center max-w-xl w-full sm:w-auto space-y-1.5">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/40 text-[11px] font-bold text-amber-200">
-                  <UserCheck className="w-3.5 h-3.5 text-amber-300" />
+              <div className="relative px-7 py-5 rounded-2xl bg-gradient-to-br from-white via-[#fcf7ea] to-[#f7ebd0] border-2 border-[#d4af37] shadow-[0_14px_38px_rgba(161,118,22,0.14)] text-center max-w-2xl w-full sm:w-auto space-y-2 overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#b8860b] via-[#f1d57e] to-[#b8860b]" />
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-[#b8860b] to-[#d4af37] text-white text-xs sm:text-sm font-bold shadow-sm">
+                  <Crown className="w-3.5 h-3.5" />
                   <span>{BUREAU_EXECUTIVE_TITLE}</span>
                 </div>
-                <h3 className="text-base sm:text-xl font-bold bg-gradient-to-r from-white via-amber-100 to-amber-300 bg-clip-text text-transparent">
+                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
                   {BUREAU_TITLE}
                 </h3>
-                <p className="text-[11px] sm:text-xs text-slate-300">
-                  คลิกเลือกกลุ่มงานด้านล่างเพื่อดูภารกิจสำคัญ และคลิกที่ข้อภารกิจเพื่อกรองผลงานที่เกี่ยวข้อง
+                <p className="text-sm sm:text-base font-medium text-slate-700">
+                  เลือกกลุ่มงานด้านล่างเพื่อดูบทบาทและภารกิจสำคัญของแต่ละกลุ่มงาน
                 </p>
               </div>
 
-              {/* Org Chart Branch Connector Lines (Desktop) */}
+              {/* Royal Gold Org Chart Branch Connector Lines (Desktop) */}
               <div className="hidden lg:flex flex-col items-center w-full max-w-5xl" aria-hidden="true">
-                <div className="w-[2px] h-6 bg-gradient-to-b from-amber-400/70 to-amber-400/40" />
-                <div className="w-[76%] h-[2px] bg-gradient-to-r from-amber-400/40 via-cyan-400/50 to-indigo-400/40" />
+                <div className="w-[2.5px] h-6 bg-gradient-to-b from-[#b8860b] to-[#d4af37]" />
+                <div className="w-[76%] h-[2.5px] bg-gradient-to-r from-[#d4af37]/75 via-[#b8860b] to-[#d4af37]/75" />
                 <div className="w-full grid grid-cols-4 px-8">
-                  <div className="flex justify-center"><div className="w-[2px] h-5 bg-amber-400/45" /></div>
-                  <div className="flex justify-center"><div className="w-[2px] h-5 bg-cyan-400/45" /></div>
-                  <div className="flex justify-center"><div className="w-[2px] h-5 bg-emerald-400/45" /></div>
-                  <div className="flex justify-center"><div className="w-[2px] h-5 bg-indigo-400/45" /></div>
+                  <div className="flex justify-center"><div className="w-[2.5px] h-5 bg-[#d4af37]" /></div>
+                  <div className="flex justify-center"><div className="w-[2.5px] h-5 bg-[#d4af37]" /></div>
+                  <div className="flex justify-center"><div className="w-[2.5px] h-5 bg-[#d4af37]" /></div>
+                  <div className="flex justify-center"><div className="w-[2.5px] h-5 bg-[#d4af37]" /></div>
                 </div>
               </div>
-              <div className="lg:hidden h-4" />
+              <div className="lg:hidden h-5" />
             </div>
 
-            {/* 4 Bureau Group Selector Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+            {/* 4 Bureau Group Selector Cards (Distinct Color Surface per Group + Royal Gold Trim) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
               {BUREAU_GROUPS.map((group) => {
                 const isSelected = group.id === selectedGroupId;
-                const accent = ACCENT_STYLES[group.accentColor];
-                const groupCount = (worksByGroup[group.id] || []).length;
+                const theme = ROYAL_GROUP_THEMES[group.accentColor];
 
                 return (
                   <button
                     key={group.id}
                     type="button"
                     onClick={() => handleSelectGroup(group.id)}
-                    className={`group text-left p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between gap-3 ${
+                    className={`group text-left p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 relative overflow-hidden ${
                       isSelected
-                        ? `${accent.activeBg} ${accent.activeBorder} ring-1 ${accent.ring} -translate-y-0.5`
-                        : accent.idleCardBg
+                        ? `${theme.cardActiveBg} ${theme.cardActiveBorder} -translate-y-1`
+                        : `${theme.cardIdleBg}`
                     }`}
                   >
-                    <div className="space-y-2.5">
+                    {/* Royal Gold Top Accent Bar on Active Card */}
+                    {isSelected && (
+                      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#b8860b] via-[#f1d57e] to-[#b8860b]" />
+                    )}
+
+                    <div className="space-y-3">
                       <div className="flex items-center justify-between gap-2">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${accent.badgeBg} ${accent.badgeText}`}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border shadow-sm ${theme.badgeBg}`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${accent.dot}`} />
+                          <UserCheck className="w-3.5 h-3.5" />
                           <span>กลุ่มงานที่ {group.order}</span>
                         </span>
-                        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 ${accent.iconBg}`}>
-                          {renderGroupIcon(group.id, 'w-4 h-4')}
+                        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-sm ${theme.iconBg}`}>
+                          {renderGroupIcon(group.id, 'w-5 h-5')}
                         </div>
                       </div>
 
                       <div>
-                        <h4 className="text-sm sm:text-[15px] font-bold text-white leading-snug group-hover:text-amber-200 transition-colors">
+                        <h4 className="text-base sm:text-lg font-extrabold text-slate-900 leading-snug">
                           {group.name}
                         </h4>
-                        <p className="text-[11px] text-slate-300/90 line-clamp-2 mt-1 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-slate-700 font-medium line-clamp-3 mt-1.5 leading-relaxed">
                           {group.summary}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2.5 border-t border-white/10 text-[11px]">
-                      <span className="text-slate-300 font-medium">
+                    <div className="flex items-center justify-between pt-3 border-t border-[#d4af37]/35 text-xs sm:text-sm">
+                      <span className="font-bold text-slate-800">
                         ภารกิจ {group.missions.length} ด้าน
-                        {group.showWorks !== false ? (
-                          <>
-                            {' '}·{' '}
-                            <strong className={accent.badgeText}>{groupCount} ผลงาน</strong>
-                          </>
-                        ) : (
-                          <span className="text-slate-400"> · งานอำนวยการ</span>
-                        )}
                       </span>
                       <span
-                        className={`inline-flex items-center gap-0.5 font-semibold transition-transform ${
-                          isSelected ? `${accent.badgeText} translate-x-0.5` : 'text-slate-400 group-hover:text-white'
+                        className={`inline-flex items-center gap-1 font-extrabold transition-transform ${
+                          isSelected
+                            ? `${theme.headingAccent} translate-x-0.5`
+                            : 'text-slate-700 group-hover:text-slate-950'
                         }`}
                       >
-                        <span>{isSelected ? 'กำลังแสดง' : 'เปิดดู'}</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
+                        <span>{isSelected ? 'กำลังแสดง' : 'ดูภารกิจ'}</span>
+                        <ChevronRight className="w-4 h-4" />
                       </span>
                     </div>
                   </button>
@@ -975,1093 +422,110 @@ export const BureauStructureModal: React.FC<BureauStructureModalProps> = ({
             </div>
           </section>
 
-          {/* Active Group Detail Workspace: Missions (Left/Full) + Linked Works (Right when enabled) */}
+          {/* Active Group Missions Showcase (Missions Only — Distinct Colored Surface + Royal Gold Trim) */}
           <section
             ref={detailPanelRef}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start pb-6"
-            aria-label={`รายละเอียดของ ${activeGroup.name}`}
+            className="pb-8"
+            aria-label={`ภารกิจของ ${activeGroup.name}`}
           >
-            {/* Missions of the Selected Group (Interactive Tag Filtering when works enabled) */}
             <div
-              className={`${
-                activeGroupShowsWorks ? 'lg:col-span-5' : 'lg:col-span-12'
-              } rounded-2xl border p-5 sm:p-6 shadow-xl space-y-5 transition-colors duration-300 ${activeAccent.panelBg}`}
+              className={`relative rounded-3xl p-6 sm:p-8 lg:p-10 space-y-6 transition-all duration-300 overflow-hidden ${activeTheme.panelBg} ${activeTheme.panelBorder}`}
             >
-              <div className="flex items-start gap-3.5 pb-4 border-b border-white/10">
-                <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${activeAccent.iconBg}`}>
-                  {renderGroupIcon(activeGroup.id, 'w-5 h-5')}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${activeAccent.badgeBg} ${activeAccent.badgeText}`}
-                    >
-                      กลุ่มงานที่ {activeGroup.order}
-                    </span>
-                    <span className="text-[11px] text-slate-400 truncate">{activeGroup.englishName}</span>
+              {/* Royal Gold Top Crown Strip */}
+              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-[#a67c00] via-[#f1d57e] to-[#a67c00]" />
+
+              {/* Group Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#d4af37]/40">
+                <div className="flex items-start sm:items-center gap-4 min-w-0">
+                  <div
+                    className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center shrink-0 shadow-md ${activeTheme.iconBg}`}
+                  >
+                    {renderGroupIcon(activeGroup.id, 'w-7 h-7')}
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-white leading-snug">
-                    {activeGroup.name}
-                  </h3>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs sm:text-sm font-extrabold border shadow-sm ${activeTheme.badgeBg}`}
+                      >
+                        กลุ่มงานที่ {activeGroup.order}
+                      </span>
+                      <span className="text-xs sm:text-sm font-semibold text-slate-600">
+                        {activeGroup.englishName}
+                      </span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 leading-snug">
+                      {activeGroup.name}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/85 border border-[#d4af37]/60 text-sm sm:text-base font-extrabold text-slate-900 shadow-sm shrink-0 self-start sm:self-auto">
+                  <Layers className={`w-4 h-4 ${activeTheme.headingAccent}`} />
+                  <span>ภารกิจหลัก {activeGroup.missions.length} ด้าน</span>
                 </div>
               </div>
 
-              <div className={`p-3.5 rounded-xl border ${activeAccent.innerCardBg}`}>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+              {/* Group Overview Summary */}
+              <div className={`p-4 sm:p-5 rounded-2xl border shadow-sm ${activeTheme.summaryBg}`}>
+                <p className="text-sm sm:text-base lg:text-lg text-slate-800 font-medium leading-relaxed">
                   {activeGroup.summary}
                 </p>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className={`flex items-center gap-2 text-xs sm:text-sm font-bold ${activeAccent.headingText}`}>
-                    <Layers className={`w-4 h-4 shrink-0 ${activeAccent.iconTint}`} />
-                    <span>
-                      ภารกิจสำคัญของกลุ่มงาน
-                      {activeGroupShowsWorks && (
-                        <span className="ml-1.5 text-[11px] font-normal text-slate-400">
-                          (กดเลือกข้อเพื่อกรองผลงาน)
-                        </span>
-                      )}
-                    </span>
-                  </div>
-
-                  {activeGroupShowsWorks && selectedMissionIndex !== null && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMissionIndex(null)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition-colors ${activeAccent.badgeBg} ${activeAccent.badgeText}`}
-                    >
-                      <Filter className="w-3 h-3" />
-                      <span>แสดงทุกภารกิจ</span>
-                    </button>
-                  )}
+              {/* Missions Grid (Large, High-Contrast Readable Typography) */}
+              <div className="space-y-4">
+                <div className={`flex items-center gap-2.5 text-base sm:text-lg font-extrabold ${activeTheme.headingAccent}`}>
+                  <span className={`w-2.5 h-2.5 rounded-full ${activeTheme.dotColor}`} />
+                  <span>บทบาทและภารกิจของ{activeGroup.name}</span>
                 </div>
 
-                <ol
-                  className={
-                    activeGroupShowsWorks
-                      ? 'space-y-2.5'
-                      : 'grid grid-cols-1 md:grid-cols-3 gap-3.5'
-                  }
-                >
+                <ol className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {activeGroup.missions.map((mission, idx) => {
                     const missionNumber = idx + 1;
-                    const matchCount = activeGroupShowsWorks
-                      ? allGroupWorks.filter((w) => w.missionIndexes?.includes(missionNumber)).length
-                      : 0;
-                    const isMissionSelected =
-                      activeGroupShowsWorks && selectedMissionIndex === missionNumber;
-
-                    if (!activeGroupShowsWorks) {
-                      return (
-                        <li
-                          key={idx}
-                          className={`flex items-start gap-3 p-3.5 rounded-xl border ${activeAccent.innerCardBg}`}
-                        >
-                          <span
-                            className={`w-6 h-6 rounded-lg border text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${activeAccent.badgeBg} ${activeAccent.badgeText}`}
-                          >
-                            {missionNumber}
-                          </span>
-                          <p className="text-xs sm:text-[13px] text-slate-200 leading-relaxed">
-                            {mission}
-                          </p>
-                        </li>
-                      );
-                    }
 
                     return (
-                      <li key={idx}>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleMissionFilter(missionNumber)}
-                          className={`w-full text-left flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer ${
-                            isMissionSelected
-                              ? `${activeAccent.activeBg} ${activeAccent.activeBorder} ring-1 ${activeAccent.ring}`
-                              : `${activeAccent.innerCardBg} ${activeAccent.missionHover}`
-                          }`}
+                      <li
+                        key={idx}
+                        className={`flex items-start gap-4 p-5 rounded-2xl border transition-all shadow-sm ${activeTheme.missionCardBg} ${activeTheme.missionCardBorder}`}
+                      >
+                        <span
+                          className={`w-9 h-9 rounded-xl border text-base font-extrabold flex items-center justify-center shrink-0 mt-0.5 shadow-sm ${activeTheme.numberBadgeBg}`}
                         >
-                          <span
-                            className={`w-6 h-6 rounded-lg border text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${
-                              isMissionSelected
-                                ? activeAccent.activePillBg
-                                : `${activeAccent.badgeBg} ${activeAccent.badgeText}`
-                            }`}
-                          >
-                            {missionNumber}
-                          </span>
-                          <div className="flex-1 min-w-0 space-y-1.5">
-                            <p className="text-xs sm:text-[13px] text-slate-200 leading-relaxed">
-                              {mission}
-                            </p>
-                            <div className="flex items-center justify-between gap-2 text-[10px]">
-                              <span
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border font-semibold ${
-                                  matchCount > 0
-                                    ? `${activeAccent.badgeBg} ${activeAccent.badgeText}`
-                                    : 'bg-slate-800/70 border-slate-700 text-slate-400'
-                                }`}
-                              >
-                                <Filter className="w-2.5 h-2.5" />
-                                <span>
-                                  {matchCount > 0
-                                    ? `${matchCount} ผลงานเชื่อมโยง`
-                                    : 'ยังไม่มีผลงานติดแท็ก'}
-                                </span>
-                              </span>
-                              <span className="text-slate-400">
-                                {isMissionSelected ? 'คลิกอีกครั้งเพื่อแสดงทั้งหมด' : 'คลิกกรองผลงาน'}
-                              </span>
-                            </div>
-                          </div>
-                        </button>
+                          {missionNumber}
+                        </span>
+                        <p className="text-base sm:text-[17px] text-slate-900 font-semibold leading-relaxed">
+                          {mission}
+                        </p>
                       </li>
                     );
                   })}
                 </ol>
               </div>
-            </div>
 
-            {/* Right Column: Linked Works & Standalone Submission Tab (Groups 1, 2, 3 ONLY) */}
-            {activeGroupShowsWorks && (
-              <div
-                className={`lg:col-span-7 rounded-2xl border p-5 sm:p-6 shadow-xl space-y-5 transition-colors duration-300 ${activeAccent.panelBg}`}
-              >
-                {/* Right Column Header + Standalone Two-Tab Bar */}
-                <div className="flex flex-col gap-3.5 pb-4 border-b border-white/10">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${activeAccent.dot}`} />
-                        <h3 className="text-base sm:text-lg font-bold text-white">
-                          {rightTab === 'submit'
-                            ? `ส่งผลงานกลุ่มงาน · ${activeGroup.shortName}`
-                            : `ผลงานและกิจกรรมของ${activeGroup.shortName}`}
-                        </h3>
-                      </div>
-                      <p className="text-xs text-slate-300 mt-0.5">
-                        {rightTab === 'submit'
-                          ? 'ระบบส่งและแก้ไขผลงานเฉพาะกลุ่มงาน 1–3 (แยกจากระบบ Admin)'
-                          : selectedMissionIndex !== null
-                          ? `กำลังกรองตามภารกิจข้อที่ ${selectedMissionIndex} (พบ ${displayedWorks.length} จากทั้งหมด ${allGroupWorks.length} รายการ)`
-                          : `แสดงภาพและรายละเอียดผลงานที่เชื่อมโยงกับภารกิจของกลุ่ม (${displayedWorks.length} รายการ) — คลิกที่การ์ดเพื่อดูรายละเอียด`}
-                      </p>
-                    </div>
-                  </div>
+              {/* Bottom Quick Navigation Between the 4 Groups */}
+              <div className="pt-5 border-t border-[#d4af37]/40 flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleSelectGroup(prevGroup.id)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/90 hover:bg-white border border-[#d4af37]/60 text-slate-900 text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[#8a5d00]" />
+                  <span>กลุ่มก่อนหน้า: {prevGroup.shortName}</span>
+                </button>
 
-                  {/* Two-Tab Toggle: ผลงานของกลุ่ม | ส่งผลงานกลุ่มงาน */}
-                  <div className={`grid grid-cols-2 gap-1.5 p-1 rounded-xl border text-xs font-semibold ${activeAccent.tabTrackBg}`}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playDigitalSound('blip');
-                        setRightTab('works');
-                      }}
-                      className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                        rightTab === 'works'
-                          ? activeAccent.activeTabBg
-                          : 'text-slate-300 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      <Eye className="w-3.5 h-3.5 shrink-0" />
-                      <span>ผลงานของกลุ่ม ({allGroupWorks.length})</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playDigitalSound('select');
-                        setRightTab('submit');
-                        setContributorError(null);
-                        setContributorNotice(null);
-                      }}
-                      className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                        rightTab === 'submit'
-                          ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-bold shadow'
-                          : 'text-amber-200 hover:text-white hover:bg-amber-500/15'
-                      }`}
-                    >
-                      <Plus className="w-3.5 h-3.5 shrink-0" />
-                      <span>ส่งผลงานกลุ่มงาน</span>
-                    </button>
-                  </div>
-                </div>
-
-                {rightTab === 'works' ? (
-                  <>
-                    {/* Active Mission Filter Strip */}
-                    {selectedMissionIndex !== null && (
-                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-400/40 flex flex-wrap items-center justify-between gap-2 text-xs">
-                        <div className="flex items-center gap-2 text-amber-200 font-medium">
-                          <Filter className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                          <span>
-                            กำลังกรอง: <strong>ภารกิจข้อที่ {selectedMissionIndex}</strong>
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedMissionIndex(null)}
-                          className="px-2.5 py-1 rounded-lg bg-slate-900/70 hover:bg-slate-800 border border-amber-400/40 text-amber-200 text-[11px] font-semibold cursor-pointer"
-                        >
-                          แสดงผลงานทั้งหมด ({allGroupWorks.length})
-                        </button>
-                      </div>
-                    )}
-
-                    {displayedWorks.length === 0 ? (
-                      <div className="py-12 px-4 rounded-2xl border border-dashed border-slate-600/60 bg-[#040e28]/50 text-center space-y-2.5">
-                        <CheckCircle2 className="w-8 h-8 text-slate-500 mx-auto" />
-                        <p className="text-sm font-semibold text-slate-300">
-                          {selectedMissionIndex !== null
-                            ? `ยังไม่มีผลงานที่ติดแท็กภารกิจข้อที่ ${selectedMissionIndex}`
-                            : 'ยังไม่มีรายการผลงานที่เพิ่มในกลุ่มงานนี้'}
-                        </p>
-                        <p className="text-xs text-slate-400 max-w-md mx-auto">
-                          {selectedMissionIndex !== null
-                            ? 'สามารถกดดูผลงานทั้งหมดของกลุ่ม หรือส่งผลงานใหม่ได้ในแท็บ "ส่งผลงานกลุ่มงาน"'
-                            : `สามารถกดแท็บ "ส่งผลงานกลุ่มงาน" เพื่อเพิ่มภาพและรายละเอียดผลงานของ${activeGroup.name} ได้ทันที`}
-                        </p>
-                        {selectedMissionIndex !== null ? (
-                          <button
-                            type="button"
-                            onClick={() => setSelectedMissionIndex(null)}
-                            className="mt-1 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/50 text-amber-200 text-xs font-semibold cursor-pointer"
-                          >
-                            <span>แสดงผลงานทั้งหมดในกลุ่มนี้</span>
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              playDigitalSound('select');
-                              setRightTab('submit');
-                            }}
-                            className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold cursor-pointer"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>ไปที่แท็บส่งผลงานกลุ่มงาน</span>
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {displayedWorks.map((work) => {
-                          const mediaMeta = getMediaTypeMeta(work.mediaType);
-                          const sourceLabel = getSourceLabel(work.source);
-                          const extraPhotosCount = work.galleryImages?.length || 0;
-
-                          return (
-                            <article
-                              key={work.id}
-                              onClick={() => {
-                                playDigitalSound('select');
-                                setSelectedWork(work);
-                              }}
-                              className={`group rounded-xl overflow-hidden border transition-all duration-200 cursor-pointer flex flex-col shadow-lg hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)] ${activeAccent.workCardBg}`}
-                            >
-                              <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
-                                <img
-                                  src={work.imageUrl}
-                                  alt={work.title}
-                                  loading="lazy"
-                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.onerror = null;
-                                    target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
-                                  }}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#040e28] via-transparent to-black/25" />
-
-                                {/* Top Badges */}
-                                <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/15 text-[10px] font-medium text-slate-100">
-                                    {mediaMeta.icon}
-                                    <span>{mediaMeta.label}</span>
-                                  </span>
-                                  {work.badge && (
-                                    <span
-                                      className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border backdrop-blur-md bg-[#040e28]/80 ${activeAccent.badgeText} border-white/15 truncate max-w-[140px]`}
-                                    >
-                                      {work.badge}
-                                    </span>
-                                  )}
-                                </div>
-
-                                {/* Gallery Photo Count Badge */}
-                                {extraPhotosCount > 0 && (
-                                  <div className="absolute bottom-2 right-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md border border-amber-400/40 text-[10px] font-semibold text-amber-200">
-                                    <Images className="w-3 h-3 text-amber-300" />
-                                    <span>+{extraPhotosCount} ภาพ</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="p-4 flex-1 flex flex-col justify-between gap-3">
-                                <div>
-                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mb-1.5">
-                                    <Calendar className="w-3 h-3 text-amber-400 shrink-0" />
-                                    <span>{work.date || 'อัปเดตล่าสุด'}</span>
-                                    {sourceLabel && (
-                                      <span className="ml-auto text-[10px] px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                                        {sourceLabel}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <h4 className="text-sm font-bold text-white group-hover:text-amber-200 transition-colors line-clamp-2 leading-snug">
-                                    {work.title}
-                                  </h4>
-                                  <p className="text-xs text-slate-300 line-clamp-2 mt-1.5 leading-relaxed">
-                                    {work.description}
-                                  </p>
-
-                                  {work.missionIndexes && work.missionIndexes.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-2">
-                                      {work.missionIndexes.map((mNum) => (
-                                        <span
-                                          key={mNum}
-                                          className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-slate-300"
-                                        >
-                                          ภารกิจ {mNum}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className={`pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] font-semibold ${activeAccent.headingText}`}>
-                                  <span>คลิกดูภาพและรายละเอียด</span>
-                                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                                </div>
-                              </div>
-                            </article>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  /* STANDALONE CONTRIBUTOR TAB: ส่งผลงานกลุ่มงาน (Passcode-only, No Email, Add/Edit Only, No CSV, No Admin) */
-                  <div className="space-y-5">
-                    {contributorError && (
-                      <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/45 text-rose-200 text-xs flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                        <p className="leading-relaxed">{contributorError}</p>
-                      </div>
-                    )}
-
-                    {contributorNotice && (
-                      <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-400/45 text-emerald-200 text-xs flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <span className="font-medium">{contributorNotice}</span>
-                      </div>
-                    )}
-
-                    {!isContributorUnlocked ? (
-                      <form
-                        onSubmit={handleContributorPasscodeSubmit}
-                        className="p-5 sm:p-6 rounded-2xl bg-[#040e28]/90 border border-amber-400/40 space-y-4 shadow-lg"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
-                            <KeyRound className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-bold text-white">
-                              ยืนยัน Passcode เพื่อส่ง / แก้ไขผลงานกลุ่มงาน
-                            </h4>
-                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                              กรอก Passcode สำหรับส่งผลงานกลุ่มงานเพื่อเข้าเพิ่มข้อมูลและแก้ไขผลงานได้ทันที
-                              (ไม่ต้องกรอกอีเมล และแยกออกจากระบบ Admin)
-                            </p>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs text-slate-300 font-semibold mb-1.5">
-                            รหัสเข้าส่งผลงานกลุ่มงาน (Passcode)
-                          </label>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <KeyRound className="w-4 h-4 text-amber-400" />
-                            </div>
-                            <input
-                              type={showPasscode ? 'text' : 'password'}
-                              autoComplete="off"
-                              value={passcodeInput}
-                              onChange={(e) => setPasscodeInput(e.target.value)}
-                              placeholder="กรอก Passcode เพื่อเข้าส่งผลงาน..."
-                              className="w-full pl-9 pr-10 py-2.5 bg-[#020818] border border-amber-400/45 focus:border-amber-300 rounded-xl text-sm text-white outline-none font-mono"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPasscode((prev) => !prev)}
-                              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-amber-300 cursor-pointer"
-                              aria-label={showPasscode ? 'ซ่อน Passcode' : 'แสดง Passcode'}
-                            >
-                              {showPasscode ? (
-                                <EyeOff className="w-4 h-4" />
-                              ) : (
-                                <Eye className="w-4 h-4" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="flex justify-end">
-                          <button
-                            type="submit"
-                            disabled={isVerifyingPasscode}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 cursor-pointer disabled:opacity-60"
-                          >
-                            {isVerifyingPasscode ? (
-                              <>
-                                <RefreshCw className="w-4 h-4 animate-spin" />
-                                <span>กำลังตรวจสอบ Passcode...</span>
-                              </>
-                            ) : (
-                              <>
-                                <ArrowRight className="w-4 h-4" />
-                                <span>เข้าจัดการส่งผลงานกลุ่มงาน</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </form>
-                    ) : (
-                      <>
-                        {/* Active Contributor Bar */}
-                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-400/35 flex flex-wrap items-center justify-between gap-2 text-xs">
-                          <div className="flex items-center gap-2 text-emerald-200 min-w-0">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                            <span className="truncate font-medium">
-                              โหมดส่งและแก้ไขผลงานกลุ่มงาน (ยืนยัน Passcode แล้ว)
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={handleContributorLogout}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-rose-500/25 border border-slate-700 hover:border-rose-400/50 text-slate-200 text-[11px] font-semibold cursor-pointer transition-colors"
-                          >
-                            <LogOut className="w-3 h-3" />
-                            <span>ล็อก / ออกจากโหมดส่งผลงาน</span>
-                          </button>
-                        </div>
-
-                        {/* Inline Add / Edit Form (NO CSV, NO Delete) */}
-                        <form
-                          ref={submitFormRef}
-                          onSubmit={handleSaveContributorWork}
-                          className="p-4 sm:p-5 rounded-2xl bg-[#040e28]/95 border border-amber-400/35 space-y-3.5 shadow-lg"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/10">
-                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                              {editingDraft.id ? (
-                                <>
-                                  <Edit2 className="w-4 h-4 text-cyan-400" />
-                                  <span>กำลังแก้ไขผลงานเดิม</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Plus className="w-4 h-4 text-amber-400" />
-                                  <span>เพิ่มผลงานใหม่เข้ากลุ่มงานนี้</span>
-                                </>
-                              )}
-                            </h4>
-                            {editingDraft.id && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  playDigitalSound('blip');
-                                  setEditingDraft(createBlankDraft(activeGroup.id));
-                                  setGalleryUrlInput('');
-                                }}
-                                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium cursor-pointer"
-                              >
-                                ยกเลิกแก้ไข / เพิ่มรายการใหม่
-                              </button>
-                            )}
-                          </div>
-
-                          <div>
-                            <label className="block text-[11px] text-slate-300 mb-1 font-semibold">
-                              กลุ่มงานเจ้าของผลงาน
-                            </label>
-                            <select
-                              value={editingDraft.groupId || activeGroup.id}
-                              onChange={(e) =>
-                                setEditingDraft({
-                                  ...editingDraft,
-                                  groupId: e.target.value as BureauGroupId,
-                                  missionIndexes: [],
-                                })
-                              }
-                              className="w-full px-3 py-2 bg-[#020818] border border-amber-500/30 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                            >
-                              {BUREAU_GROUPS_WITH_WORKS.map((g) => (
-                                <option key={g.id} value={g.id}>
-                                  กลุ่มงานที่ {g.order}: {g.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {/* Mission Tag Checkboxes */}
-                          <div className="p-3 rounded-xl bg-[#020818]/90 border border-amber-400/25 space-y-2">
-                            <span className="block text-[11px] text-amber-300 font-semibold">
-                              ภารกิจที่เกี่ยวข้องของกลุ่มนี้ (เลือกได้หลายข้อ)
-                            </span>
-                            <div className="space-y-1.5">
-                              {(
-                                getBureauGroupById(editingDraft.groupId || activeGroup.id)?.missions || []
-                              ).map((mText, idx) => {
-                                const mNum = idx + 1;
-                                const checked = (editingDraft.missionIndexes || []).includes(mNum);
-                                return (
-                                  <label
-                                    key={mNum}
-                                    className="flex items-start gap-2 text-[11px] text-slate-200 cursor-pointer hover:text-white"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={checked}
-                                      onChange={() => {
-                                        const current = editingDraft.missionIndexes || [];
-                                        const next = checked
-                                          ? current.filter((n) => n !== mNum)
-                                          : [...current, mNum].sort((a, b) => a - b);
-                                        setEditingDraft({ ...editingDraft, missionIndexes: next });
-                                      }}
-                                      className="mt-0.5 accent-amber-400"
-                                    />
-                                    <span className="leading-relaxed">
-                                      <strong className="text-amber-300">ภารกิจ {mNum}:</strong> {mText}
-                                    </span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-[11px] text-slate-300 mb-1 font-semibold">
-                              ชื่อผลงาน / กิจกรรม
-                            </label>
-                            <input
-                              type="text"
-                              maxLength={300}
-                              required
-                              value={editingDraft.title || ''}
-                              onChange={(e) => setEditingDraft({ ...editingDraft, title: e.target.value })}
-                              placeholder="เช่น โครงการสื่อสารเชิงรุกเครือข่ายสื่อมวลชน"
-                              className="w-full px-3 py-2 bg-[#020818] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div>
-                              <label className="block text-[11px] text-slate-300 mb-1 font-semibold">
-                                รูปแบบสื่อ
-                              </label>
-                              <select
-                                value={editingDraft.mediaType || 'photo'}
-                                onChange={(e) =>
-                                  setEditingDraft({
-                                    ...editingDraft,
-                                    mediaType: e.target.value as GroupWorkItem['mediaType'],
-                                  })
-                                }
-                                className="w-full px-3 py-2 bg-[#020818] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
-                              >
-                                <option value="photo">ภาพกิจกรรม (Photo)</option>
-                                <option value="infographic">อินโฟกราฟิก (Infographic)</option>
-                                <option value="video">วิดีโอ / ถ่ายทอดสด (Video)</option>
-                                <option value="report">รายงาน / ข้อเท็จจริง (Report)</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-[11px] text-slate-300 mb-1 font-semibold">
-                                วันที่ผลงาน (YYYY-MM-DD)
-                              </label>
-                              <input
-                                type="text"
-                                maxLength={50}
-                                required
-                                value={editingDraft.workDate || ''}
-                                onChange={(e) =>
-                                  setEditingDraft({ ...editingDraft, workDate: e.target.value })
-                                }
-                                placeholder="2026-10-15"
-                                className="w-full px-3 py-2 bg-[#020818] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[11px] text-slate-300 mb-1 font-semibold">
-                                ป้ายกำกับย่อย (Badge)
-                              </label>
-                              <input
-                                type="text"
-                                maxLength={100}
-                                value={editingDraft.badge || ''}
-                                onChange={(e) =>
-                                  setEditingDraft({ ...editingDraft, badge: e.target.value })
-                                }
-                                placeholder="เช่น Live Studio"
-                                className="w-full px-3 py-2 bg-[#020818] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-[11px] text-slate-300 mb-1 font-semibold">
-                              รายละเอียดผลงาน (แนะนำ 3–5 บรรทัด)
-                            </label>
-                            <textarea
-                              rows={3}
-                              maxLength={2000}
-                              required
-                              value={editingDraft.description || ''}
-                              onChange={(e) =>
-                                setEditingDraft({ ...editingDraft, description: e.target.value })
-                              }
-                              placeholder="อธิบายรายละเอียดกิจกรรมหรือผลงาน..."
-                              className="w-full px-3 py-2 bg-[#020818] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 leading-relaxed"
-                            />
-                          </div>
-
-                          {/* Cover Image Upload or URL */}
-                          <div>
-                            <div className="flex items-center justify-between mb-1">
-                              <label className="block text-[11px] text-slate-300 font-semibold">
-                                ภาพปกผลงาน (URL หรืออัปโหลดจากเครื่อง)
-                              </label>
-                              <input
-                                ref={coverInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={handleUploadDraftCover}
-                                className="hidden"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => coverInputRef.current?.click()}
-                                disabled={isUploadingCover}
-                                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/40 cursor-pointer"
-                              >
-                                <Upload className="w-3 h-3" />
-                                <span>{isUploadingCover ? 'กำลังบีบอัด...' : 'อัปโหลดภาพปก'}</span>
-                              </button>
-                            </div>
-                            <input
-                              type="text"
-                              required
-                              value={editingDraft.imageUrl || ''}
-                              onChange={(e) =>
-                                setEditingDraft({ ...editingDraft, imageUrl: e.target.value })
-                              }
-                              className="w-full px-3 py-2 bg-[#020818] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
-                            />
-                          </div>
-
-                          {/* Multi-Image Gallery Section (up to 5 photos) */}
-                          <div className="p-3 rounded-xl bg-[#020818]/90 border border-cyan-500/25 space-y-2.5">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-[11px] text-cyan-300 font-semibold">
-                                ภาพประกอบเพิ่มเติม ({(editingDraft.galleryImages || []).length}/5 ภาพ)
-                              </span>
-                              <input
-                                ref={galleryInputRef}
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleUploadDraftGallery}
-                                className="hidden"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => galleryInputRef.current?.click()}
-                                disabled={
-                                  isUploadingGallery || (editingDraft.galleryImages || []).length >= 5
-                                }
-                                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 cursor-pointer disabled:opacity-50"
-                              >
-                                <Upload className="w-3 h-3" />
-                                <span>{isUploadingGallery ? 'กำลังอัปโหลด...' : '+ อัปโหลดภาพชุด'}</span>
-                              </button>
-                            </div>
-
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                value={galleryUrlInput}
-                                onChange={(e) => setGalleryUrlInput(e.target.value)}
-                                placeholder="วางลิงก์ภาพเพิ่มเติม (https://...)"
-                                className="flex-1 px-2.5 py-1.5 bg-[#040e28] border border-cyan-500/30 rounded-lg text-[11px] text-white outline-none font-mono"
-                              />
-                              <button
-                                type="button"
-                                disabled={
-                                  !galleryUrlInput.trim() ||
-                                  (editingDraft.galleryImages || []).length >= 5
-                                }
-                                onClick={() => {
-                                  const url = galleryUrlInput.trim();
-                                  if (!url) return;
-                                  setEditingDraft((prev) => ({
-                                    ...prev,
-                                    galleryImages: [...(prev.galleryImages || []), url].slice(0, 5),
-                                  }));
-                                  setGalleryUrlInput('');
-                                }}
-                                className="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 text-[11px] font-semibold cursor-pointer disabled:opacity-40"
-                              >
-                                เพิ่มลิงก์
-                              </button>
-                            </div>
-
-                            {(editingDraft.galleryImages || []).length > 0 && (
-                              <div className="grid grid-cols-5 gap-2 pt-1">
-                                {(editingDraft.galleryImages || []).map((imgUrl, idx) => (
-                                  <div
-                                    key={`${idx}-${imgUrl.slice(0, 20)}`}
-                                    className="relative aspect-square rounded-lg overflow-hidden border border-white/15 bg-black/40"
-                                  >
-                                    <img
-                                      src={imgUrl}
-                                      alt={`Gallery ${idx + 1}`}
-                                      className="w-full h-full object-cover"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setEditingDraft((prev) => ({
-                                          ...prev,
-                                          galleryImages: (prev.galleryImages || []).filter(
-                                            (_, i) => i !== idx
-                                          ),
-                                        }));
-                                      }}
-                                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/80 hover:bg-rose-600 text-white flex items-center justify-center cursor-pointer"
-                                      title="นำภาพนี้ออก"
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          <div>
-                            <label className="block text-[11px] text-slate-300 mb-1 font-semibold">
-                              ลิงก์เพิ่มเติม (URL หรือ #section - ไม่บังคับ)
-                            </label>
-                            <input
-                              type="text"
-                              maxLength={1000}
-                              value={editingDraft.linkUrl || ''}
-                              onChange={(e) =>
-                                setEditingDraft({ ...editingDraft, linkUrl: e.target.value })
-                              }
-                              placeholder="https://... หรือ #published-works"
-                              className="w-full px-3 py-2 bg-[#020818] border border-cyan-500/30 rounded-xl text-xs text-white outline-none focus:border-cyan-400 font-mono"
-                            />
-                          </div>
-
-                          <div className="pt-2 flex justify-end gap-2">
-                            <button
-                              type="submit"
-                              disabled={isSavingWork}
-                              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 cursor-pointer disabled:opacity-60"
-                            >
-                              {isSavingWork ? (
-                                <>
-                                  <RefreshCw className="w-4 h-4 animate-spin" />
-                                  <span>กำลังบันทึก...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Save className="w-4 h-4" />
-                                  <span>
-                                    {editingDraft.id ? 'บันทึกการแก้ไขผลงาน' : 'บันทึกเพิ่มผลงานใหม่'}
-                                  </span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </form>
-
-                        {/* Editable Group Works List for Active Group (Edit Only — NO Delete) */}
-                        <div className="space-y-2.5">
-                          <h4 className="text-xs font-bold text-slate-200 flex items-center justify-between">
-                            <span>
-                              ผลงานใน{activeGroup.name} ({editableWorksForActiveGroup.length} รายการ)
-                            </span>
-                            <span className="text-[11px] font-normal text-slate-400">
-                              กด &quot;แก้ไข&quot; เพื่ออัปเดตข้อมูล
-                            </span>
-                          </h4>
-
-                          {editableWorksForActiveGroup.length === 0 ? (
-                            <div className="p-4 rounded-xl border border-dashed border-slate-700 text-center text-xs text-slate-400">
-                              ยังไม่มีผลงานในกลุ่มนี้ — กรอกแบบฟอร์มด้านบนเพื่อเพิ่มรายการแรกได้เลย
-                            </div>
-                          ) : (
-                            <div className="space-y-2.5">
-                              {editableWorksForActiveGroup.map((item) => {
-                                const isBeingEdited = editingDraft.id === item.id;
-                                return (
-                                  <div
-                                    key={item.id}
-                                    className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${
-                                      isBeingEdited
-                                        ? 'bg-amber-500/10 border-amber-400/70'
-                                        : 'bg-[#040e28]/80 border-white/10 hover:border-cyan-400/40'
-                                    }`}
-                                  >
-                                    <img
-                                      src={item.imageUrl}
-                                      alt={item.title}
-                                      className="w-16 h-12 rounded-lg object-cover border border-white/15 shrink-0"
-                                      onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.onerror = null;
-                                        target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
-                                      }}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <div className="text-xs font-bold text-white truncate">
-                                        {item.title}
-                                      </div>
-                                      <div className="text-[11px] text-slate-400 flex flex-wrap items-center gap-2 mt-0.5">
-                                        <span>{item.workDate}</span>
-                                        {item.missionIndexes && item.missionIndexes.length > 0 && (
-                                          <span className="text-amber-300">
-                                            ภารกิจ {item.missionIndexes.join(',')}
-                                          </span>
-                                        )}
-                                        {item.galleryImages && item.galleryImages.length > 0 && (
-                                          <span className="text-cyan-300">
-                                            +{item.galleryImages.length} ภาพ
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        playDigitalSound('select');
-                                        setContributorError(null);
-                                        setContributorNotice(null);
-                                        setGalleryUrlInput('');
-                                        setEditingDraft({ ...item });
-                                        submitFormRef.current?.scrollIntoView({
-                                          behavior: 'smooth',
-                                          block: 'start',
-                                        });
-                                      }}
-                                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 text-[11px] font-semibold shrink-0 cursor-pointer"
-                                    >
-                                      <Edit2 className="w-3 h-3" />
-                                      <span>แก้ไข</span>
-                                    </button>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={() => handleSelectGroup(nextGroup.id)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#e7c55c] to-[#c5961b] hover:from-[#e0be53] hover:to-[#d4af37] text-slate-950 border border-[#b8860b] text-xs sm:text-sm font-extrabold shadow-sm transition-all cursor-pointer ml-auto"
+                >
+                  <span>กลุ่มถัดไป: {nextGroup.shortName}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
-            )}
+            </div>
           </section>
         </div>
       </div>
-
-      {/* Nested Work Detail Lightbox with Multi-Image Gallery */}
-      {selectedWork && (
-        <div
-          className="fixed inset-0 z-[85] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn"
-          onClick={() => setSelectedWork(null)}
-        >
-          <div
-            className={`w-full max-w-3xl max-h-[92vh] bg-gradient-to-b border rounded-2xl shadow-2xl overflow-hidden flex flex-col ${activeAccent.lightboxBg}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Lightbox Header */}
-            <div className="px-4 sm:px-6 py-3.5 border-b border-white/15 bg-[#040e28]/90 flex items-center justify-between gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  playDigitalSound('blip');
-                  setSelectedWork(null);
-                }}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>กลับหน้ารวม</span>
-              </button>
-              <span className={`text-xs font-semibold truncate ${activeAccent.badgeText}`}>
-                {activeGroup.name}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSelectedWork(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
-                aria-label="ปิดรายละเอียดผลงาน"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Lightbox Body */}
-            <div className="flex-1 overflow-y-auto overscroll-contain">
-              <div className="relative w-full bg-black/70 flex items-center justify-center max-h-[50vh] overflow-hidden border-b border-white/10">
-                <img
-                  src={activeLightboxPhoto}
-                  alt={selectedWork.title}
-                  className="w-full max-h-[50vh] object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.onerror = null;
-                    target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
-                  }}
-                />
-
-                {lightboxPhotos.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playDigitalSound('blip');
-                        setActivePhotoIndex(
-                          (prev) => (prev - 1 + lightboxPhotos.length) % lightboxPhotos.length
-                        );
-                      }}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 hover:bg-amber-400 text-white hover:text-slate-950 border border-white/25 flex items-center justify-center transition-all cursor-pointer shadow-lg"
-                      aria-label="ภาพก่อนหน้า"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playDigitalSound('blip');
-                        setActivePhotoIndex((prev) => (prev + 1) % lightboxPhotos.length);
-                      }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 hover:bg-amber-400 text-white hover:text-slate-950 border border-white/25 flex items-center justify-center transition-all cursor-pointer shadow-lg"
-                      aria-label="ภาพถัดไป"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                    <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/75 border border-white/20 text-[11px] font-mono text-amber-200">
-                      ภาพ {activePhotoIndex + 1} / {lightboxPhotos.length}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Thumbnail Gallery Strip */}
-              {lightboxPhotos.length > 1 && (
-                <div className="px-4 sm:px-6 py-2.5 bg-[#040e28]/90 border-b border-white/10 flex items-center gap-2 overflow-x-auto">
-                  {lightboxPhotos.map((photoUrl, idx) => (
-                    <button
-                      key={`${photoUrl}-${idx}`}
-                      type="button"
-                      onClick={() => {
-                        playDigitalSound('blip');
-                        setActivePhotoIndex(idx);
-                      }}
-                      className={`relative w-16 h-11 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                        idx === activePhotoIndex
-                          ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30'
-                          : 'border-white/15 opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <img
-                        src={photoUrl}
-                        alt={`ภาพประกอบที่ ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.onerror = null;
-                          target.src = '/assets/images/sai_audit_hero_1791689796943.jpg';
-                        }}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <div className="p-5 sm:p-6 space-y-4">
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 text-slate-200 font-medium">
-                    {getMediaTypeMeta(selectedWork.mediaType).icon}
-                    <span>{getMediaTypeMeta(selectedWork.mediaType).label}</span>
-                  </span>
-                  {selectedWork.badge && (
-                    <span
-                      className={`px-2.5 py-1 rounded-lg border font-semibold ${activeAccent.badgeBg} ${activeAccent.badgeText}`}
-                    >
-                      {selectedWork.badge}
-                    </span>
-                  )}
-                  {getSourceLabel(selectedWork.source) && (
-                    <span className="px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-medium">
-                      {getSourceLabel(selectedWork.source)}
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-1.5 text-slate-400 ml-auto">
-                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{selectedWork.date}</span>
-                  </span>
-                </div>
-
-                <h3 className="text-lg sm:text-xl font-bold text-white leading-snug">
-                  {selectedWork.title}
-                </h3>
-
-                {selectedWork.missionIndexes && selectedWork.missionIndexes.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedWork.missionIndexes.map((mNum) => (
-                      <span
-                        key={mNum}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border ${activeAccent.badgeBg} ${activeAccent.badgeText}`}
-                      >
-                        <span>ภารกิจข้อที่ {mNum}</span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <p className="text-sm text-slate-200 leading-relaxed whitespace-pre-line">
-                  {selectedWork.description}
-                </p>
-
-                {selectedWork.linkUrl && (
-                  <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
-                    <span className="text-xs text-slate-400 truncate max-w-sm">
-                      แหล่งอ้างอิง: {selectedWork.linkUrl}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleWorkLinkClick(selectedWork.linkUrl)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 text-xs font-bold shadow-md transition-all cursor-pointer"
-                    >
-                      <span>เปิดดูข้อมูล / สื่อที่เกี่ยวข้อง</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
-

@@ -64,26 +64,47 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
   return (
     <section
       id="public-interest"
-      className="relative py-16 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto scroll-mt-20"
+      className={`relative w-full py-14 sm:py-16 scroll-mt-20 overflow-hidden transition-colors duration-300 ${
+        isClean
+          ? 'bg-gradient-to-b from-[#f1f6f3] via-[#f6faf8] to-[#edf4f0]'
+          : 'bg-gradient-to-b from-[#031221]/80 via-[#04182a]/75 to-[#02091a]/85'
+      }`}
     >
-      {/* Dedicated Ambient Glow Behind e-Audit Section */}
-      {!isClean && (
+      {/* Section 4 Backdrop: Soft Jade-Celadon Pearl (Clean) / Deep Emerald-Teal Navy (Dark) */}
+      <div
+        className="absolute inset-0 pointer-events-none overflow-hidden"
+        aria-hidden="true"
+      >
         <div
-          className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
-          aria-hidden="true"
+          className="absolute inset-0"
           style={{
-            background:
-              'radial-gradient(750px 450px at 50% 42%, rgba(13, 148, 136, 0.16), rgba(8, 145, 178, 0.13) 45%, rgba(37, 99, 235, 0.10) 70%, transparent 82%)',
+            background: isClean
+              ? 'radial-gradient(750px 450px at 50% 42%, rgba(16, 185, 129, 0.055), rgba(212, 175, 55, 0.05) 48%, transparent 80%), radial-gradient(600px 380px at 88% 18%, rgba(255, 255, 255, 0.85), transparent 74%)'
+              : 'radial-gradient(750px 450px at 50% 42%, rgba(13, 148, 136, 0.16), rgba(8, 145, 178, 0.13) 45%, rgba(37, 99, 235, 0.10) 70%, transparent 82%)',
           }}
         />
-      )}
+        {isClean && (
+          <svg
+            className="absolute inset-0 w-full h-full opacity-[0.20]"
+            preserveAspectRatio="none"
+            viewBox="0 0 1440 700"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M-40 220 C 320 150, 620 290, 980 200 C 1220 140, 1360 220, 1500 175" stroke="#b9cfc3" strokeWidth="1.6" strokeOpacity="0.65" />
+            <path d="M-60 540 C 300 600, 660 460, 1060 530 C 1260 565, 1400 490, 1500 540" stroke="#d4c7a3" strokeWidth="1.4" strokeOpacity="0.55" />
+          </svg>
+        )}
+      </div>
+
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto">
 
       {/* Section Header */}
-      <div className={`mb-8 pb-4 border-b ${isClean ? 'border-slate-200' : 'border-slate-800/80'}`}>
+      <div className={`mb-8 pb-4 border-b ${isClean ? 'border-[#d4af37]/45' : 'border-slate-800/80'}`}>
         <div
           className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs sm:text-sm font-bold mb-3 backdrop-blur-sm ${
             isClean
-              ? 'bg-amber-50 border-amber-300 text-amber-800'
+              ? 'bg-gradient-to-r from-[#fff6d6] to-[#f4dc94] border-[#d4af37]/80 text-[#7a5000] shadow-sm'
               : 'bg-amber-500/15 border-amber-500/35 text-amber-300'
           }`}
         >
@@ -97,7 +118,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
         >
           ข้อมูล e-Audit (Public Interest &amp; Insights)
         </h2>
-        <p className={`text-sm sm:text-base mt-1.5 max-w-2xl leading-relaxed ${isClean ? 'text-slate-600' : 'text-slate-300'}`}>
+        <p className={`text-sm sm:text-base mt-1.5 max-w-2xl leading-relaxed ${isClean ? 'text-slate-700' : 'text-slate-300'}`}>
           เรื่องใหม่และสำคัญของ สตง. กับการตรวจเงินแผ่นดินทางอิเล็กทรอนิกส์ (e-Audit) เริ่มตั้งแต่ปีงบประมาณ 2570 พร้อมสิทธิการมีส่วนร่วมของประชาชน
         </p>
       </div>
@@ -113,8 +134,8 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
               className={`rounded-2xl transition-all duration-300 border ${
                 isClean
                   ? isOpen
-                    ? 'bg-white border-2 border-sky-500 shadow-lg ring-2 ring-sky-100'
-                    : 'bg-white border-slate-200 hover:border-sky-400 shadow-sm'
+                    ? 'bg-gradient-to-br from-white via-[#fcf9f2] to-[#f7efdc] border-2 border-[#b8860b] shadow-[0_12px_32px_rgba(161,118,22,0.14)] ring-2 ring-[#d4af37]/25'
+                    : 'bg-gradient-to-br from-white to-[#fcf8ee] border-[#d4af37]/50 hover:border-[#b8860b] shadow-[0_4px_18px_rgba(161,118,22,0.06)]'
                   : isOpen
                   ? 'bg-[#0b2256]/96 border-2 border-cyan-400/60 shadow-[0_10px_35px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.25)] ring-1 ring-white/5'
                   : 'bg-[#081a44]/94 border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.4)] ring-1 ring-white/5'
@@ -127,12 +148,14 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
               >
                 <div className="flex items-start sm:items-center gap-3 min-w-0">
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors mt-0.5 sm:mt-0 ${
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors mt-0.5 sm:mt-0 border ${
                       isOpen
-                        ? 'bg-amber-500 text-slate-950 font-bold'
+                        ? isClean
+                          ? 'bg-gradient-to-br from-[#d4af37] to-[#b8860b] text-slate-950 border-[#8a5d00] font-bold shadow-sm'
+                          : 'bg-amber-500 text-slate-950 border-amber-400 font-bold'
                         : isClean
-                        ? 'bg-slate-100 text-slate-700'
-                        : 'bg-slate-800 text-slate-200'
+                        ? 'bg-[#fcf7ea] border-[#d4af37]/55 text-[#8a5d00]'
+                        : 'bg-slate-800 border-slate-700 text-slate-200'
                     }`}
                   >
                     {renderFaqIcon(item.iconKey)}
@@ -142,7 +165,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
                       <span
                         className={`inline-block px-2 py-0.5 rounded-md border text-[11px] font-bold ${
                           isClean
-                            ? 'bg-amber-50 border-amber-300 text-amber-800'
+                            ? 'bg-[#fff6d6] border-[#d4af37]/75 text-[#7a5000]'
                             : 'bg-amber-400/15 border-amber-400/35 text-amber-300'
                         }`}
                       >
@@ -153,7 +176,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
                       className={`text-sm sm:text-base font-bold transition-colors leading-snug ${
                         isClean
                           ? isOpen
-                            ? 'text-sky-700'
+                            ? 'text-[#7a5000]'
                             : 'text-slate-900'
                           : isOpen
                           ? 'text-amber-300'
@@ -169,8 +192,10 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
                   className={`w-4 h-4 shrink-0 transition-transform duration-300 ${
                     isOpen
                       ? isClean
-                        ? 'rotate-180 text-sky-600'
+                        ? 'rotate-180 text-[#8a5d00]'
                         : 'rotate-180 text-amber-400'
+                      : isClean
+                      ? 'text-[#b8860b]/70'
                       : 'text-slate-400'
                   }`}
                 />
@@ -179,7 +204,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
               {isOpen && (
                 <div
                   className={`px-4 pb-4 sm:px-5 sm:pb-5 pt-2.5 border-t animate-fadeIn ${
-                    isClean ? 'border-slate-200' : 'border-slate-800/80'
+                    isClean ? 'border-[#d4af37]/35' : 'border-slate-800/80'
                   }`}
                 >
                   <div className="pl-12 space-y-3">
@@ -201,7 +226,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
                           <li key={bIdx} className="flex items-start gap-2.5">
                             <span
                               className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
-                                isClean ? 'bg-sky-600' : 'bg-amber-400'
+                                isClean ? 'bg-[#b8860b]' : 'bg-amber-400'
                               }`}
                             />
                             <span>{b}</span>
@@ -223,7 +248,11 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
                       ) : item.actionAnchor ? (
                         <a
                           href={item.actionAnchor}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-medium transition-colors"
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${
+                            isClean
+                              ? 'bg-[#fff6d6] hover:bg-[#f4dc94] border-[#d4af37]/70 text-[#7a5000]'
+                              : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-400/30 text-amber-300'
+                          }`}
                         >
                           <span>{item.actionText}</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -256,10 +285,14 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
                                 : '',
                           })
                         }
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 text-xs font-medium transition-colors cursor-pointer"
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+                          isClean
+                            ? 'bg-[#fcf7ea] hover:bg-[#f4dc94]/60 text-[#7a5000] border-[#d4af37]/65'
+                            : 'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border-cyan-400/40'
+                        }`}
                         title="แชร์คำถาม-คำตอบนี้"
                       >
-                        <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+                        <Share2 className={`w-3.5 h-3.5 ${isClean ? 'text-[#8a5d00]' : 'text-cyan-400'}`} />
                         <span>แชร์ข้อมูลนี้</span>
                       </button>
                     </div>
@@ -272,17 +305,20 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
 
         {/* Companion Highlight Card for Deep-Dive Technical Explorer */}
         <div
-          className={`mt-2 rounded-2xl border px-5 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+          className={`relative mt-2 rounded-2xl border-2 px-5 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 overflow-hidden ${
             isClean
-              ? 'bg-gradient-to-r from-sky-50 via-white to-amber-50/70 border-sky-200 shadow-sm'
+              ? 'bg-gradient-to-r from-white via-[#fcf7ea] to-[#f5e7c2] border-[#d4af37]/70 shadow-[0_12px_32px_rgba(161,118,22,0.12)]'
               : 'bg-gradient-to-r from-[#071a49]/95 via-[#0b235d]/95 to-[#061539]/95 border-cyan-400/40 shadow-[0_12px_36px_rgba(2,10,31,0.65)]'
           }`}
         >
+          {isClean && (
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#a67c00] via-[#f1d57e] to-[#a67c00] pointer-events-none" />
+          )}
           <div className="flex items-start sm:items-center gap-3.5">
             <div
-              className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+              className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center shrink-0 ${
                 isClean
-                  ? 'bg-sky-100 border-sky-300 text-sky-700'
+                  ? 'bg-gradient-to-br from-[#fff6d6] to-[#f4dc94] border-[#d4af37]/75 text-[#8a5d00]'
                   : 'bg-cyan-400/15 border-cyan-400/40 text-cyan-300'
               }`}
             >
@@ -291,7 +327,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
             <div>
               <div
                 className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider mb-0.5 ${
-                  isClean ? 'text-amber-700' : 'text-amber-300'
+                  isClean ? 'text-[#8a5d00]' : 'text-amber-300'
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -310,7 +346,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
             onClick={() => openDeepDive('overview')}
             className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer shrink-0 ${
               isClean
-                ? 'bg-sky-600 hover:bg-sky-700 text-white'
+                ? 'bg-gradient-to-r from-[#d4af37] via-[#e7c55c] to-[#c5961b] hover:brightness-105 text-slate-950 border border-[#b8860b]'
                 : 'bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-slate-950 shadow-cyan-500/20'
             }`}
           >
@@ -333,6 +369,7 @@ export const PublicInterestSection: React.FC<PublicInterestSectionProps> = () =>
         initialTab={deepDiveTab}
         onClose={() => setIsDeepDiveOpen(false)}
       />
+      </div>
     </section>
   );
 };

@@ -389,37 +389,53 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
   return (
     <section
       id="incident-timeline"
-      className="relative pt-8 sm:pt-12 pb-8 sm:pb-14 mb-6 sm:mb-10 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto scroll-mt-20 select-none"
+      className={`relative w-full py-10 sm:py-14 scroll-mt-20 select-none overflow-hidden transition-colors duration-300 ${
+        isClean
+          ? 'bg-gradient-to-b from-[#fcf3f1] via-[#faf0ed] to-[#f7e9e5] border-b border-[#d4af37]/35'
+          : 'bg-gradient-to-b from-[#0b0714]/85 via-[#0e0a1a]/80 to-[#060918]/85'
+      }`}
     >
       {/* =========================================================================
           THEME: TACTICAL EMERGENCY COMMAND & CRISIS INTELLIGENCE CENTER (EOC)
-          Distinct High-Contrast Tactical Theme (Obsidian + Emergency Crimson & Amber)
+          Section 2 Backdrop: Blush Rose-Champagne Pearl (Clean) / Crimson-Slate (Dark)
           ========================================================================= */}
       <div
-        className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-3xl"
+        className="absolute inset-0 pointer-events-none overflow-hidden"
         aria-hidden="true"
       >
-        {/* Tactical Emergency Glows: Crimson Alert & High-Visibility Amber (Zero-blur CSS gradients) */}
         <div
           className="absolute inset-0"
           style={{
             background: isClean
-              ? 'radial-gradient(620px 440px at 18% 20%, rgba(244, 63, 94, 0.05), rgba(234, 88, 12, 0.03) 45%, transparent 74%), radial-gradient(560px 390px at 84% 84%, rgba(245, 158, 11, 0.05), rgba(14, 165, 233, 0.04) 45%, transparent 74%)'
+              ? 'radial-gradient(680px 440px at 16% 22%, rgba(225, 29, 72, 0.045), rgba(212, 175, 55, 0.05) 45%, transparent 74%), radial-gradient(620px 420px at 84% 82%, rgba(212, 175, 55, 0.07), rgba(244, 63, 94, 0.03) 45%, transparent 74%)'
               : 'radial-gradient(620px 440px at 18% 20%, rgba(225, 29, 72, 0.16), rgba(234, 88, 12, 0.11) 45%, transparent 74%), radial-gradient(560px 390px at 84% 84%, rgba(245, 158, 11, 0.11), rgba(225, 29, 72, 0.08) 45%, transparent 74%)',
           }}
         />
-        {/* Tactical grid background overlay */}
-        <div className={`absolute inset-0 bg-digital-grid ${isClean ? 'opacity-10' : 'opacity-35'}`} />
+        {isClean && (
+          <svg
+            className="absolute inset-0 w-full h-full opacity-[0.20]"
+            preserveAspectRatio="none"
+            viewBox="0 0 1440 700"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M-40 160 C 310 110, 560 250, 940 175 C 1220 120, 1360 210, 1500 155" stroke="#d9b7b0" strokeWidth="1.6" strokeOpacity="0.6" />
+            <path d="M-60 520 C 280 570, 620 440, 1020 510 C 1240 550, 1380 480, 1500 530" stroke="#dcc0a3" strokeWidth="1.4" strokeOpacity="0.55" />
+          </svg>
+        )}
+        <div className={`absolute inset-0 bg-digital-grid ${isClean ? 'opacity-[0.05]' : 'opacity-35'}`} />
       </div>
+
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 w-full max-w-[1920px] 2xl:max-w-[2400px] 3xl:max-w-none mx-auto">
 
       {/* SECTION HEADER: TACTICAL CRISIS CENTER BADGE */}
       <div className="flex items-center justify-between mb-3.5 sm:mb-4 relative">
         <div>
           {/* Tactical Crisis Center Badge */}
           <div
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm sm:text-base font-extrabold backdrop-blur-md transition-colors ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 text-sm sm:text-base font-extrabold backdrop-blur-md transition-colors ${
               isClean
-                ? 'bg-rose-50 border-rose-300 shadow-sm text-rose-800'
+                ? 'bg-gradient-to-r from-[#fff8e8] via-white to-[#fff2f2] border-[#d4af37]/75 shadow-[0_6px_18px_rgba(161,118,22,0.12)] text-rose-800'
                 : 'bg-[#160b13]/90 border-rose-500/60 shadow-[0_0_15px_rgba(244,63,94,0.35)] text-rose-200'
             }`}
           >
@@ -439,9 +455,9 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
         {/* Card 1: ระยะเวลาติดตาม */}
         <div
-          className={`p-3.5 sm:p-5 rounded-2xl border transition-all flex flex-col items-center text-center justify-between gap-2 ${
+          className={`p-3.5 sm:p-5 rounded-2xl border-2 transition-all flex flex-col items-center text-center justify-between gap-2 ${
             isClean
-              ? 'bg-white border-emerald-200 shadow-sm hover:border-emerald-400'
+              ? 'bg-gradient-to-b from-white via-[#fcf9f2] to-[#f6eedb] border-[#d4af37]/60 shadow-[0_8px_24px_rgba(161,118,22,0.09)] hover:border-[#b8860b]'
               : 'bg-[#0b1222]/90 border-emerald-500/40 shadow-md hover:border-emerald-400/60'
           }`}
         >
@@ -449,7 +465,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
             <div
               className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 ${
                 isClean
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
                   : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-400'
               }`}
             >
@@ -490,9 +506,9 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
         {/* Card 2: เงินเยียวยาและช่วยเหลือ */}
         <div
-          className={`p-3.5 sm:p-5 rounded-2xl border transition-all flex flex-col items-center text-center justify-between gap-2 ${
+          className={`p-3.5 sm:p-5 rounded-2xl border-2 transition-all flex flex-col items-center text-center justify-between gap-2 ${
             isClean
-              ? 'bg-white border-sky-200 shadow-sm hover:border-sky-400'
+              ? 'bg-gradient-to-b from-white via-[#fcf9f2] to-[#f6eedb] border-[#d4af37]/60 shadow-[0_8px_24px_rgba(161,118,22,0.09)] hover:border-[#b8860b]'
               : 'bg-[#0b1222]/90 border-cyan-500/40 shadow-md hover:border-cyan-400/60'
           }`}
         >
@@ -500,7 +516,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
             <div
               className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 ${
                 isClean
-                  ? 'bg-sky-50 border-sky-200 text-sky-700'
+                  ? 'bg-sky-50 border-sky-300 text-sky-700'
                   : 'bg-cyan-500/20 border-cyan-400/40 text-cyan-300'
               }`}
             >
@@ -541,9 +557,9 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
         {/* Card 3: ผู้ถูกฟ้องคดีอาญา */}
         <div
-          className={`p-3.5 sm:p-5 rounded-2xl border transition-all flex flex-col items-center text-center justify-between gap-2 ${
+          className={`p-3.5 sm:p-5 rounded-2xl border-2 transition-all flex flex-col items-center text-center justify-between gap-2 ${
             isClean
-              ? 'bg-white border-amber-200 shadow-sm hover:border-amber-400'
+              ? 'bg-gradient-to-b from-white via-[#fcf9f2] to-[#f6eedb] border-[#d4af37]/60 shadow-[0_8px_24px_rgba(161,118,22,0.09)] hover:border-[#b8860b]'
               : 'bg-[#0b1222]/90 border-amber-500/40 shadow-md hover:border-amber-400/60'
           }`}
         >
@@ -551,7 +567,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
             <div
               className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 ${
                 isClean
-                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                  ? 'bg-[#fff6d6] border-[#d4af37]/80 text-[#8a5d00]'
                   : 'bg-amber-500/20 border-amber-400/40 text-amber-300'
               }`}
             >
@@ -559,7 +575,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
             </div>
             <span
               className={`text-xs sm:text-sm font-bold tracking-tight ${
-                isClean ? 'text-amber-800' : 'text-amber-200'
+                isClean ? 'text-[#7a5000]' : 'text-amber-200'
               }`}
             >
               ผู้ถูกฟ้องคดีอาญา
@@ -568,13 +584,13 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           <div className="w-full flex flex-col items-center">
             <div
               className={`text-3xl sm:text-4xl lg:text-[42px] font-black font-mono tracking-tight flex items-baseline justify-center gap-1.5 ${
-                isClean ? 'text-amber-700' : 'text-amber-300'
+                isClean ? 'text-[#8a5d00]' : 'text-amber-300'
               }`}
             >
               <span>23</span>
               <span
                 className={`text-sm sm:text-base font-bold font-sans ${
-                  isClean ? 'text-amber-600' : 'text-amber-400'
+                  isClean ? 'text-[#a67c00]' : 'text-amber-400'
                 }`}
               >
                 ราย
@@ -592,9 +608,9 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
         {/* Card 4: คดีที่ติดตาม */}
         <div
-          className={`p-3.5 sm:p-5 rounded-2xl border transition-all flex flex-col items-center text-center justify-between gap-2 ${
+          className={`p-3.5 sm:p-5 rounded-2xl border-2 transition-all flex flex-col items-center text-center justify-between gap-2 ${
             isClean
-              ? 'bg-white border-rose-200 shadow-sm hover:border-rose-400'
+              ? 'bg-gradient-to-b from-white via-[#fcf9f2] to-[#f6eedb] border-[#d4af37]/60 shadow-[0_8px_24px_rgba(161,118,22,0.09)] hover:border-[#b8860b]'
               : 'bg-[#0b1222]/90 border-rose-500/40 shadow-md hover:border-rose-400/60'
           }`}
         >
@@ -602,7 +618,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
             <div
               className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 ${
                 isClean
-                  ? 'bg-rose-50 border-rose-200 text-rose-700'
+                  ? 'bg-rose-50 border-rose-300 text-rose-700'
                   : 'bg-rose-500/20 border-rose-400/40 text-rose-300'
               }`}
             >
@@ -648,19 +664,25 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
       <div
         className={`relative mb-0 rounded-3xl border-2 p-4 sm:p-6 lg:p-7 overflow-clip transition-colors ${
           isClean
-            ? 'bg-gradient-to-b from-white via-slate-50 to-slate-100 border-slate-200 shadow-[0_16px_48px_rgba(15,23,42,0.08)]'
+            ? 'bg-gradient-to-b from-white via-[#fcf8ee] to-[#f4ead2] border-[#d4af37]/70 shadow-[0_16px_48px_rgba(161,118,22,0.12)]'
             : 'bg-gradient-to-b from-[#1b253c]/98 via-[#233352]/98 to-[#162238] border-rose-500/45 shadow-[0_20px_70px_rgba(15,23,42,0.65),0_0_45px_rgba(244,63,94,0.22)] ring-1 ring-white/10'
         }`}
       >
         {/* Holographic Top Laser Accent Line */}
-        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 z-10" />
+        <div
+          className={`absolute top-0 left-0 right-0 h-[3px] z-10 ${
+            isClean
+              ? 'bg-gradient-to-r from-[#a67c00] via-[#f1d57e] to-[#a67c00]'
+              : 'bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400'
+          }`}
+        />
 
         {/* ฉากเมือง เงาตึก */}
         <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0" aria-hidden="true">
           <div
             className={`absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] ${
               isClean
-                ? 'from-sky-200/35 via-amber-100/20 to-transparent'
+                ? 'from-amber-200/35 via-rose-100/15 to-transparent'
                 : 'from-amber-400/20 via-sky-500/15 to-transparent'
             }`}
           />
@@ -855,24 +877,24 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           <div
             className={`absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t ${
               isClean
-                ? 'from-slate-100 via-slate-100/80 to-transparent'
+                ? 'from-[#f4ead2] via-[#f4ead2]/85 to-transparent'
                 : 'from-[#162238] via-[#1a263e]/75 to-transparent'
             }`}
           />
         </div>
 
         {/* Console Header Bar */}
-        <div className={`space-y-3 pb-4 mb-3 border-b ${isClean ? 'border-slate-200' : 'border-rose-500/25'}`}>
+        <div className={`space-y-3 pb-4 mb-3 border-b ${isClean ? 'border-[#d4af37]/45' : 'border-rose-500/25'}`}>
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div
                 className={`p-2 rounded-xl border ${
                   isClean
-                    ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm'
+                    ? 'bg-gradient-to-br from-[#fff6d6] to-[#f4dc94] text-[#8a5d00] border-[#d4af37]/75 shadow-sm'
                     : 'bg-rose-500/20 text-rose-300 border-rose-400/40 shadow-[0_0_12px_rgba(244,63,94,0.35)]'
                 }`}
               >
-                <Compass className={`w-4 h-4 animate-spin-slow ${isClean ? 'text-rose-600' : 'text-rose-400'}`} />
+                <Compass className={`w-4 h-4 animate-spin-slow ${isClean ? 'text-[#8a5d00]' : 'text-rose-400'}`} />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -886,7 +908,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                   <span
                     className={`text-xs px-2.5 py-0.5 rounded-full border font-mono font-bold shrink-0 ${
                       isClean
-                        ? 'bg-rose-50 text-rose-700 border-rose-300'
+                        ? 'bg-[#fff6d6] text-[#7a5000] border-[#d4af37]/75'
                         : 'bg-rose-500/20 text-rose-300 border-rose-400/40'
                     }`}
                   >
@@ -903,7 +925,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 onClick={() => handleJumpToEdge('start')}
                 className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
                   isClean
-                    ? 'bg-white hover:bg-slate-100 border-slate-300 text-slate-800 hover:border-amber-500'
+                    ? 'bg-[#fffdf8] hover:bg-[#fff6d6] border-[#d4af37]/65 text-slate-900 hover:border-[#b8860b]'
                     : 'bg-[#091229] hover:bg-slate-800 border-slate-600/70 hover:border-amber-400/60 text-slate-200 hover:text-amber-300'
                 }`}
                 title="เลื่อนไปยังจุดเริ่มต้นเหตุการณ์"
@@ -916,7 +938,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 disabled={!canScrollLeft}
                 className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed border text-xs font-bold transition-colors cursor-pointer ${
                   isClean
-                    ? 'bg-rose-50 hover:bg-rose-100 border-rose-300 text-rose-700'
+                    ? 'bg-rose-50/90 hover:bg-rose-100 border-rose-300 text-rose-800'
                     : 'bg-rose-500/20 hover:bg-rose-500/35 border-rose-400/50 text-rose-200'
                 }`}
                 title="เลื่อนดูช่วงเหตุการณ์ก่อนหน้า"
@@ -930,7 +952,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 disabled={!canScrollRight}
                 className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed border text-xs font-bold transition-colors cursor-pointer ${
                   isClean
-                    ? 'bg-white hover:bg-slate-100 border-slate-300 text-slate-800'
+                    ? 'bg-[#fffdf8] hover:bg-[#fff6d6] border-[#d4af37]/65 text-slate-900'
                     : 'bg-[#091229] hover:bg-slate-800 border-slate-600/70 text-slate-200'
                 }`}
                 title="เลื่อนไปช่วงถัดไป"
@@ -943,7 +965,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 onClick={() => handleJumpToEdge('latest')}
                 className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
                   isClean
-                    ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-700'
+                    ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800'
                     : 'bg-emerald-500/15 hover:bg-emerald-500/30 border-emerald-400/50 text-emerald-300'
                 }`}
                 title="เลื่อนกลับมาที่ช่วงเหตุการณ์ล่าสุด"
@@ -957,15 +979,15 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           <div
             className={`hidden sm:flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm ${
               isClean
-                ? 'bg-amber-50 border-amber-300 text-amber-950'
+                ? 'bg-gradient-to-r from-[#fff8e1] via-[#fffdf8] to-[#fff6d6] border-[#d4af37]/70 text-slate-900'
                 : 'bg-gradient-to-r from-amber-500/15 via-rose-500/15 to-cyan-500/10 border-amber-400/40'
             }`}
           >
-            <div className={`flex items-center gap-2 font-semibold ${isClean ? 'text-amber-950' : 'text-amber-200'}`}>
+            <div className={`flex items-center gap-2 font-semibold ${isClean ? 'text-slate-900' : 'text-amber-200'}`}>
               <span
                 className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border text-xs font-bold shrink-0 ${
                   isClean
-                    ? 'bg-amber-200/70 border-amber-400 text-amber-900'
+                    ? 'bg-[#f4dc94] border-[#b8860b]/70 text-[#664200]'
                     : 'bg-amber-400/20 border-amber-400/40 text-amber-300'
                 }`}
               >
@@ -976,7 +998,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 แสดงเหตุการณ์ล่าสุดอยู่ด้านขวาสุด — กรุณาเลื่อนแถบ Timeline ไปทางซ้าย (หรือกดปุ่ม &ldquo;เลื่อนดูย้อนหลัง&rdquo;) เพื่อดูเหตุการณ์ในช่วงวันเดือนปีอื่นครบทั้ง {timeline.length} ช่วง
               </span>
             </div>
-            <span className={`text-xs shrink-0 hidden xl:inline font-medium ${isClean ? 'text-slate-700' : 'text-slate-300'}`}>
+            <span className={`text-xs shrink-0 hidden xl:inline font-semibold ${isClean ? 'text-[#7a5000]' : 'text-slate-300'}`}>
               คลิกที่บล็อกวันที่เพื่อเปิดอ่านฉบับเต็ม
             </span>
           </div>
@@ -993,7 +1015,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               onClick={() => handleScrollTimelineTrack('left')}
               className={`absolute left-2 bottom-[calc(50%+42px)] z-40 flex items-center gap-1 px-3 py-1.5 rounded-full border backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                 isClean
-                  ? 'bg-white/95 hover:bg-rose-600 text-rose-700 hover:text-white border-rose-300 shadow-lg'
+                  ? 'bg-[#fffdf8]/95 hover:bg-[#d4af37] text-[#8a5d00] hover:text-slate-950 border-[#d4af37]/80 shadow-lg'
                   : 'bg-[#07112b]/95 hover:bg-rose-500 text-white border-rose-400/70 shadow-[0_0_20px_rgba(244,63,94,0.45)]'
               }`}
               title="เลื่อนซ้ายเพื่อดูเหตุการณ์ช่วงก่อนหน้า"
@@ -1011,7 +1033,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               onClick={() => handleScrollTimelineTrack('right')}
               className={`absolute right-2 bottom-[calc(50%+42px)] z-40 flex items-center gap-1 px-3 py-1.5 rounded-full border backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                 isClean
-                  ? 'bg-white/95 hover:bg-emerald-600 text-emerald-700 hover:text-white border-emerald-300 shadow-lg'
+                  ? 'bg-[#fffdf8]/95 hover:bg-[#d4af37] text-[#8a5d00] hover:text-slate-950 border-[#d4af37]/80 shadow-lg'
                   : 'bg-[#07112b]/95 hover:bg-emerald-500 text-white border-emerald-400/70 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
               }`}
               title="เลื่อนขวาเพื่อดูเหตุการณ์ถัดไป"
@@ -1048,13 +1070,13 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 <div
                   className={`px-3 py-1.5 rounded-l-xl border-y border-l font-mono text-xs font-bold tracking-widest shadow-sm ${
                     isClean
-                      ? 'bg-white border-slate-300 text-slate-700'
+                      ? 'bg-[#fffdf8] border-[#d4af37]/75 text-[#7a5000]'
                       : 'bg-[#090e1f] border-slate-600/60 text-slate-300'
                   }`}
                 >
                   START
                 </div>
-                <div className="w-5 h-[2px] bg-gradient-to-r from-slate-400 to-orange-500" />
+                <div className="w-5 h-[2px] bg-gradient-to-r from-[#d4af37] to-orange-500" />
               </div>
 
               {/* CONNECTED MILESTONES CHAIN (Matching Visme Layout) */}
@@ -1104,7 +1126,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                               isActive
                                 ? `${theme.bg} text-slate-950 border-white ring-4 ring-white/30 scale-110 ${theme.glow}`
                                 : isClean
-                                  ? 'bg-white text-slate-700 border-slate-300 group-hover:border-slate-500 group-hover:scale-105'
+                                  ? 'bg-[#fffdf8] text-[#7a5000] border-[#d4af37]/70 group-hover:border-[#b8860b] group-hover:scale-105'
                                   : 'bg-[#0a1024] text-white border-slate-600/80 group-hover:border-white group-hover:scale-105'
                             }`}
                           >
@@ -1114,7 +1136,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                           {/* Prominent Large Date Badge */}
                           <div
                             className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-sm mb-1.5 ${
-                              isClean ? 'bg-white' : 'bg-[#050b1d]/95'
+                              isClean ? 'bg-[#fffdf8]' : 'bg-[#050b1d]/95'
                             } ${theme.border}`}
                           >
                             <Calendar className={`w-3.5 h-3.5 shrink-0 ${theme.text}`} />
@@ -1235,7 +1257,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                               isActive
                                 ? `${theme.bg} text-slate-950 border-white ring-4 ring-white/30 scale-110 ${theme.glow}`
                                 : isClean
-                                  ? 'bg-white text-slate-700 border-slate-300 group-hover:border-slate-500 group-hover:scale-105'
+                                  ? 'bg-[#fffdf8] text-[#7a5000] border-[#d4af37]/70 group-hover:border-[#b8860b] group-hover:scale-105'
                                   : 'bg-[#0a1024] text-white border-slate-600/80 group-hover:border-white group-hover:scale-105'
                             }`}
                           >
@@ -1245,7 +1267,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                           {/* Prominent Large Date Badge */}
                           <div
                             className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-sm mb-1.5 ${
-                              isClean ? 'bg-white' : 'bg-[#050b1d]/95'
+                              isClean ? 'bg-[#fffdf8]' : 'bg-[#050b1d]/95'
                             } ${theme.border}`}
                           >
                             <Calendar className={`w-3.5 h-3.5 shrink-0 ${theme.text}`} />
@@ -1297,11 +1319,11 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
               {/* FINISH / ONGOING TAG at the far right */}
               <div className="flex items-center shrink-0 ml-2 z-10">
-                <div className="w-5 h-[2px] bg-gradient-to-r from-emerald-500 to-slate-400" />
+                <div className="w-5 h-[2px] bg-gradient-to-r from-emerald-500 to-[#d4af37]" />
                 <div
                   className={`px-3 py-1.5 rounded-r-xl border-y border-r font-mono text-xs font-bold tracking-widest shadow-sm flex items-center gap-1.5 ${
                     isClean
-                      ? 'bg-white border-emerald-300 text-emerald-700'
+                      ? 'bg-[#fffdf8] border-[#d4af37]/75 text-emerald-700'
                       : 'bg-[#090e1f] border-slate-600/60 text-emerald-400'
                   }`}
                 >
@@ -1314,11 +1336,11 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
 
           {/* Bottom Scroll Guide Note */}
           <div className={`mt-2 flex items-center justify-center gap-2 text-xs sm:text-sm font-medium ${isClean ? 'text-slate-700' : 'text-slate-300'}`}>
-            <ChevronLeft className={`w-4 h-4 ${isClean ? 'text-rose-600' : 'text-rose-400'}`} />
+            <ChevronLeft className={`w-4 h-4 ${isClean ? 'text-[#8a5d00]' : 'text-rose-400'}`} />
             <span>
-              ใช้แถบเลื่อนด้านบน หรือกดปุ่ม <strong className={isClean ? 'text-rose-700' : 'text-rose-300'}>ดูย้อนหลัง / ถัดไป</strong> เพื่อดู Timeline ในช่วงอื่นทั้งหมด
+              ใช้แถบเลื่อนด้านบน หรือกดปุ่ม <strong className={isClean ? 'text-[#7a5000]' : 'text-rose-300'}>ดูย้อนหลัง / ถัดไป</strong> เพื่อดู Timeline ในช่วงอื่นทั้งหมด
             </span>
-            <ChevronRight className={`w-4 h-4 ${isClean ? 'text-emerald-600' : 'text-emerald-400'}`} />
+            <ChevronRight className={`w-4 h-4 ${isClean ? 'text-[#8a5d00]' : 'text-emerald-400'}`} />
           </div>
         </div>
 
@@ -1329,12 +1351,12 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           <div
             className={`mb-3 px-3 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-between gap-2 ${
               isClean
-                ? 'bg-amber-50 border-amber-300 text-amber-900'
+                ? 'bg-[#fff6d6] border-[#d4af37]/75 text-[#7a5000]'
                 : 'bg-amber-500/15 border-amber-400/40 text-amber-200'
             }`}
           >
             <span>เลื่อนลงเพื่อดูเหตุการณ์ครบทั้ง {timeline.length} ช่วง</span>
-            <span className={`text-[11px] shrink-0 ${isClean ? 'text-amber-700' : 'text-amber-300'}`}>
+            <span className={`text-[11px] shrink-0 ${isClean ? 'text-[#8a5d00]' : 'text-amber-300'}`}>
               แตะการ์ดเพื่ออ่านเต็ม
             </span>
           </div>
@@ -1348,13 +1370,13 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               <div
                 className={`px-2.5 py-1 rounded-lg border font-mono text-[11px] font-bold tracking-widest shadow-sm ${
                   isClean
-                    ? 'bg-white border-orange-300 text-orange-700'
+                    ? 'bg-[#fffdf8] border-[#d4af37]/75 text-[#7a5000]'
                     : 'bg-[#090e1f] border-orange-500/60 text-orange-300'
                 }`}
               >
                 START
               </div>
-              <div className={`text-xs font-medium ${isClean ? 'text-slate-600' : 'text-slate-400'}`}>จุดเริ่มต้นเหตุการณ์</div>
+              <div className={`text-xs font-medium ${isClean ? 'text-slate-700' : 'text-slate-400'}`}>จุดเริ่มต้นเหตุการณ์</div>
             </div>
 
             {/* VERTICAL MILESTONES STACK */}
@@ -1378,7 +1400,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                         isActive
                           ? `${theme.bg} text-slate-950 border-white ring-4 ring-rose-500/50 scale-110 shadow-[0_0_15px_rgba(255,255,255,0.8)]`
                           : isClean
-                            ? 'bg-white text-slate-700 border-slate-300 shadow-sm'
+                            ? 'bg-[#fffdf8] text-[#7a5000] border-[#d4af37]/75 shadow-sm'
                             : 'bg-[#0a1024] text-white border-slate-600 hover:border-white shadow-md'
                       }`}
                     >
@@ -1390,8 +1412,8 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                       className={`p-3.5 rounded-2xl border transition-all duration-300 shadow-md ${
                         isClean
                           ? isActive
-                            ? 'bg-rose-50/70 border-rose-400 shadow-md'
-                            : 'bg-white hover:bg-slate-50 border-slate-200'
+                            ? 'bg-gradient-to-br from-white via-[#fcf8ee] to-[#f4e4bc] border-[#b8860b] shadow-md'
+                            : 'bg-gradient-to-br from-white to-[#fcf8ee] border-[#d4af37]/55'
                           : isActive
                             ? 'bg-gradient-to-br from-[#1a233d]/95 via-[#202c4b]/95 to-[#151f36]/98 border-rose-400/80 shadow-[0_8px_25px_rgba(0,0,0,0.6),0_0_20px_rgba(244,63,94,0.3)] ring-1 ring-white/20'
                             : 'bg-[#0f172a]/90 hover:bg-[#152038]/95 border-slate-700/60 hover:border-slate-500'
@@ -1454,14 +1476,14 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               <div
                 className={`px-2.5 py-1 rounded-lg border font-mono text-[11px] font-bold tracking-widest shadow-sm flex items-center gap-1.5 ${
                   isClean
-                    ? 'bg-white border-emerald-300 text-emerald-700'
+                    ? 'bg-[#fffdf8] border-[#d4af37]/75 text-emerald-700'
                     : 'bg-[#090e1f] border-emerald-500/60 text-emerald-400'
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                 <span>ONGOING</span>
               </div>
-              <div className={`text-xs font-medium ${isClean ? 'text-slate-600' : 'text-slate-400'}`}>
+              <div className={`text-xs font-medium ${isClean ? 'text-slate-700' : 'text-slate-400'}`}>
                 สถานะปัจจุบัน ติดตามต่อเนื่อง
               </div>
             </div>
@@ -1481,18 +1503,18 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           <div
             className={`relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl border-2 p-5 sm:p-7 text-left ${
               isClean
-                ? 'bg-white border-slate-200 shadow-2xl text-slate-900'
+                ? 'bg-gradient-to-b from-white via-[#fcf9f2] to-[#f6eedb] border-[#d4af37]/75 shadow-2xl text-slate-900'
                 : 'bg-gradient-to-b from-[#0e1429] via-[#090e20] to-[#050814] border-rose-500/60 shadow-[0_25px_80px_rgba(0,0,0,0.95),0_0_50px_rgba(244,63,94,0.3)] ring-1 ring-white/10'
             }`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Modal Header */}
-            <div className={`flex items-center justify-between pb-4 mb-5 border-b ${isClean ? 'border-slate-200' : 'border-rose-500/30'}`}>
+            <div className={`flex items-center justify-between pb-4 mb-5 border-b ${isClean ? 'border-[#d4af37]/45' : 'border-rose-500/30'}`}>
               <div className="flex items-center gap-2 flex-wrap">
                 <span
                   className={`px-3 py-1 rounded-lg border text-xs font-bold font-mono ${
                     isClean
-                      ? 'bg-rose-50 text-rose-800 border-rose-300'
+                      ? 'bg-[#fff6d6] text-[#7a5000] border-[#d4af37]/75'
                       : 'bg-gradient-to-r from-rose-500/25 to-orange-500/25 text-rose-300 border-rose-400/40'
                   }`}
                 >
@@ -1502,11 +1524,11 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 <span
                   className={`text-xs flex items-center gap-1 px-2.5 py-1 rounded-lg border font-semibold ${
                     isClean
-                      ? 'text-slate-800 bg-slate-100 border-slate-300'
+                      ? 'text-slate-900 bg-[#fcf7ea] border-[#d4af37]/55'
                       : 'text-rose-200 bg-[#050816] border-rose-500/30'
                   }`}
                 >
-                  <Calendar className={`w-3.5 h-3.5 ${isClean ? 'text-rose-600' : 'text-rose-400'}`} />
+                  <Calendar className={`w-3.5 h-3.5 ${isClean ? 'text-[#8a5d00]' : 'text-rose-400'}`} />
                   <span>{currentItem.date}</span>
                 </span>
 
@@ -1514,11 +1536,11 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                   <span
                     className={`text-xs flex items-center gap-1 px-2 py-1 rounded-lg border ${
                       isClean
-                        ? 'text-slate-700 bg-slate-100 border-slate-300'
+                        ? 'text-slate-800 bg-[#fcf7ea] border-[#d4af37]/55'
                         : 'text-slate-300 bg-[#050816] border-slate-700'
                     }`}
                   >
-                    <Clock className="w-3 h-3 text-slate-400" />
+                    <Clock className="w-3 h-3 text-[#8a5d00]" />
                     <span>{currentItem.time}</span>
                   </span>
                 )}
@@ -1539,7 +1561,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                   }}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${
                     isClean
-                      ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
+                      ? 'bg-[#fff6d6] hover:bg-[#f4dc94] text-[#7a5000] border-[#d4af37]/75'
                       : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border-rose-400/40'
                   }`}
                   title="แชร์โหนดนี้"
@@ -1552,7 +1574,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                   onClick={() => setIsCardModalOpen(false)}
                   className={`p-2 rounded-xl border transition-colors cursor-pointer active:scale-95 ${
                     isClean
-                      ? 'bg-slate-100 hover:bg-rose-600 text-slate-700 hover:text-white border-slate-300'
+                      ? 'bg-[#fcf7ea] hover:bg-[#d4af37] text-[#7a5000] hover:text-slate-950 border-[#d4af37]/65'
                       : 'bg-slate-900/90 hover:bg-rose-500 text-slate-300 hover:text-white border-slate-700'
                   }`}
                   title="ปิดหน้าต่าง"
@@ -1568,13 +1590,13 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 <h3 className={`text-xl sm:text-2xl font-extrabold leading-tight mb-2 ${isClean ? 'text-slate-900' : 'text-white'}`}>
                   {currentItem.title}
                 </h3>
-                <p className={`text-sm sm:text-base leading-relaxed font-normal ${isClean ? 'text-slate-700' : 'text-slate-200'}`}>
+                <p className={`text-sm sm:text-base leading-relaxed font-normal ${isClean ? 'text-slate-800' : 'text-slate-200'}`}>
                   {currentItem.description}
                 </p>
               </div>
 
               {/* Media Section: Video or Photo */}
-              <div className={`rounded-2xl overflow-hidden border-2 bg-slate-950 shadow-xl ${isClean ? 'border-slate-200' : 'border-rose-500/40'}`}>
+              <div className={`rounded-2xl overflow-hidden border-2 bg-slate-950 shadow-xl ${isClean ? 'border-[#d4af37]/65' : 'border-rose-500/40'}`}>
                 {currentItem.mediaType === 'video' && currentItem.videoUrl ? (
                   <div className="relative aspect-video w-full bg-black">
                     <iframe
@@ -1613,7 +1635,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               {currentItem.fullStatement && (
                 <div
                   className={`p-4 sm:p-5 rounded-2xl border space-y-2 ${
-                    isClean ? 'bg-slate-50 border-slate-200' : 'bg-[#060a18] border-rose-400/40 shadow-inner'
+                    isClean ? 'bg-white/90 border-[#d4af37]/50' : 'bg-[#060a18] border-rose-400/40 shadow-inner'
                   }`}
                 >
                   <div className={`flex items-center gap-2 text-sm sm:text-base font-bold ${isClean ? 'text-rose-700' : 'text-rose-300'}`}>
@@ -1629,11 +1651,11 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               {/* Engineering Verification Spec Box */}
               <div
                 className={`p-4 rounded-2xl border space-y-2 ${
-                  isClean ? 'bg-amber-50/70 border-amber-200' : 'bg-[#070b1a] border-amber-400/40 shadow-inner'
+                  isClean ? 'bg-[#fff8e1]/80 border-[#d4af37]/60' : 'bg-[#070b1a] border-amber-400/40 shadow-inner'
                 }`}
               >
-                <div className={`flex items-center gap-2 text-sm sm:text-base font-bold ${isClean ? 'text-amber-800' : 'text-amber-300'}`}>
-                  <Activity className={`w-4 h-4 animate-pulse ${isClean ? 'text-amber-600' : 'text-amber-400'}`} />
+                <div className={`flex items-center gap-2 text-sm sm:text-base font-bold ${isClean ? 'text-[#7a5000]' : 'text-amber-300'}`}>
+                  <Activity className={`w-4 h-4 animate-pulse ${isClean ? 'text-[#8a5d00]' : 'text-amber-400'}`} />
                   <span>ข้อมูลทางวิศวกรรมและการตรวจวัด (Engineering Verification):</span>
                 </div>
                 <p className={`text-sm leading-relaxed pl-4 ${isClean ? 'text-slate-800' : 'text-slate-200 font-mono'}`}>
@@ -1645,13 +1667,13 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
               {currentItem.referenceTitle && (
                 <div
                   className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm ${
-                    isClean ? 'bg-slate-50 border-slate-200' : 'bg-[#040714] border-slate-700'
+                    isClean ? 'bg-white/90 border-[#d4af37]/50' : 'bg-[#040714] border-slate-700'
                   }`}
                 >
-                  <div className={`flex items-center gap-2 ${isClean ? 'text-slate-700' : 'text-slate-300'}`}>
-                    <ExternalLink className={`w-4 h-4 shrink-0 ${isClean ? 'text-rose-600' : 'text-rose-400'}`} />
+                  <div className={`flex items-center gap-2 ${isClean ? 'text-slate-800' : 'text-slate-300'}`}>
+                    <ExternalLink className={`w-4 h-4 shrink-0 ${isClean ? 'text-[#8a5d00]' : 'text-rose-400'}`} />
                     <div>
-                      <span className={`font-bold block sm:inline mr-2 ${isClean ? 'text-rose-700' : 'text-rose-200'}`}>
+                      <span className={`font-bold block sm:inline mr-2 ${isClean ? 'text-[#7a5000]' : 'text-rose-200'}`}>
                         เอกสารอ้างอิงทางการ:
                       </span>
                       <span>{currentItem.referenceTitle}</span>
@@ -1664,7 +1686,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                       rel="noopener noreferrer"
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-colors text-center ${
                         isClean
-                          ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200'
+                          ? 'bg-[#fff6d6] hover:bg-[#f4dc94] text-[#7a5000] border border-[#d4af37]/70'
                           : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300'
                       }`}
                     >
@@ -1676,20 +1698,20 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
             </div>
 
             {/* Modal Bottom Stepper Bar */}
-            <div className={`mt-7 pt-4 border-t flex items-center justify-between gap-3 flex-wrap ${isClean ? 'border-slate-200' : 'border-rose-500/25'}`}>
+            <div className={`mt-7 pt-4 border-t flex items-center justify-between gap-3 flex-wrap ${isClean ? 'border-[#d4af37]/45' : 'border-rose-500/25'}`}>
               <button
                 onClick={handlePrev}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors text-sm font-semibold cursor-pointer active:scale-95 ${
                   isClean
-                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                    ? 'bg-[#fffdf8] hover:bg-[#fff6d6] text-slate-900 border-[#d4af37]/65'
                     : 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-700 hover:border-rose-400/60'
                 }`}
               >
-                <ChevronLeft className={`w-4 h-4 ${isClean ? 'text-rose-600' : 'text-rose-400'}`} />
+                <ChevronLeft className={`w-4 h-4 ${isClean ? 'text-[#8a5d00]' : 'text-rose-400'}`} />
                 <span>โหนดก่อนหน้า</span>
               </button>
 
-              <div className={`text-sm font-mono font-bold ${isClean ? 'text-rose-700' : 'text-rose-300'}`}>
+              <div className={`text-sm font-mono font-bold ${isClean ? 'text-[#7a5000]' : 'text-rose-300'}`}>
                 โหนด {activeIndex + 1} จากทั้งหมด {timeline.length}
               </div>
 
@@ -1697,12 +1719,12 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
                 onClick={handleNext}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors text-sm font-semibold cursor-pointer active:scale-95 ${
                   isClean
-                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                    ? 'bg-[#fffdf8] hover:bg-[#fff6d6] text-slate-900 border-[#d4af37]/65'
                     : 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-700 hover:border-rose-400/60'
                 }`}
               >
                 <span>โหนดถัดไป</span>
-                <ChevronRight className={`w-4 h-4 ${isClean ? 'text-rose-600' : 'text-rose-400'}`} />
+                <ChevronRight className={`w-4 h-4 ${isClean ? 'text-[#8a5d00]' : 'text-rose-400'}`} />
               </button>
             </div>
           </div>
@@ -1747,6 +1769,7 @@ export const BuildingIncidentSection: React.FC<BuildingIncidentSectionProps> = (
           }}
         />
       )}
+      </div>
     </section>
   );
 };

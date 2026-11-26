@@ -956,7 +956,7 @@ export default function App() {
     <div
       className={`relative min-h-screen overflow-x-clip transition-colors duration-300 ${
         isClean
-          ? 'bg-[#f8fafc] text-slate-900 selection:bg-sky-200 selection:text-slate-900'
+          ? 'bg-[#faf7f0] text-slate-900 selection:bg-amber-200 selection:text-slate-900'
           : 'bg-[#020717] text-slate-100 selection:bg-amber-500/30 selection:text-amber-200'
       }`}
     >
@@ -1000,16 +1000,16 @@ export default function App() {
           <div
             className={`fixed top-20 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl border text-sm shadow-2xl animate-fadeIn ${
               isClean
-                ? 'bg-white border-sky-300 text-slate-900 shadow-slate-300/60'
+                ? 'bg-gradient-to-br from-white via-[#fcf8ee] to-[#f7efdb] border-[#d4af37]/75 text-slate-900 shadow-[0_12px_32px_rgba(161,118,22,0.18)]'
                 : 'bg-[#06153d] border-cyan-500/50 text-cyan-300 shadow-cyan-500/20'
             }`}
           >
-            <ShieldCheck className={`w-5 h-5 shrink-0 ${isClean ? 'text-sky-600' : 'text-cyan-400'}`} />
+            <ShieldCheck className={`w-5 h-5 shrink-0 ${isClean ? 'text-[#8a5d00]' : 'text-cyan-400'}`} />
             <div>
               <span className={`font-bold block ${isClean ? 'text-slate-900' : 'text-white'}`}>
                 ยืนยันตัวตนผู้ดูแลระบบสำเร็จ
               </span>
-              <span className={`text-xs font-mono ${isClean ? 'text-sky-700' : 'text-cyan-400'}`}>
+              <span className={`text-xs font-mono ${isClean ? 'text-[#8a5d00]' : 'text-cyan-400'}`}>
                 เข้าสู่ระบบ: {adminEmail || 'ผู้ดูแลระบบ สตง.'}
               </span>
             </div>
@@ -1040,41 +1040,56 @@ export default function App() {
           <PublicInterestSection />
 
           {/* Quick End CTA Strip: รู้จัก 4 กลุ่มงานของเรา */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-            <div
-              className={`rounded-2xl border px-5 py-4 sm:px-7 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
-                isClean
-                  ? 'bg-gradient-to-r from-sky-50 via-white to-amber-50/70 border-slate-200 shadow-sm'
-                  : 'bg-gradient-to-r from-[#071946]/95 via-[#0a2159]/95 to-[#061539]/95 border-amber-400/35 shadow-[0_12px_36px_rgba(2,10,31,0.7)]'
-              }`}
-            >
-              <div className="flex items-start sm:items-center gap-3.5">
-                <div
-                  className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${
+          <section
+            className={`w-full py-10 transition-colors ${
+              isClean
+                ? 'bg-gradient-to-b from-[#edf4f0] via-[#f6f5ee] to-[#faf7f0] border-t border-[#d4af37]/25'
+                : 'bg-gradient-to-b from-[#02091a]/85 to-[#020717]/90 border-t border-white/10'
+            }`}
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div
+                className={`relative rounded-2xl border-2 px-5 py-4 sm:px-7 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 overflow-hidden transition-colors ${
+                  isClean
+                    ? 'bg-gradient-to-r from-white via-[#fcf7ea] to-[#f6e8c3] border-[#d4af37]/70 shadow-[0_12px_32px_rgba(161,118,22,0.12)]'
+                    : 'bg-gradient-to-r from-[#071946]/95 via-[#0a2159]/95 to-[#061539]/95 border-amber-400/35 shadow-[0_12px_36px_rgba(2,10,31,0.7)]'
+                }`}
+              >
+                {isClean && (
+                  <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#a67c00] via-[#f1d57e] to-[#a67c00] pointer-events-none" />
+                )}
+                <div className="flex items-start sm:items-center gap-3.5">
+                  <div
+                    className={`w-11 h-11 rounded-xl border-2 flex items-center justify-center shrink-0 ${
+                      isClean
+                        ? 'bg-gradient-to-br from-[#fff6d6] to-[#f4dc94] border-[#d4af37]/75 text-[#8a5d00] shadow-sm'
+                        : 'bg-amber-400/15 border-amber-400/40 text-amber-300'
+                    }`}
+                  >
+                    <Network className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className={`text-base sm:text-lg font-extrabold ${isClean ? 'text-slate-900' : 'text-white'}`}>
+                      รู้จัก 4 กลุ่มงานของเรา · สำนักประชาสัมพันธ์และสื่อสารองค์กร
+                    </h3>
+                    <p className={`text-xs sm:text-sm font-medium mt-0.5 ${isClean ? 'text-slate-700' : 'text-slate-300'}`}>
+                      ดูแผนผังโครงสร้างภายในและบทบาทภารกิจหลักของแต่ละกลุ่มงานแบบเต็มจอ
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenBureauStructure}
+                  className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-extrabold shadow-lg transition-all cursor-pointer shrink-0 ${
                     isClean
-                      ? 'bg-amber-100 border-amber-300 text-amber-700'
-                      : 'bg-amber-400/15 border-amber-400/40 text-amber-300'
+                      ? 'bg-gradient-to-r from-[#d4af37] via-[#e7c55c] to-[#c5961b] hover:brightness-105 text-slate-950 border border-[#b8860b] shadow-[0_6px_18px_rgba(184,134,11,0.22)]'
+                      : 'bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-amber-500/20'
                   }`}
                 >
-                  <Network className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className={`text-base sm:text-lg font-extrabold ${isClean ? 'text-slate-900' : 'text-white'}`}>
-                    รู้จัก 4 กลุ่มงานของเรา · สำนักประชาสัมพันธ์และสื่อสารองค์กร
-                  </h3>
-                  <p className={`text-xs sm:text-sm font-medium mt-0.5 ${isClean ? 'text-slate-700' : 'text-slate-300'}`}>
-                    ดูแผนผังโครงสร้างภายใน บทบาทภารกิจหลัก และผลงานเชื่อมโยงของแต่ละกลุ่มงานแบบเต็มจอ
-                  </p>
-                </div>
+                  <span>เปิดดูโครงสร้างและภารกิจ</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleOpenBureauStructure}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 text-sm font-extrabold shadow-lg shadow-amber-500/20 transition-all cursor-pointer shrink-0"
-              >
-                <span>เปิดดูโครงสร้างและภารกิจ</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
             </div>
           </section>
         </main>

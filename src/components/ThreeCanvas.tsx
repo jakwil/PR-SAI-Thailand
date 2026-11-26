@@ -15,29 +15,69 @@ export const ThreeCanvas: React.FC = () => {
         style={{ contain: 'strict' }}
         aria-hidden="true"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#ffffff] via-[#f8fafc] to-[#f1f5f9]" />
+        {/* 1. Warm Pearl White Marble Base */}
         <div
           className="absolute inset-0"
           style={{
+            backgroundColor: '#faf7f0',
             backgroundImage: [
-              'radial-gradient(700px 480px at 20% 8%, rgba(14, 165, 233, 0.06), transparent 72%)',
-              'radial-gradient(620px 440px at 85% 28%, rgba(245, 158, 11, 0.05), transparent 72%)',
-              'radial-gradient(650px 480px at 50% 85%, rgba(59, 130, 246, 0.05), transparent 72%)',
+              'radial-gradient(900px 620px at 78% 12%, rgba(255, 255, 255, 0.96), transparent 72%)',
+              'radial-gradient(780px 560px at 14% 24%, rgba(212, 175, 55, 0.08), transparent 72%)',
+              'radial-gradient(840px 580px at 82% 72%, rgba(240, 230, 206, 0.55), transparent 74%)',
+              'radial-gradient(720px 520px at 20% 88%, rgba(212, 175, 55, 0.07), transparent 72%)',
+              'linear-gradient(125deg, rgba(255,255,255,0.78) 0%, rgba(244,239,229,0.52) 38%, rgba(255,255,255,0.88) 68%, rgba(238,231,216,0.58) 100%)',
             ].join(', '),
           }}
         />
+
+        {/* 2. Subtle Translucent Marble Veining SVG Overlay */}
         <svg
-          className="absolute inset-0 w-full h-full opacity-[0.03] pointer-events-none"
+          className="absolute inset-0 w-full h-full opacity-[0.26] pointer-events-none"
+          preserveAspectRatio="none"
+          viewBox="0 0 1440 900"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M-60 210 C 210 160, 380 310, 680 230 C 960 155, 1180 280, 1510 190"
+            stroke="#d6c59c"
+            strokeWidth="1.8"
+            strokeOpacity="0.7"
+          />
+          <path
+            d="M-40 540 C 260 610, 520 430, 860 520 C 1120 590, 1290 470, 1500 550"
+            stroke="#d8ccb2"
+            strokeWidth="1.5"
+            strokeOpacity="0.6"
+          />
+          <path
+            d="M220 -20 C 310 240, 440 420, 380 920"
+            stroke="#e2d6bc"
+            strokeWidth="1.4"
+            strokeOpacity="0.55"
+          />
+          <path
+            d="M1140 -20 C 1030 280, 1210 560, 1080 920"
+            stroke="#d4c295"
+            strokeWidth="1.5"
+            strokeOpacity="0.55"
+          />
+        </svg>
+
+        {/* 3. Ultra-faint Royal Gold Diamond Lattice */}
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.035] pointer-events-none"
           xmlns="http://www.w3.org/2000/svg"
           width="100%"
           height="100%"
         >
           <defs>
-            <pattern id="clean-grid-lattice" width="48" height="48" patternUnits="userSpaceOnUse">
-              <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#0f172a" strokeWidth="0.6" />
+            <pattern id="pearl-gold-lattice" width="72" height="72" patternUnits="userSpaceOnUse">
+              <path d="M36 0 L72 36 L36 72 L0 36 Z" fill="none" stroke="#b8860b" strokeWidth="0.7" />
+              <circle cx="36" cy="36" r="1.2" fill="#b8860b" />
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#clean-grid-lattice)" />
+          <rect width="100%" height="100%" fill="url(#pearl-gold-lattice)" />
         </svg>
       </div>
     );

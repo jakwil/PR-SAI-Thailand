@@ -16,7 +16,8 @@ import {
   Network,
   Sun,
   Moon,
-  Type
+  Type,
+  Newspaper
 } from 'lucide-react';
 import { AppData } from '../types';
 import { QuickSearchBar } from './QuickSearchBar';
@@ -112,6 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         setSearchModalOpen((prev) => !prev);
       } else if (e.key === 'Escape') {
         setSearchModalOpen(false);
+        setMobileMenuOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -124,19 +126,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      {/* Fixed Header (รองรับทั้งโทน Royal Navy และโทนสีคลีน) */}
+      {/* Fixed Header (รองรับทั้งโทน Royal Navy และโทนขาวมุกหินอ่อน ขอบทอง Royal) */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 w-full backdrop-blur-xl select-none overflow-hidden transition-colors duration-300 ${
           isClean
-            ? 'bg-white/95 border-b border-slate-200 shadow-sm'
+            ? 'bg-[#fffdf9]/95 border-b-2 border-[#d4af37]/55 shadow-[0_6px_26px_rgba(161,118,22,0.10)]'
             : 'bg-gradient-to-r from-[#040e28]/95 via-[#07163d]/95 to-[#040e28]/95 border-b border-cyan-500/25 shadow-[0_4px_24px_rgba(0,0,0,0.75)]'
         }`}
       >
         {/* Subtle Top Luminous Accent Line */}
         <div
-          className={`absolute top-0 left-0 right-0 h-[1.5px] pointer-events-none ${
+          className={`absolute top-0 left-0 right-0 h-[2px] pointer-events-none ${
             isClean
-              ? 'bg-gradient-to-r from-sky-500/60 via-amber-500/60 to-sky-500/60'
+              ? 'bg-gradient-to-r from-[#a67c00] via-[#f1d57e] to-[#a67c00]'
               : 'bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent'
           }`}
         />
@@ -178,7 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span
                   className={`text-sm sm:text-base font-extrabold tracking-tight leading-tight transition-colors ${
                     isClean
-                      ? 'text-slate-900 group-hover:text-sky-700'
+                      ? 'text-slate-900 group-hover:text-[#8a5d00]'
                       : 'text-white group-hover:text-amber-300'
                   }`}
                 >
@@ -193,11 +195,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span
                   className={`text-[10px] sm:text-xs font-semibold tracking-wide leading-tight mt-[1px] transition-colors ${
                     isClean
-                      ? 'text-sky-700 group-hover:text-sky-900'
+                      ? 'text-[#8a5d00] group-hover:text-[#6f4800]'
                       : 'text-amber-300/90 group-hover:text-amber-200'
                   }`}
                 >
-                  สำนักประชาสัมพันธ์และสื่อสารองค์กร
+                  สำนักประชาสัมพันธ์และสื่อสารองค์กร (สปส.)
                 </span>
               </div>
             </div>
@@ -206,13 +208,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Zone 2: Navigation Links (Larger & Clearer) */}
           <nav
             className={`hidden lg:flex items-center gap-4 xl:gap-5 text-sm font-semibold ${
-              isClean ? 'text-slate-700' : 'text-slate-200'
+              isClean ? 'text-slate-800' : 'text-slate-200'
             }`}
           >
             <a
               href="#home"
               className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
-                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+                isClean ? 'hover:text-[#8a5d00]' : 'hover:text-white'
               }`}
             >
               หน้าแรก
@@ -225,21 +227,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5 font-semibold cursor-pointer ${
                 isClean
-                  ? 'text-amber-700 hover:text-amber-900'
+                  ? 'text-[#8a5d00] hover:text-[#664200]'
                   : 'text-amber-200 hover:text-amber-300'
               }`}
               title="เปิดดูโครงสร้าง 4 กลุ่มงาน ภารกิจ และผลงานสำนักประชาสัมพันธ์ฯ (เต็มจอ)"
             >
-              <Network className={`w-4 h-4 ${isClean ? 'text-amber-600' : 'text-amber-400'}`} />
+              <Network className={`w-4 h-4 ${isClean ? 'text-[#b8860b]' : 'text-amber-400'}`} />
               <span>โครงสร้างและภารกิจ</span>
             </button>
             <a
               href="#viral-clips"
               className={`transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1.5 ${
-                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+                isClean ? 'hover:text-[#8a5d00]' : 'hover:text-white'
               }`}
             >
-              <span className={`w-2 h-2 rounded-full animate-pulse ${isClean ? 'bg-amber-500' : 'bg-amber-400'}`} />
+              <span className={`w-2 h-2 rounded-full animate-pulse ${isClean ? 'bg-[#b8860b]' : 'bg-amber-400'}`} />
               <span className={isClean ? 'text-slate-900 font-bold' : 'text-amber-200 font-bold'}>
                 ข่าว & คลิปไวรัล
               </span>
@@ -247,7 +249,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <a
               href="#incident-timeline"
               className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
-                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+                isClean ? 'hover:text-[#8a5d00]' : 'hover:text-white'
               }`}
             >
               สถานการณ์อาคาร สตง.
@@ -255,7 +257,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <a
               href="#published-works"
               className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
-                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+                isClean ? 'hover:text-[#8a5d00]' : 'hover:text-white'
               }`}
             >
               คลังสื่อดิจิทัล
@@ -263,7 +265,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <a
               href="#public-interest"
               className={`transition-colors whitespace-nowrap shrink-0 py-1 ${
-                isClean ? 'hover:text-sky-700' : 'hover:text-white'
+                isClean ? 'hover:text-[#8a5d00]' : 'hover:text-white'
               }`}
             >
               ข้อมูล e-Audit
@@ -276,11 +278,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onOpenAdminPanel();
                 }}
                 className={`transition-colors whitespace-nowrap shrink-0 py-1 flex items-center gap-1 font-semibold cursor-pointer ${
-                  isClean ? 'text-sky-700 hover:text-sky-900' : 'text-amber-300 hover:text-amber-200'
+                  isClean ? 'text-[#8a5d00] hover:text-slate-950' : 'text-amber-300 hover:text-amber-200'
                 }`}
                 title="ดูศูนย์วิเคราะห์สถิติ Real-time (เฉพาะผู้ดูแลระบบ)"
               >
-                <BarChart3 className={`w-4 h-4 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
+                <BarChart3 className={`w-4 h-4 ${isClean ? 'text-[#b8860b]' : 'text-amber-400'}`} />
                 <span>แดชบอร์ดสถิติ</span>
               </button>
             )}
@@ -288,7 +290,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Zone 3: Theme Switcher, Text Size, Search, PR CTA, Biometric */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
-            {/* Website Color Theme Selector: Clean Light vs Royal Navy */}
+            {/* Website Color Theme Selector: Clean Pearl Marble Royal vs Royal Navy */}
             <button
               type="button"
               onClick={() => {
@@ -297,10 +299,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-bold border transition-all active:scale-95 cursor-pointer whitespace-nowrap ${
                 isClean
-                  ? 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900 shadow-sm'
-                  : 'bg-white/95 hover:bg-white text-slate-900 border-white/80 shadow-sm'
+                  ? 'bg-gradient-to-r from-[#071842] to-[#0f2964] hover:brightness-110 text-amber-200 border-[#b8860b]/80 shadow-sm'
+                  : 'bg-gradient-to-r from-[#fffdf8] to-[#f6ebd0] hover:brightness-105 text-slate-900 border-[#d4af37] shadow-sm'
               }`}
-              title={isClean ? 'เปลี่ยนกลับเป็นโทน Royal Navy (เข้ม)' : 'เปลี่ยนเป็นโทนสีคลีน (สว่าง สบายตา)'}
+              title={isClean ? 'เปลี่ยนกลับเป็นโทน Royal Navy (เข้ม)' : 'เปลี่ยนเป็นโทนคลีน ขาวมุกหินอ่อน ขอบทอง Royal'}
               aria-label="สลับโทนสีเว็บไซต์"
             >
               {isClean ? (
@@ -310,7 +312,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </>
               ) : (
                 <>
-                  <Sun className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <Sun className="w-3.5 h-3.5 text-[#b8860b] shrink-0" />
                   <span className="hidden xs:inline">โทนคลีน</span>
                 </>
               )}
@@ -326,10 +328,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-full text-xs font-extrabold border transition-all active:scale-95 cursor-pointer whitespace-nowrap ${
                 isLargeFont
                   ? isClean
-                    ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                    ? 'bg-gradient-to-r from-[#d4af37] to-[#e7c55c] text-slate-950 border-[#b8860b] shadow-sm'
                     : 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm'
                   : isClean
-                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+                  ? 'bg-[#fcf7ea] hover:bg-[#f6ebd0] text-[#7a5000] border-[#d4af37]/60'
                   : 'bg-white/10 hover:bg-white/20 text-slate-200 border-white/20'
               }`}
               title={isLargeFont ? 'สลับเป็นตัวอักษรขนาดมาตรฐานชัด' : 'ขยายตัวอักษรให้ใหญ่พิเศษ'}
@@ -348,7 +350,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`p-1.5 sm:p-2 rounded-full transition-colors cursor-pointer flex items-center justify-center group ${
                 isClean
-                  ? 'text-slate-700 hover:text-sky-700 hover:bg-slate-100'
+                  ? 'text-[#7a5000] hover:text-slate-950 hover:bg-[#f6ebd0] border border-transparent hover:border-[#d4af37]/50'
                   : 'text-slate-200 hover:text-white hover:bg-white/10'
               }`}
               title="ค้นหาด่วนทั่วทั้งเว็บไซต์ (Ctrl + K)"
@@ -363,9 +365,26 @@ export const Navbar: React.FC<NavbarProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all whitespace-nowrap shrink-0"
-              title="ขอรับการสนับสนุนงาน PR สำนักประชาสัมพันธ์และสื่อสารองค์กร สตง."
+              title="ขอรับการสนับสนุนงาน PR สำนักประชาสัมพันธ์และสื่อสารองค์กร (สปส.) สตง."
             >
               <span>ขอรับการสนับสนุนงาน PR</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+
+            {/* SAO News Monitor Portal CTA (visible alongside PR button when width permits; always in 3-line Menu & Footer) */}
+            <a
+              href="https://saonewsmonitor.pages.dev/all/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`hidden md:inline-flex lg:hidden 2xl:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border shadow-sm hover:scale-105 active:scale-95 transition-all whitespace-nowrap shrink-0 ${
+                isClean
+                  ? 'bg-gradient-to-r from-[#eef5ff] to-[#dceaff] text-[#1e3a8a] border-[#2563eb]/45 hover:brightness-105'
+                  : 'bg-gradient-to-r from-cyan-500/20 to-sky-500/20 text-cyan-200 border-cyan-400/45 hover:bg-cyan-500/30'
+              }`}
+              title="เปิดระบบ SAO News Monitor (ข่าวจากสื่อ)"
+            >
+              <Newspaper className={`w-3.5 h-3.5 ${isClean ? 'text-[#1d4ed8]' : 'text-cyan-300'}`} />
+              <span>SAO News Monitor (ข่าวจากสื่อ)</span>
               <ExternalLink className="w-3 h-3" />
             </a>
 
@@ -448,16 +467,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
 
-            {/* Mobile / Tablet Menu Hamburger Toggle */}
+            {/* All-Viewports Menu Hamburger Toggle (3 ขีดในทุกมุมมอง) */}
             <button
               onClick={() => {
                 playDigitalSound('switch');
                 setMobileMenuOpen(!mobileMenuOpen);
               }}
-              className={`lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
                 isClean
-                  ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+                  ? 'text-[#7a5000] hover:text-slate-950 hover:bg-[#f6ebd0] border border-[#d4af37]/40'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10 border border-white/15'
               }`}
               aria-label="Toggle navigation"
               title={mobileMenuOpen ? 'ปิดเมนู' : 'เปิดเมนู'}
@@ -505,23 +524,26 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       )}
 
-      {/* Backdrop for Compact Right-Aligned Menu on Tablet & Mobile */}
+      {/* Backdrop for Right-Aligned Menu Across All Viewports */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-fadeIn"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      {/* Compact Right-Aligned Drawer (ไม่มีปุ่มขอรับการสนับสนุนและกระชับขอบบนพอดี) */}
+      {/* Right-Aligned Menu Drawer (ทุกมุมมอง) */}
       {mobileMenuOpen && (
         <div
-          className={`fixed top-[54px] sm:top-[60px] right-2 sm:right-3 md:right-4 z-50 w-[235px] sm:w-[250px] backdrop-blur-2xl rounded-2xl p-2.5 lg:hidden animate-slide-in-right overflow-hidden select-none ${
+          className={`fixed top-[54px] sm:top-[60px] right-2 sm:right-3 md:right-4 z-50 w-[265px] sm:w-[290px] backdrop-blur-2xl rounded-2xl p-2.5 animate-slide-in-right overflow-hidden select-none ${
             isClean
-              ? 'bg-white/98 border border-slate-200 shadow-[0_16px_40px_rgba(15,23,42,0.16)]'
+              ? 'bg-gradient-to-b from-[#fffdf8]/98 via-[#fcf7ea]/98 to-[#f5ecd4]/98 border-2 border-[#d4af37]/70 shadow-[0_16px_45px_rgba(161,118,22,0.22)]'
               : 'bg-gradient-to-b from-[#0a1e4d]/98 via-[#061539]/98 to-[#030d26]/98 border-2 border-amber-400/60 shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_30px_rgba(245,158,11,0.3)]'
           }`}
         >
+          {isClean && (
+            <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#a67c00] via-[#f1d57e] to-[#a67c00] pointer-events-none" />
+          )}
           {/* Floating Compact Close Button (ไม่กินพื้นที่แถวบน) */}
           <button
             onClick={() => {
@@ -530,7 +552,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className={`absolute top-2 right-2 z-20 p-1 rounded-md transition-colors cursor-pointer ${
               isClean
-                ? 'text-slate-400 hover:text-slate-900 hover:bg-slate-100'
+                ? 'text-[#8a5d00] hover:text-slate-950 hover:bg-[#f4dc94]/50'
                 : 'text-slate-400 hover:text-white hover:bg-white/10'
             }`}
             aria-label="ปิดเมนู"
@@ -548,11 +570,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg transition-all ${
                 isClean
-                  ? 'text-slate-800 hover:text-sky-700 hover:bg-sky-50'
+                  ? 'text-slate-800 hover:text-[#7a5000] hover:bg-[#f4dc94]/40'
                   : 'text-slate-100 hover:text-amber-300 hover:bg-amber-500/15'
               }`}
             >
-              <Home className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
+              <Home className={`w-4 h-4 shrink-0 ${isClean ? 'text-[#8a5d00]' : 'text-amber-400'}`} />
               <span>หน้าแรก</span>
             </a>
 
@@ -565,11 +587,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`w-full flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg border transition-all text-left cursor-pointer ${
                 isClean
-                  ? 'text-amber-800 bg-amber-50/70 hover:bg-amber-100 border-amber-200'
+                  ? 'text-[#7a5000] bg-gradient-to-r from-[#fff6d6] to-[#f7e7b4] hover:brightness-98 border-[#d4af37]/70'
                   : 'text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 border-amber-500/30'
               }`}
             >
-              <Network className={`w-4 h-4 shrink-0 ${isClean ? 'text-amber-600' : 'text-amber-400'}`} />
+              <Network className={`w-4 h-4 shrink-0 ${isClean ? 'text-[#8a5d00]' : 'text-amber-400'}`} />
               <span>โครงสร้างและภารกิจ</span>
             </button>
 
@@ -581,11 +603,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg transition-all ${
                 isClean
-                  ? 'text-slate-800 hover:text-sky-700 hover:bg-sky-50'
+                  ? 'text-slate-800 hover:text-[#7a5000] hover:bg-[#f4dc94]/40'
                   : 'text-amber-200 hover:text-amber-300 hover:bg-amber-500/15'
               }`}
             >
-              <Radio className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
+              <Radio className={`w-4 h-4 shrink-0 ${isClean ? 'text-[#8a5d00]' : 'text-amber-400'}`} />
               <span>ข่าว & คลิปไวรัล สตง.</span>
             </a>
 
@@ -597,7 +619,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg border transition-all ${
                 isClean
-                  ? 'text-rose-700 bg-rose-50/70 hover:bg-rose-100 border-rose-200'
+                  ? 'text-rose-800 bg-rose-50/80 hover:bg-rose-100 border-rose-300/80'
                   : 'text-amber-300 hover:bg-amber-500/20 border-amber-500/30'
               }`}
             >
@@ -613,11 +635,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg transition-all ${
                 isClean
-                  ? 'text-slate-800 hover:text-sky-700 hover:bg-sky-50'
+                  ? 'text-slate-800 hover:text-[#7a5000] hover:bg-[#f4dc94]/40'
                   : 'text-slate-100 hover:text-amber-300 hover:bg-amber-500/15'
               }`}
             >
-              <Film className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
+              <Film className={`w-4 h-4 shrink-0 ${isClean ? 'text-[#8a5d00]' : 'text-amber-400'}`} />
               <span>คลังสื่อดิจิทัล</span>
             </a>
 
@@ -629,13 +651,58 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className={`flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg transition-all ${
                 isClean
-                  ? 'text-slate-800 hover:text-sky-700 hover:bg-sky-50'
+                  ? 'text-slate-800 hover:text-[#7a5000] hover:bg-[#f4dc94]/40'
                   : 'text-slate-100 hover:text-amber-300 hover:bg-amber-500/15'
               }`}
             >
-              <HelpCircle className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
+              <HelpCircle className={`w-4 h-4 shrink-0 ${isClean ? 'text-[#8a5d00]' : 'text-amber-400'}`} />
               <span>ประเด็นเด่นที่น่าสนใจ (e-Audit)</span>
             </a>
+
+            <div
+              className={`my-1.5 pt-1.5 border-t space-y-1.5 ${
+                isClean ? 'border-[#d4af37]/35' : 'border-amber-400/20'
+              }`}
+            >
+              <a
+                href="https://pr-request-system.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  playDigitalSound('select');
+                  setMobileMenuOpen(false);
+                }}
+                className={`flex items-center justify-between gap-2 px-3 py-2 text-[13px] sm:text-sm font-bold rounded-xl border transition-all ${
+                  isClean
+                    ? 'bg-gradient-to-r from-[#fff6d6] to-[#f4dc94] text-[#7a5000] border-[#b8860b]/70 hover:brightness-98 shadow-sm'
+                    : 'bg-gradient-to-r from-yellow-400 to-amber-400 text-slate-950 border-amber-300 hover:brightness-105 shadow-sm'
+                }`}
+              >
+                <span className="leading-snug">ขอรับการสนับสนุนงาน PR</span>
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+              </a>
+
+              <a
+                href="https://saonewsmonitor.pages.dev/all/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  playDigitalSound('select');
+                  setMobileMenuOpen(false);
+                }}
+                className={`flex items-center justify-between gap-2 px-3 py-2 text-[13px] sm:text-sm font-bold rounded-xl border transition-all ${
+                  isClean
+                    ? 'bg-gradient-to-r from-[#eef5ff] to-[#dceaff] text-[#1e3a8a] border-[#2563eb]/45 hover:brightness-98 shadow-sm'
+                    : 'bg-cyan-500/15 text-cyan-200 border-cyan-400/45 hover:bg-cyan-500/25'
+                }`}
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <Newspaper className={`w-4 h-4 shrink-0 ${isClean ? 'text-[#1d4ed8]' : 'text-cyan-300'}`} />
+                  <span className="leading-snug">SAO News Monitor (ข่าวจากสื่อ)</span>
+                </span>
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+              </a>
+            </div>
 
             {isAdminLoggedIn && (
               <button
@@ -647,11 +714,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
                 className={`w-full flex items-center gap-2.5 px-2.5 py-2 font-semibold rounded-lg border transition-all text-left cursor-pointer ${
                   isClean
-                    ? 'text-sky-800 bg-sky-50 border-sky-200'
+                    ? 'text-[#7a5000] bg-[#fff6d6] border-[#d4af37]/70'
                     : 'text-amber-300 hover:bg-amber-500/20 border-amber-500/30'
                 }`}
               >
-                <BarChart3 className={`w-4 h-4 shrink-0 ${isClean ? 'text-sky-600' : 'text-amber-400'}`} />
+                <BarChart3 className={`w-4 h-4 shrink-0 ${isClean ? 'text-[#8a5d00]' : 'text-amber-400'}`} />
                 <span>แดชบอร์ดสถิติ (Admin)</span>
               </button>
             )}

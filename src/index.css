@@ -36,7 +36,7 @@
   }
 
   html.theme-clean body {
-    background-color: #f8fafc;
+    background-color: #faf7f0;
     color: #0f172a;
   }
 }
@@ -62,16 +62,16 @@
 }
 
 html.theme-clean ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f5efe2;
 }
 
 html.theme-clean ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border: 1px solid #94a3b8;
+  background: #d8c79e;
+  border: 1px solid rgba(184, 134, 11, 0.45);
 }
 
 html.theme-clean ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #b8860b;
 }
 
 /* Royal Luxury Gold & Navy Glow Borders */

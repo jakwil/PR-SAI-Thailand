@@ -66,7 +66,7 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
       <div
         className={`relative w-full rounded-none border-y border-x-0 overflow-hidden py-2 sm:py-2.5 px-0 flex items-center group/ticker transition-colors ${
           isClean
-            ? 'bg-gradient-to-r from-sky-50 via-white to-amber-50/80 border-slate-200 shadow-sm'
+            ? 'bg-gradient-to-r from-[#fcf7ea] via-[#fffdf8] to-[#f8eed5] border-[#d4af37]/60 shadow-[0_4px_18px_rgba(161,118,22,0.08)]'
             : 'bg-gradient-to-r from-[#061539]/98 via-[#081a44]/98 to-[#051130]/98 border-amber-400/60 shadow-[0_4px_20px_rgba(0,0,0,0.6),0_0_20px_rgba(245,158,11,0.22)]'
         }`}
         onMouseEnter={() => pauseOnHover && setIsHovered(true)}
@@ -74,20 +74,26 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
       >
         {/* Top & Bottom Accent Lines */}
         <div
-          className={`absolute top-0 left-0 right-0 h-[1.5px] pointer-events-none ${
+          className={`absolute top-0 left-0 right-0 h-[2px] pointer-events-none ${
             isClean
-              ? 'bg-gradient-to-r from-transparent via-sky-500/60 to-transparent'
+              ? 'bg-gradient-to-r from-[#a67c00]/75 via-[#f1d57e] to-[#a67c00]/75'
               : 'bg-gradient-to-r from-transparent via-amber-400/80 to-transparent'
           }`}
         />
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent pointer-events-none" />
+        <div
+          className={`absolute bottom-0 left-0 right-0 h-[1px] pointer-events-none ${
+            isClean
+              ? 'bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent'
+              : 'bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent'
+          }`}
+        />
 
         {/* Optional Prefix Badge */}
         {settings?.prefixLabel && (
           <div
             className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-0.5 ml-3 sm:ml-4 rounded-full border text-xs font-bold shrink-0 mr-3 z-20 ${
               isClean
-                ? 'bg-amber-100 border-amber-300 text-amber-800'
+                ? 'bg-gradient-to-r from-[#fff6d6] to-[#f4dc94] border-[#d4af37]/80 text-[#7a5000] shadow-sm'
                 : 'bg-amber-500/20 border-amber-400/60 text-amber-300'
             }`}
           >
@@ -98,12 +104,12 @@ export const MarqueeTicker: React.FC<MarqueeTickerProps> = ({
         {/* Edge Gradient Fades */}
         <div
           className={`absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r to-transparent pointer-events-none z-10 ${
-            isClean ? 'from-sky-50' : 'from-[#061539]'
+            isClean ? 'from-[#fcf7ea]' : 'from-[#061539]'
           }`}
         />
         <div
           className={`absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l to-transparent pointer-events-none z-10 ${
-            isClean ? 'from-amber-50/80' : 'from-[#051130]'
+            isClean ? 'from-[#f8eed5]' : 'from-[#051130]'
           }`}
         />
 

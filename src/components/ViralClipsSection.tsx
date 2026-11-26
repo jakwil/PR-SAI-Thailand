@@ -68,7 +68,7 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
           onClick={() => handleScroll('left')}
           className={`absolute -left-1.5 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-9 sm:h-9 rounded-full border transition-all active:scale-90 backdrop-blur-md flex items-center justify-center cursor-pointer ${
             isClean
-              ? 'bg-white/95 hover:bg-sky-50 border-slate-300 text-slate-700 hover:text-sky-700 shadow-md'
+              ? 'bg-[#fffdf8]/95 hover:bg-[#fff6d6] border-[#d4af37]/75 text-[#8a5d00] hover:text-slate-950 shadow-[0_4px_16px_rgba(161,118,22,0.18)]'
               : 'bg-[#040e2b]/90 hover:bg-amber-500/30 border-amber-400/50 text-amber-300 hover:text-white shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
           }`}
           aria-label="เลื่อนซ้าย"
@@ -83,7 +83,7 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
           onClick={() => handleScroll('right')}
           className={`absolute -right-1.5 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-9 sm:h-9 rounded-full border transition-all active:scale-90 backdrop-blur-md flex items-center justify-center cursor-pointer ${
             isClean
-              ? 'bg-white/95 hover:bg-sky-50 border-slate-300 text-slate-700 hover:text-sky-700 shadow-md'
+              ? 'bg-[#fffdf8]/95 hover:bg-[#fff6d6] border-[#d4af37]/75 text-[#8a5d00] hover:text-slate-950 shadow-[0_4px_16px_rgba(161,118,22,0.18)]'
               : 'bg-[#040e2b]/90 hover:bg-amber-500/30 border-amber-400/50 text-amber-300 hover:text-white shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
           }`}
           aria-label="เลื่อนขวา"
@@ -103,7 +103,7 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
               onClick={() => handleOpenClip(clip)}
               className={`group cursor-pointer rounded-xl sm:rounded-2xl border transition-all duration-300 flex flex-col shrink-0 w-[140px] sm:w-[290px] md:w-[256px] xl:w-[280px] 2xl:w-[304px] snap-start overflow-hidden hover:scale-[1.01] active:scale-[0.98] transform-gpu ${
                 isClean
-                  ? 'bg-white border-slate-200 hover:border-sky-400 shadow-sm hover:shadow-md'
+                  ? 'bg-gradient-to-b from-white via-[#fcf9f2] to-[#f6eedb] border-[#d4af37]/55 hover:border-[#b8860b] shadow-[0_6px_22px_rgba(161,118,22,0.09)] hover:shadow-[0_10px_28px_rgba(161,118,22,0.18)]'
                   : 'bg-[#081a44]/96 border-amber-400/30 hover:border-amber-400/70 shadow-[0_4px_16px_rgba(0,0,0,0.5)] sm:shadow-[0_8px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_40px_rgba(245,158,11,0.25)] ring-1 ring-white/5'
               }`}
               title={`กดที่ภาพเพื่อชมคลิป: ${clip.title}`}
@@ -149,7 +149,7 @@ export const ViralClipsSection: React.FC<ViralClipsSectionProps> = ({ clips, onP
                 <h3
                   className={`text-xs sm:text-sm font-bold transition-colors line-clamp-2 leading-snug ${
                     isClean
-                      ? 'text-slate-900 group-hover:text-sky-700'
+                      ? 'text-slate-900 group-hover:text-[#8a5d00]'
                       : 'text-white group-hover:text-amber-300'
                   }`}
                 >
